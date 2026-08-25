@@ -9,14 +9,24 @@ import {
   OldStudentRegistrationFormScreen,
   Payment,
   PercentageUnpaidFeeScreen,
-  SignupScreen,
   SplashScreen,
   StudentDetails,
   StudentFeeHistory,
   StudentRegistrationFormScreen,
+  PrincipalDashboard,
 } from "../screens";
-import { Home } from "../screens/Home";
 import { RootStackScreenNames, Screen } from "../types";
+import { HomeScreen } from "../screens/HomeScreen";
+
+import { PrincipalAcademicsScreen } from "../screens/dashboards/PrincipalAcademicsScreen";
+
+import { PrincipalStudentsScreen } from "../screens/dashboards/PrincipalStudentsScreen";
+import { PrincipalTeachersScreen } from "../screens/dashboards/PrincipalTeachersScreen";
+import { PrincipalParentsScreen } from "../screens/dashboards/PrincipalParentsScreen";
+import { PrincipalClassesScreen } from "../screens/dashboards/PrincipalClassesScreen";
+import { PrincipalClassStudentsScreen } from "../screens/dashboards/PrincipalClassStudentsScreen";
+import { PrincipalFinanceScreen } from "../screens/dashboards/PrincipalFinanceScreen";
+import { Component } from "react";
 
 export const RootScreens: Screen[] = [
   {
@@ -24,14 +34,14 @@ export const RootScreens: Screen[] = [
     component: LoginScreen,
     options: { headerShown: false },
   },
-  {
-    name: RootStackScreenNames.Signup,
-    component: SignupScreen,
-    options: { headerTitle: "Create Admin" },
-  },
+  // {
+  //   name: RootStackScreenNames.Signup,
+  //   component: SignupScreen,
+  //   options: { headerTitle: "Create Admin" },
+  // },
   {
     name: RootStackScreenNames.Home,
-    component: Home,
+    component: HomeScreen,
     options: { headerShown: false },
   },
   {
@@ -97,5 +107,47 @@ export const RootScreens: Screen[] = [
     name: RootStackScreenNames.SplashScreen,
     component: SplashScreen,
     options: { headerShown: false },
+  },
+  {
+    name: RootStackScreenNames.PrincipalDashboard,
+    component:PrincipalDashboard,
+    options:{headerTitle:"Dashboard"}
+  },
+
+  {
+  name:RootStackScreenNames.PrincipalStudents,
+  component:PrincipalStudentsScreen,
+  options:{headerTitle:"Students"}
+
+  },
+  {
+    name: RootStackScreenNames.PrincipalTeachers,
+    component: PrincipalTeachersScreen,
+    options: { headerTitle: "Teachers" },
+  },
+  {
+    name: RootStackScreenNames.PrincipalParents,
+    component: PrincipalParentsScreen,
+    options: { headerTitle: "Parents" },
+  },
+  {
+    name: RootStackScreenNames.PrincipalClasses,
+    component: PrincipalClassesScreen,
+    options: { headerTitle: "Classes" },
+  },
+  {
+    name: RootStackScreenNames.PrincipalClassStudents,
+    component: PrincipalClassStudentsScreen,
+    options: { headerTitle: "Class Students"},
+  },
+  {
+    name: RootStackScreenNames.PrincipalFinance,
+    component: PrincipalFinanceScreen,
+    options: { headerTitle: "Finance Dashboard" },
+  },
+  {
+    name: RootStackScreenNames.PrincipalAcademics,
+    component: PrincipalAcademicsScreen,
+    options: { headerTitle: "Academics Dashboard" },
   },
 ];

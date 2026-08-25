@@ -1,15 +1,78 @@
-export type Admin = {
+/* ============================================================================
+   AUTH / SCHOOL USER
+============================================================================ */
+
+import { CommonResponse } from "./commonApiTypes";
+
+export enum SchoolUserRole {
+  PRINCIPAL = "PRINCIPAL",
+  ADMIN = "ADMIN",
+  TEACHER = "TEACHER",
+  PARENT = "PARENT",
+}
+
+export enum PlatformAdminRole {
+  PLATFORM_ADMIN = "PLATFORM_ADMIN",
+}
+
+export type AcademicYear = {
+  id: string;
   name: string;
-  designation: string;
-  adminId: string;
-  email: string;
-  roles: Roles[];
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
 };
 
-export enum Roles {
-  admin = "admin",
-  superadmin = "superadmin",
-}
+export type GetAcademicYearsResponse = {
+  academicYears: AcademicYear[];
+};
+
+export type SchoolUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: SchoolUserRole;
+  designation: string | null;
+  schoolId: string;
+  schoolCode: string;
+  schoolName: string;
+};
+
+/* ============================================================================
+   SCHOOL USER SIGN IN
+============================================================================ */
+
+export type SigninRequest = {
+  schoolCode: string;
+  email: string;
+  password: string;
+};
+
+export type SigninResponse = {
+  user: SchoolUser;
+  accessToken: string;
+  accessTokenTTL: number;
+  accessTokenFetchedAt: number;
+};
+
+/* ============================================================================
+   PLATFORM ADMIN SIGN IN
+============================================================================ */
+
+export type PlatformAdminSigninRequest = {
+  email: string;
+  password: string;
+};
+
+export type PlatformAdminSigninResponse = {
+  id: string;
+  accessToken: string;
+  accessTokenTTL: number;
+  name: string;
+  email: string;
+  role: PlatformAdminRole;
+  type: "PLATFORM_ADMIN";
+};
 
 export type Class = {
   classNumber: string;
@@ -41,6 +104,8 @@ export type Student = {
   name: string;
   aadhaar: string;
   fatherName: string;
+  academicYearId: string;
+  sectionName: string;
   dob: string;
   doj: string;
   phoneNo: string;
@@ -82,3 +147,38 @@ export type Transaction = {
   paymentMode: PaymentMode;
   classNumber: string;
 };
+
+
+
+export type CreateSchoolRequest = {
+  code: string;
+  name: string;
+  address?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  logoUrl?: string;
+  board?: string;
+
+  subscriptionPlan?: string;
+
+  maxStudents?: number;
+  maxStaffAccounts?: number;
+
+  gracePeriodDays?: number;
+};
+
+
+export type CreatePrincipalRequest = {
+  name: string;
+  email: string;
+  password: string;
+
+  designation?: string;
+  phone?: string;
+  department?: string;
+  employeeId?: string;
+};
+
+
+export type DeleteUserRequest = { email: string };
+export type DeleteUserResponse = CommonResponse;

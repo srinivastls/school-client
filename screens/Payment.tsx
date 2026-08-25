@@ -1,16 +1,48 @@
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
+
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 import dayjs from "dayjs";
-import React, { useCallback, useRef, useState } from "react";
-import { FlatList, View, Text } from "react-native";
+
+import React, {
+  useCallback,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  FlatList,
+  View,
+  Text,
+} from "react-native";
+
 import DropDownPicker from "react-native-dropdown-picker";
-import { Button } from "react-native-paper";
-import Snackbar from "react-native-snackbar";
+
+import {
+  Button,
+  Snackbar,
+} from "react-native-paper";
+
 import { useQueryClient } from "react-query";
 
-import { Page, PaymentForm } from "../components";
+import {
+  Page,
+  PaymentForm,
+} from "../components";
+
 import { txnServices } from "../services";
+
 import { useUserStore } from "../store";
-import { Colors, makeStyles, Metrics } from "../theme";
+
+import {
+  Colors,
+  makeStyles,
+  Metrics,
+} from "../theme";
 
 import {
   PaymentMode,
@@ -19,38 +51,60 @@ import {
   RootStackScreenNames,
 } from "../types";
 
-import { formatToIndianAmount } from "../utils";
+import {
+  formatToIndianAmount,
+} from "../utils";
 
 const Payment = () => {
   const route =
     useRoute<
-      RouteProp<RootStackParamList, RootStackScreenNames.Payment>
+      RouteProp<
+        RootStackParamList,
+        RootStackScreenNames.Payment
+      >
     >();
 
   const { student } = route.params;
 
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<
+      NativeStackNavigationProp<RootStackParamList>
+    >();
 
   const styles = useStyles();
 
   const paymentModes = [
-    { label: "Cash", value: PaymentMode.cash },
-    { label: "Wallet", value: PaymentMode.wallet },
+    {
+      label: "Cash",
+      value: PaymentMode.cash,
+    },
+    {
+      label: "Wallet",
+      value: PaymentMode.wallet,
+    },
   ];
 
-  const [selectedPaymentMode, setSelectedPaymentMode] =
-    useState<PaymentMode | null>(null);
+  const [
+    selectedPaymentMode,
+    setSelectedPaymentMode,
+  ] = useState<PaymentMode | null>(null);
 
-  const [modeDdOpen, setModeDdOpen] = useState(false);
+  const [modeDdOpen, setModeDdOpen] =
+    useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
-  const adminId = useUserStore((state) => state.user?.adminId);
+  const adminId = useUserStore(
+    (state) => state.user?.id
+  );
 
   const queryClient = useQueryClient();
 
-  // Safely handle missing fee objects
-  const tiePendingAmount = Number(student.tie?.pendingAmount ?? 0);
+  // Pending amounts
+  const tiePendingAmount = Number(
+    student.tie?.pendingAmount ?? 0
+  );
 
   const diaryPendingAmount = Number(
     student.diary?.pendingAmount ?? 0
@@ -80,21 +134,45 @@ const Payment = () => {
     student.pendingAmount ?? 0
   );
 
-  const amountDetails = useRef<RecordTxnRequest["amountDetails"]>({
-    tie: "0",
-    diary: "0",
-    belt: "0",
-    arrears: "0",
-    textBookFee: "0",
-    noteBookFee: "0",
-    tuitionFee: "0",
-    other: "0",
-  });
+  const amountDetails =
+    useRef<RecordTxnRequest["amountDetails"]>({
+      tie: "0",
+      diary: "0",
+      belt: "0",
+      arrears: "0",
+      textBookFee: "0",
+      noteBookFee: "0",
+      tuitionFee: "0",
+      other: "0",
+    });
 
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalAmount, setTotalAmount] =
+    useState(0);
 
   const [isTotalAmountNaN, setIsTotalAmountNaN] =
     useState(false);
+
+  // Snackbar
+  const [snackbarVisible, setSnackbarVisible] =
+    useState(false);
+
+  const [snackbarMessage, setSnackbarMessage] =
+    useState("");
+
+  const [snackbarColor, setSnackbarColor] =
+    useState(Colors.errorBg);
+
+  const showSnackbar = useCallback(
+    (
+      message: string,
+      backgroundColor: string = Colors.errorBg
+    ) => {
+      setSnackbarMessage(message);
+      setSnackbarColor(backgroundColor);
+      setSnackbarVisible(true);
+    },
+    []
+  );
 
   const updateTotal = () => {
     const {
@@ -121,11 +199,18 @@ const Payment = () => {
     const isTotalNaN = Number.isNaN(total);
 
     setIsTotalAmountNaN(isTotalNaN);
-    setTotalAmount(isTotalNaN ? 0 : total);
+
+    setTotalAmount(
+      isTotalNaN ? 0 : total
+    );
   };
 
   const onChange = useCallback(
-    (updatedDetail: Partial<RecordTxnRequest["amountDetails"]>) => {
+    (
+      updatedDetail: Partial<
+        RecordTxnRequest["amountDetails"]
+      >
+    ) => {
       amountDetails.current = {
         ...amountDetails.current,
         ...updatedDetail,
@@ -142,22 +227,18 @@ const Payment = () => {
     }
 
     if (!selectedPaymentMode) {
-      Snackbar.show({
-        text: "Please select payment mode",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
+      showSnackbar(
+        "Please select payment mode",
+        Colors.errorBg
+      );
       return;
     }
 
     if (!totalAmount || totalAmount <= 0) {
-      Snackbar.show({
-        text: "Please enter some amount",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
+      showSnackbar(
+        "Please enter some amount",
+        Colors.errorBg
+      );
       return;
     }
 
@@ -199,11 +280,10 @@ const Payment = () => {
       enteredNotebookAmount > notebookPendingAmount ||
       totalAmount > totalPendingAmount
     ) {
-      Snackbar.show({
-        text: "Amount cannot be greater than pending amount",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_SHORT,
-      });
+      showSnackbar(
+        "Amount cannot be greater than pending amount",
+        Colors.errorBg
+      );
 
       return;
     }
@@ -220,37 +300,48 @@ const Payment = () => {
     setLoading(true);
 
     try {
-      const txn = await txnServices.recordTxn(payload);
+      const txn =
+        await txnServices.recordTxn(payload);
 
-      Snackbar.show({
-        text: "Payment recorded successfully",
-        backgroundColor: Colors.successBg,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
-      navigation.replace(RootStackScreenNames.Invoice, {
-        student,
-        transaction: txn,
-      });
-
-      queryClient.refetchQueries(["transactions"]);
+      queryClient.refetchQueries([
+        "transactions",
+      ]);
 
       queryClient.refetchQueries([
         "student" + student.admissionNo,
       ]);
 
-      queryClient.refetchQueries(["dailyTotal"]);
-      queryClient.refetchQueries(["weeklyTotal"]);
-      queryClient.refetchQueries(["monthlyTotal"]);
+      queryClient.refetchQueries([
+        "dailyTotal",
+      ]);
+
+      queryClient.refetchQueries([
+        "weeklyTotal",
+      ]);
+
+      queryClient.refetchQueries([
+        "monthlyTotal",
+      ]);
+
+      showSnackbar(
+        "Payment recorded successfully",
+        Colors.successBg
+      );
+
+      navigation.replace(
+        RootStackScreenNames.Invoice,
+        {
+          student,
+          transaction: txn,
+        }
+      );
     } catch (error) {
-      Snackbar.show({
-        text:
-          // @ts-ignore
-          error?.response?.data?.message ??
+      showSnackbar(
+        // @ts-ignore
+        error?.response?.data?.message ??
           "Something went wrong. Please try again later.",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_LONG,
-      });
+        Colors.errorBg
+      );
     } finally {
       setLoading(false);
     }
@@ -261,7 +352,9 @@ const Payment = () => {
       <Page>
         <Text style={styles.totalPending}>
           Total pending:{" "}
-          {formatToIndianAmount(totalPendingAmount)}
+          {formatToIndianAmount(
+            totalPendingAmount
+          )}
         </Text>
 
         <DropDownPicker
@@ -288,7 +381,12 @@ const Payment = () => {
             </Text>
           </Text>
         ) : (
-          <Text style={[styles.total, styles.nanTotal]}>
+          <Text
+            style={[
+              styles.total,
+              styles.nanTotal,
+            ]}
+          >
             Please enter valid amounts
           </Text>
         )}
@@ -311,13 +409,30 @@ const Payment = () => {
   };
 
   return (
-    <FlatList
-      data={["dummy"]}
-      renderItem={renderItem}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1 }}
-      automaticallyAdjustKeyboardInsets
-    />
+    <>
+      <FlatList
+        data={["dummy"]}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+        automaticallyAdjustKeyboardInsets
+      />
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => {
+          setSnackbarVisible(false);
+        }}
+        duration={3000}
+        style={{
+          backgroundColor: snackbarColor,
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
+    </>
   );
 };
 

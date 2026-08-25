@@ -1,70 +1,141 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
-import { FlatList, Text } from "react-native";
-import { Button, Card, Paragraph } from "react-native-paper";
-import { useQuery } from "react-query";
-import { Icon, Page } from "../components";
-import { getAllUsers, userServices } from "../services";
-import { Colors, Metrics } from "../theme";
-import { Admin, RootStackParamList } from "../types";
-import { GetAllUsersResponse } from "../types/userApiTypes";
-import Snackbar from "react-native-snackbar";
-import { isUserSuperAdmin } from "../utils";
 
-const keyExtractor = (admin: Admin) => admin.adminId;
+import { useNavigation } from "@react-navigation/native";
+
+import React, { useState } from "react";
+
+import { FlatList, Text } from "react-native";
+
+import {
+  Button,
+  Card,
+  Paragraph,
+  Snackbar,
+} from "react-native-paper";
+
+import { useQuery } from "react-query";
+
+import { Icon, Page } from "../components";
+
+import {  userServices } from "../services";
+
+import { Colors, Metrics } from "../theme";
+
+import {
+  RootStackParamList,
+} from "../types";
+import { isAdmin } from "../utils";
+import { GetAllUsersResponse } from "../types/userApiTypes";
+
+
+//const keyExtractor = (admin: Admin) => admin.adminId;
 
 const AdminListScreen = () => {
-  const { data, isLoading, isError, isFetching, refetch } =
-    useQuery<GetAllUsersResponse>(["allUsers"], getAllUsers);
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useQuery<GetAllUsersResponse>(
+    ["allUsers"],
+    //getAllUsers
+  );
 
-  const AdminCard = ({ admin }: { admin: Admin }) => {
+  // Snackbar state
+  const [showSnackBar, setShowSnackBar] =
+    useState(false);
+
+  const [snackBarText, setSnackBarText] =
+    useState("");
+
+  const showSnackbar = (message: string) => {
+    setSnackBarText(message);
+    setShowSnackBar(true);
+  };
+
+  const AdminCard = ({ admin }: { admin: any }) => {
     const navigation: NativeStackNavigationProp<RootStackParamList> =
-      //@ts-ignore
+      // @ts-ignore
       useNavigation().getParent("RootStack");
 
     const [deleting, setDeleting] = useState(false);
 
     const onDelete = async () => {
-      setDeleting(true);
-      try {
-        await userServices.deleteUser({ email });
-        await refetch();
-        Snackbar.show({
-          text: "Admin deleted successfully",
-          backgroundColor: Colors.successBg,
-          duration: Snackbar.LENGTH_SHORT,
-        });
-      } catch (err) {
-        Snackbar.show({
-          text:
-            //@ts-ignore
-            err?.response?.data?.message ??
-            "Something went wrong. Please try again later.",
-          backgroundColor: Colors.errorBg,
-          duration: Snackbar.LENGTH_LONG,
-        });
+      if (deleting) {
+        return;
       }
-      setDeleting(false);
+
+      setDeleting(true);
+
+      try {
+        await userServices.deleteUser({
+          email: admin.email,
+        });
+
+        await refetch();
+
+        showSnackbar("Deleted successfully");
+      } catch (err) {
+        showSnackbar(
+          // @ts-ignore
+          err?.response?.data?.message ??
+            "Something went wrong. Please try again later."
+        );
+      } finally {
+        setDeleting(false);
+      }
     };
 
-    const { name, designation, adminId, email } = admin;
+    const {
+      name,
+      designation,
+      adminId,
+      email,
+    } = admin;
+
     return (
-      <Card style={{ marginBottom: Metrics.x4, marginHorizontal: Metrics.x1 }}>
+      <Card
+        style={{
+          marginBottom: Metrics.x4,
+          marginHorizontal: Metrics.x1,
+        }}
+      >
         <Card.Content>
-          <Text style={{ fontWeight: "bold", fontSize: 20 }}>{name}</Text>
-          <Paragraph>Designation: {designation}</Paragraph>
-          <Paragraph>ID: {adminId}</Paragraph>
-          <Paragraph>Email: {email}</Paragraph>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 20,
+            }}
+          >
+            {name}
+          </Text>
+
+          <Paragraph>
+            Designation: {designation}
+          </Paragraph>
+
+          <Paragraph>
+            ID: {adminId}
+          </Paragraph>
+
+          <Paragraph>
+            Email: {email}
+          </Paragraph>
         </Card.Content>
+
         <Card.Actions>
-          {!isUserSuperAdmin(admin) ? (
+          {!isAdmin(admin) ? (
             <Button
               mode="contained-tonal"
               onPress={onDelete}
               loading={deleting}
+              disabled={deleting}
             >
-              <Icon name="delete-outline" size="lg" />
+              <Icon
+                name="delete-outline"
+                size="lg"
+              />
             </Button>
           ) : (
             <Button mode="text">
@@ -76,21 +147,44 @@ const AdminListScreen = () => {
     );
   };
 
-  const renderAdmin = ({ item }: { item: Admin }) => {
+  const renderAdmin = ({
+    item,
+  }: {
+    item: any;
+  }) => {
     return <AdminCard admin={item} />;
   };
 
   return (
-    <Page isLoading={isLoading} isError={isError} onRetry={refetch}>
-      <FlatList
-        data={data?.users ?? []}
-        keyExtractor={keyExtractor}
-        renderItem={renderAdmin}
-        showsVerticalScrollIndicator={false}
-        refreshing={isFetching}
-        onRefresh={refetch}
-      />
-    </Page>
+    <>
+      <Page
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
+      >
+        <FlatList
+          data={data?.users ?? []}
+          //keyExtractor={keyExtractor}
+          renderItem={renderAdmin}
+          showsVerticalScrollIndicator={false}
+          refreshing={isFetching}
+          onRefresh={refetch}
+        />
+      </Page>
+
+      <Snackbar
+        visible={showSnackBar}
+        onDismiss={() => {
+          setShowSnackBar(false);
+        }}
+        duration={3000}
+        style={{
+          backgroundColor: Colors.errorBg,
+        }}
+      >
+        {snackBarText}
+      </Snackbar>
+    </>
   );
 };
 

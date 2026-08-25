@@ -60,7 +60,7 @@ const Invoice = ({
   // ==========================================
 
   const studentClass =
-    student?.class ??
+    //student?.class ??
     student?.classNumber ??
     {};
 
@@ -87,29 +87,24 @@ const Invoice = ({
 
   // Diary comes from Class model
   const diaryAmount = Number(
-    studentClass?.diary ??
       student?.diary?.amount ??
-      student?.diaryAmount ??
       0
   );
 
   // Tie comes directly from Student model
   const tieAmount = Number(
-    student?.tieAmount ??
       student?.tie?.amount ??
       0
   );
 
   // Belt comes directly from Student model
   const beltAmount = Number(
-    student?.beltAmount ??
       student?.belt?.amount ??
       0
   );
 
   // Arrears comes directly from Student model
   const arrearsAmount = Number(
-    student?.arrearsAmount ??
       student?.arrears?.amount ??
       0
   );
@@ -132,7 +127,6 @@ const Invoice = ({
   // ==========================================
 
   const couponDiscount = Number(
-    student?.coupon?.discount ??
       student?.couponCode?.discount ??
       0
   );
@@ -143,43 +137,36 @@ const Invoice = ({
 
   const paidTie = Number(
     amountDetails?.tie ??
-      transaction?.tieAmount ??
       0
   );
 
   const paidDiary = Number(
     amountDetails?.diary ??
-      transaction?.diaryAmount ??
       0
   );
 
   const paidBelt = Number(
     amountDetails?.belt ??
-      transaction?.beltAmount ??
       0
   );
 
   const paidArrears = Number(
     amountDetails?.arrears ??
-      transaction?.arrearsAmount ??
       0
   );
 
   const paidTuitionFee = Number(
     amountDetails?.tuitionFee ??
-      transaction?.tuitionFeeAmount ??
       0
   );
 
   const paidTextBookFee = Number(
     amountDetails?.textBookFee ??
-      transaction?.textBookFeeAmount ??
       0
   );
 
   const paidNoteBookFee = Number(
     amountDetails?.noteBookFee ??
-      transaction?.noteBookFeeAmount ??
       0
   );
 

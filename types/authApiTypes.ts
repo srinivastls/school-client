@@ -1,5 +1,5 @@
 import { CommonResponse } from "./commonApiTypes";
-import { Admin, Roles } from "./entityTypes";
+import { SchoolUserRole } from "./entityTypes";
 
 export type SignupRequest = {
   name: string;
@@ -7,16 +7,12 @@ export type SignupRequest = {
   email: string;
   designation: string;
   adminId: string;
-  roles?: Roles[];
+  roles?: SchoolUserRole[];
 };
 export type SignupResponse = CommonResponse;
 
 export type SigninRequest = { email: string; password: string };
-export type SinginResponse = CommonResponse &
-  Admin & {
-    accessToken: string;
-    accessTokenTTL: number;
-  };
+
 
 export type DeleteUserRequest = { email: string };
 export type DeleteUserResponse = CommonResponse;

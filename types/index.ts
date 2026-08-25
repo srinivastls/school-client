@@ -1,6 +1,5 @@
 export * from "./screenTypes";
 export * from "./entityTypes";
-export * from "./authApiTypes";
 export * from "./commonApiTypes";
 export * from "./classApiTypes";
 export * from "./couponApiTypes";

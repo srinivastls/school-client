@@ -39,7 +39,7 @@ const PaymentForm = React.memo(
             editable={false}
             style={styles.rowItemRight}
             value={String(
-              student.pendingDiaryAmount ?? "0"
+              student.diary.pendingAmount ?? "0"
             )}
           />
         </View>
@@ -64,7 +64,7 @@ const PaymentForm = React.memo(
             editable={false}
             style={styles.rowItemRight}
             value={String(
-              student.tiePendingAmount ?? "0"
+              student.tie.pendingAmount ?? "0"
             )}
           />
         </View>
@@ -89,7 +89,7 @@ const PaymentForm = React.memo(
             editable={false}
             style={styles.rowItemRight}
             value={String(
-              student.beltPendingAmount ?? "0"
+              student.belt.pendingAmount ?? "0"
             )}
           />
         </View>
@@ -114,7 +114,7 @@ const PaymentForm = React.memo(
             editable={false}
             style={styles.rowItemRight}
             value={String(
-              student.arrearsPendingAmount ?? "0"
+              student.arrears.pendingAmount ?? "0"
             )}
           />
         </View>

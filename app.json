@@ -29,8 +29,9 @@
       "package": "com.school.app"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    },
+  "favicon": "./assets/favicon.png",
+  "output": "single"
+},
     "extra": {
       "eas": {
         "projectId": "8be2abcc-eab0-4c4d-aa19-11be8f76e87f"

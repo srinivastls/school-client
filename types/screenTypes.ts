@@ -18,6 +18,24 @@ export enum RootStackScreenNames {
   Invoice = "Invoice",
   Payment = "Payment",
   SplashScreen = "SplashScreen",
+  PrincipalDashboard = "PrincipalDashboard",
+  PrincipalStudents = "PrincipalStudents",
+  PrincipalTeachers = "PrincipalTeachers",
+  PrincipalParents = "PrincipalParents",
+  PrincipalClasses = "PrincipalClasses",
+  PrincipalClassStudents = "PrincipalClassStudents",
+  PrincipalFinance = "PrincipalFinance",
+  PrincipalAcademics = "PrincipalAcademics",
+  EditStudent= "EditStudent",
+  StudentRegistration = "StudentRegistration",
+  PlatformSchools = "PlatformSchools",
+  PlatformAdminDashboard = "PlatformAdminDashboard",
+  PlatformAdminCreateSchool = "PlatformAdminCreateSchool",
+  AdminDashboard = "AdminDashboard",
+  TeacherDashboard = "TeacherDashboard",
+  ParentDashboard = "ParentDashboard",
+  PlatformAdminCreatePrincipal ="PlatformAdminCreatePrincipal",
+  PlatformAdminSchoolDetails = "PlatformAdminSchoolDetails",
 }
 
 export type RootStackParamList = {
@@ -44,7 +62,29 @@ export type RootStackParamList = {
   };
   [RootStackScreenNames.Payment]: { student: Student };
   [RootStackScreenNames.SplashScreen]: undefined;
+  [RootStackScreenNames.PrincipalClassStudents]: { classNumber: string };
+  [RootStackScreenNames.PrincipalStudents]: undefined;
+  [RootStackScreenNames.PrincipalTeachers]: undefined;
+  [RootStackScreenNames.PrincipalParents]: undefined;
+  [RootStackScreenNames.PrincipalClasses]: undefined;
+  [RootStackScreenNames.PrincipalFinance]: undefined;
+  [RootStackScreenNames.PrincipalDashboard]: undefined;
+  [RootStackScreenNames.PrincipalAcademics]: undefined;
+  [RootStackScreenNames.StudentRegistration]:undefined;
+  [RootStackScreenNames.EditStudent]: { preFetchedData: Student };
+  [RootStackScreenNames.PlatformSchools]: undefined;
+  [RootStackScreenNames.PlatformAdminDashboard]: undefined;
+  [RootStackScreenNames.PlatformAdminCreateSchool]: undefined;
+  [RootStackScreenNames.AdminDashboard]: undefined;
+  [RootStackScreenNames.TeacherDashboard]: undefined;
+  [RootStackScreenNames.ParentDashboard]: undefined;
+  [RootStackScreenNames.PlatformAdminCreatePrincipal]: { schoolId: string;
+  schoolCode: string;
+  schoolName: string;
+},
+  [RootStackScreenNames.PlatformAdminSchoolDetails]: { schoolId: string;},
 };
+
 
 export type Screen<
   S = RootStackScreenNames,

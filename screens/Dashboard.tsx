@@ -1,74 +1,165 @@
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, TextInput as RNTextInput } from "react-native";
-import { ProgressBar, TextInput } from "react-native-paper";
-import Snackbar from "react-native-snackbar";
+
+import {
+  FlatList,
+  TextInput as RNTextInput,
+} from "react-native";
+
+import {
+  ProgressBar,
+  Snackbar,
+  TextInput,
+} from "react-native-paper";
+
 import { useQuery } from "react-query";
+
 import {
   DashboardNavTiles,
-  DashboardPaymentTracker,
   Page,
 } from "../components";
+
 import { txnServices } from "../services";
 import { studentServices } from "../services/studentServices";
+
 import { Colors, Metrics } from "../theme";
-import { RootStackScreenNames } from "../types";
-import { getDateRangeFromStartOf, isUserSuperAdmin } from "../utils";
+
+import {
+  GetStudentResponse,
+  RootStackParamList,
+  RootStackScreenNames,
+  Student,
+} from "../types";
+
+import {
+  getDateRangeFromStartOf,
+} from "../utils";
+
+/* ============================================================================
+   TYPE GUARD
+============================================================================ */
+
+const isStudent = (
+  data: GetStudentResponse
+): data is Student => {
+  return (
+    !!data &&
+    "admissionNo" in data &&
+    "name" in data
+  );
+};
+
+/* ============================================================================
+   SEARCH BAR
+============================================================================ */
 
 const Searchbar = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<
+      NativeStackNavigationProp<RootStackParamList>
+    >();
+
   const [query, setQuery] = useState("");
-  const ref = useRef<RNTextInput>(null);
 
-  const onSubmit = () => {
-    if (!query) {
-      return;
-    }
-    refetch();
-  };
+  const ref =
+    useRef<RNTextInput>(null);
 
-  const { data, isFetching, isError, refetch, error, isFetched } = useQuery(
+  const [showSnackbar, setShowSnackbar] =
+    useState(false);
+
+  const [snackbarText, setSnackbarText] =
+    useState("");
+
+  const {
+    data,
+    isFetching,
+    isError,
+    refetch,
+    error,
+    isFetched,
+  } = useQuery<GetStudentResponse>(
     ["student", query],
-    () => studentServices.getStudentById({ admissionNo: query }),
+    () =>
+      studentServices.getStudentById({
+        admissionNo: query.trim(),
+      }),
     {
       enabled: false,
       cacheTime: 0,
     }
   );
-  useEffect(() => {
-    if (!isError && data && !isFetching) {
-      //@ts-ignore
-      navigation.navigate(RootStackScreenNames.StudentDetails, {
-        student: data,
-      });
+
+  /* --------------------------------------------------------------------------
+     SEARCH
+  -------------------------------------------------------------------------- */
+
+  const onSubmit = () => {
+    if (!query.trim()) {
+      return;
     }
-  }, [data, isError, isFetching]);
+
+    setShowSnackbar(false);
+
+    refetch();
+  };
+
+  /* --------------------------------------------------------------------------
+     SEARCH SUCCESS
+  -------------------------------------------------------------------------- */
+
+  useEffect(() => {
+    if (
+      !isError &&
+      data &&
+      !isFetching &&
+      isStudent(data)
+    ) {
+      navigation.navigate(
+        RootStackScreenNames.StudentDetails,
+        {
+          student: data,
+        }
+      );
+    }
+  }, [
+    data,
+    isError,
+    isFetching,
+    navigation,
+  ]);
+
+  /* --------------------------------------------------------------------------
+     SEARCH ERROR
+  -------------------------------------------------------------------------- */
 
   useEffect(() => {
     if (isFetched && isError) {
-      Snackbar.show({
-        text:
-          //@ts-ignore
-          error?.response?.data?.message ??
-          "Something went wrong. Please try again later.",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_LONG,
-      });
+      setSnackbarText(
+        // @ts-ignore
+        error?.response?.data?.message ??
+          "Something went wrong. Please try again."
+      );
+
+      setShowSnackbar(true);
     }
-  }, [isError, isFetched]);
+  }, [
+    isError,
+    isFetched,
+    error,
+  ]);
 
   return (
     <>
       <TextInput
         ref={ref}
         mode="outlined"
-        placeholder={"Search by Admission No."}
+        placeholder="Search by Admission No."
         placeholderTextColor={Colors.subtext}
         value={query}
-        onChangeText={(text) => {
-          setQuery(text);
-        }}
+        onChangeText={setQuery}
         right={
           <TextInput.Icon
             icon="account-search"
@@ -78,35 +169,71 @@ const Searchbar = () => {
             }}
           />
         }
-        onSubmitEditing={(e) => {
+        onSubmitEditing={() => {
           ref.current?.blur();
           onSubmit();
         }}
         autoCapitalize="characters"
-        style={!isFetching ? { marginBottom: Metrics.x4 } : {}}
-      ></TextInput>
+        autoCorrect={false}
+        style={
+          !isFetching
+            ? {
+                marginBottom: Metrics.x4,
+              }
+            : undefined
+        }
+      />
+
       {isFetching ? (
         <ProgressBar
           color={Colors.brandPrimary}
           indeterminate
-          style={{ marginBottom: Metrics.x4, borderRadius: 2 }}
+          style={{
+            marginBottom: Metrics.x4,
+            borderRadius: 2,
+          }}
         />
       ) : null}
+
+      <Snackbar
+        visible={showSnackbar}
+        onDismiss={() => {
+          setShowSnackbar(false);
+        }}
+        duration={3000}
+        style={{
+          backgroundColor: Colors.errorBg,
+        }}
+      >
+        {snackbarText}
+      </Snackbar>
     </>
   );
 };
 
-export { Searchbar };
+/* ============================================================================
+   DASHBOARD
+============================================================================ */
 
-//should use render method and flatlist since we should not nest flatlist inside scrollview
 const Dashboard = () => {
+  /* ==========================================================================
+     CLASS / STUDENT COUNTS
+  ========================================================================== */
+
   const {
     data: classStudentCounts,
     isLoading: cscLoading,
     isFetching: cscFetching,
     error: cscError,
     refetch: cscRefetch,
-  } = useQuery(["classStudentCounts"], studentServices.getClassStudentCounts);
+  } = useQuery(
+    ["classStudentCounts"],
+    studentServices.getClassStudentCounts
+  );
+
+  /* ==========================================================================
+     DAILY TOTAL
+  ========================================================================== */
 
   const {
     data: dailyTotal,
@@ -117,9 +244,19 @@ const Dashboard = () => {
   } = useQuery(
     ["dailyTotal"],
     () =>
-      txnServices.getTotalTxnAmount({ dates: [dayjs().format("DD/MM/YYYY")] }),
-    { enabled: false }
+      txnServices.getTotalTxnAmount({
+        dates: [
+          dayjs().format("DD/MM/YYYY"),
+        ],
+      }),
+    {
+      enabled: false,
+    }
   );
+
+  /* ==========================================================================
+     WEEKLY TOTAL
+  ========================================================================== */
 
   const {
     data: weeklyTotal,
@@ -130,9 +267,18 @@ const Dashboard = () => {
   } = useQuery(
     ["weeklyTotal"],
     () =>
-      txnServices.getTotalTxnAmount({ dates: getDateRangeFromStartOf("week") }),
-    { enabled: false }
+      txnServices.getTotalTxnAmount({
+        dates:
+          getDateRangeFromStartOf("week"),
+      }),
+    {
+      enabled: false,
+    }
   );
+
+  /* ==========================================================================
+     MONTHLY TOTAL
+  ========================================================================== */
 
   const {
     data: monthlyTotal,
@@ -144,41 +290,94 @@ const Dashboard = () => {
     ["monthlyTotal"],
     () =>
       txnServices.getTotalTxnAmount({
-        dates: getDateRangeFromStartOf("month"),
+        dates:
+          getDateRangeFromStartOf("month"),
       }),
-    { enabled: false }
+    {
+      enabled: false,
+    }
   );
 
+  /* ==========================================================================
+     DASHBOARD SNACKBAR
+  ========================================================================== */
+
+  const [showSnackbar, setShowSnackbar] =
+    useState(false);
+
+  const [snackbarText, setSnackbarText] =
+    useState("");
+
+  /* ==========================================================================
+     FETCH DASHBOARD TOTALS
+     
+     IMPORTANT:
+     
+     Do NOT check isUserSuperAdmin() here.
+     
+     Authentication is now handled by the JWT:
+     
+       JWT
+        ↓
+       schoolId
+        ↓
+       backend
+        ↓
+       current school's data
+     
+     Principal/Admin can therefore load these totals.
+  ========================================================================== */
+
   const fetchTotals = () => {
-    if (isUserSuperAdmin()) {
-      dailyTotalRefetch();
-      weeklyTotalRefetch();
-      monthlyTotalRefetch();
-    }
+    dailyTotalRefetch();
+    weeklyTotalRefetch();
+    monthlyTotalRefetch();
   };
 
-  useEffect(fetchTotals, []);
+  /* ==========================================================================
+     FETCH TOTALS WHEN DASHBOARD LOADS
+  ========================================================================== */
+
+  useEffect(() => {
+    fetchTotals();
+  }, []);
+
+  /* ==========================================================================
+     DASHBOARD QUERY ERRORS
+  ========================================================================== */
 
   useEffect(() => {
     const error =
       cscError ??
       dailyTotalError ??
       weeklyTotalError ??
-      monthlyTotalError ??
-      undefined;
-    if (error) {
-      Snackbar.show({
-        text:
-          //@ts-ignore
-          error?.response?.data?.message ??
-          "Something went wrong in fetching class details",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_LONG,
-      });
-    }
-  }, [cscError, dailyTotalError, weeklyTotalError, monthlyTotalError]);
+      monthlyTotalError;
 
-  const renderDashboard = ({ item }: any) => {
+    if (error) {
+      setSnackbarText(
+        // @ts-ignore
+        error?.response?.data?.message ??
+          "Something went wrong in fetching dashboard details"
+      );
+
+      setShowSnackbar(true);
+    }
+  }, [
+    cscError,
+    dailyTotalError,
+    weeklyTotalError,
+    monthlyTotalError,
+  ]);
+
+  /* ==========================================================================
+     DASHBOARD CONTENT
+  ========================================================================== */
+
+  const renderDashboard = ({
+    item,
+  }: {
+    item: string;
+  }) => {
     return (
       <Page
         isLoading={
@@ -189,19 +388,34 @@ const Dashboard = () => {
         }
       >
         <Searchbar />
-        {isUserSuperAdmin() ? (
-          <DashboardPaymentTracker
-            dailyTotal={dailyTotal}
-            weeklyTotal={weeklyTotal}
-            monthlyTotal={monthlyTotal}
-          />
-        ) : null}
+
+        {/*
+          Payment tracker can be enabled later.
+
+          The API calls are still retained above so
+          existing dashboard functionality is preserved.
+        */}
+
+        {/*
+        <DashboardPaymentTracker
+          dailyTotal={dailyTotal}
+          weeklyTotal={weeklyTotal}
+          monthlyTotal={monthlyTotal}
+        />
+        */}
+
         <DashboardNavTiles
-          classStudentsCounts={classStudentCounts?.countData ?? []}
+          classStudentsCounts={
+            classStudentCounts?.countData ?? []
+          }
         />
       </Page>
     );
   };
+
+  /* ==========================================================================
+     REFRESHING STATE
+  ========================================================================== */
 
   const refreshing =
     cscFetching ||
@@ -209,17 +423,37 @@ const Dashboard = () => {
     weeklyTotalFetching ||
     monthlyTotalFetching;
 
+  /* ==========================================================================
+     RENDER
+  ========================================================================== */
+
   return (
-    <FlatList
-      showsVerticalScrollIndicator={false}
-      data={["dummy"]}
-      renderItem={renderDashboard}
-      refreshing={refreshing}
-      onRefresh={() => {
-        cscRefetch();
-        fetchTotals();
-      }}
-    />
+    <>
+      <FlatList
+        showsVerticalScrollIndicator={false}
+        data={["dummy"]}
+        renderItem={renderDashboard}
+        refreshing={refreshing}
+        onRefresh={() => {
+          cscRefetch();
+          fetchTotals();
+        }}
+      />
+
+      <Snackbar
+        visible={showSnackbar}
+        onDismiss={() => {
+          setShowSnackbar(false);
+        }}
+        duration={3000}
+        style={{
+          backgroundColor:
+            Colors.errorBg,
+        }}
+      >
+        {snackbarText}
+      </Snackbar>
+    </>
   );
 };
 

@@ -5,7 +5,8 @@ import { Button } from "react-native-paper";
 import { Page } from "../components";
 import { makeStyles, Metrics } from "../theme";
 import { RootStackScreenNames } from "../types";
-import { isUserSuperAdmin } from "../utils";
+import { isAdmin } from "../utils";
+//import { isUserSuperAdmin } from "../utils";
 
 const Report = () => {
   const styles = useStyles();
@@ -15,17 +16,18 @@ const Report = () => {
       <Button
         mode="elevated"
         onPress={() => {
-          navigation.navigate(RootStackScreenNames.PercentageUnpaidFee);
+          //navigation.navigate(RootStackScreenNames.PercentageUnpaidFee);
         }}
         style={styles.marginBottomX5}
       >
         PERCENTAGE
       </Button>
-      {isUserSuperAdmin() ? (
+      {isAdmin() ? (
         <Button
           mode="elevated"
           onPress={() => {
-            navigation.navigate(RootStackScreenNames.MonthOrDateFeeHistory);
+            // empty
+            // navigation.navigate(RootStackScreenNames.MonthOrDateFeeHistory);
           }}
           style={styles.marginBottomX5}
         >
@@ -35,7 +37,7 @@ const Report = () => {
       <Button
         mode="elevated"
         onPress={() => {
-          navigation.navigate(RootStackScreenNames.StudentFeeHistory);
+          //navigation.navigate(RootStackScreenNames.StudentFeeHistory);
         }}
         style={styles.marginBottomX5}
       >

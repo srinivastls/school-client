@@ -42,7 +42,7 @@ const StudentDetailsCard = ({
   onSiblingPress: (admissionNumber: string) => void;
 }) => {
   const styles = useStyles();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const {
     name,

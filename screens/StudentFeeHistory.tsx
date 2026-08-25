@@ -1,24 +1,82 @@
 import dayjs from "dayjs";
+
 import React, { useEffect, useState } from "react";
-import { FlatList, View, Text, Keyboard } from "react-native";
-import { Button, TextInput } from "react-native-paper";
-import Snackbar from "react-native-snackbar";
-import { MonthDropdown, Page, TransactionItem } from "../components";
+
+import {
+  FlatList,
+  View,
+  Text,
+  Keyboard,
+} from "react-native";
+
+import {
+  Button,
+  TextInput,
+  Snackbar,
+} from "react-native-paper";
+
+import {
+  MonthDropdown,
+  Page,
+  TransactionItem,
+} from "../components";
+
 import { reportServices } from "../services";
-import { Colors, makeStyles, Metrics } from "../theme";
-import { GetStudentMonthOrDateReportRequest, Transaction } from "../types";
+
+import {
+  Colors,
+  makeStyles,
+  Metrics,
+} from "../theme";
+
+import {
+  GetStudentMonthOrDateReportRequest,
+  Transaction,
+} from "../types";
 
 const renderTransaction = (txn: Transaction) => {
-  return <TransactionItem txn={txn} key={txn.id} student={txn.student} />;
+  return (
+    <TransactionItem
+      txn={txn}
+      key={txn.id}
+      student={txn.student}
+    />
+  );
 };
 
 const StudentFeeHistory = () => {
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] =
+    useState<string | null>(null);
+
   const [date, setDate] = useState("");
+
   const [admissionNo, setAdmissionNo] = useState("");
+
   const styles = useStyles();
-  const [fetchingTxns, setFetchingTxns] = useState(false);
+
+  const [fetchingTxns, setFetchingTxns] =
+    useState(false);
+
   const [txns, setTxns] = useState<Transaction[]>([]);
+
+  // Snackbar state
+  const [snackbarVisible, setSnackbarVisible] =
+    useState(false);
+
+  const [snackbarMessage, setSnackbarMessage] =
+    useState("");
+
+  const [snackbarColor, setSnackbarColor] =
+    useState(Colors.errorBg);
+
+  const showSnackbar = (
+    message: string,
+    backgroundColor: string = Colors.errorBg
+  ) => {
+    setSnackbarMessage(message);
+    setSnackbarColor(backgroundColor);
+    setSnackbarVisible(true);
+  };
 
   useEffect(() => {
     if (selectedMonth) {
@@ -28,25 +86,25 @@ const StudentFeeHistory = () => {
 
   const onPress = async () => {
     Keyboard.dismiss();
+
     if (!admissionNo || (!selectedMonth && !date)) {
-      Snackbar.show({
-        text: "Please select all fields",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_SHORT,
-      });
+      showSnackbar(
+        "Please select all fields",
+        Colors.errorBg
+      );
       return;
     }
 
     if (selectedMonth && date) {
-      Snackbar.show({
-        text: "Choose only one of month and date",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_SHORT,
-      });
+      showSnackbar(
+        "Choose only one of month and date",
+        Colors.errorBg
+      );
       return;
     }
 
     let payload: GetStudentMonthOrDateReportRequest;
+
     if (selectedMonth) {
       payload = {
         admissionNo,
@@ -60,29 +118,34 @@ const StudentFeeHistory = () => {
         date,
       };
     }
+
     setFetchingTxns(true);
+
     try {
-      const txns = await reportServices.getStudentMonthOrDateReport(payload);
-      if (txns.length) {
-        setTxns(txns);
+      const transactions =
+        await reportServices.getStudentMonthOrDateReport(
+          payload
+        );
+
+      if (transactions.length) {
+        setTxns(transactions);
       } else {
         setTxns([]);
-        Snackbar.show({
-          text: "No transactions exist",
-          backgroundColor: Colors.errorBg,
-          duration: Snackbar.LENGTH_LONG,
-        });
+
+        showSnackbar(
+          "No transactions exist",
+          Colors.errorBg
+        );
       }
     } catch (error) {
-      Snackbar.show({
-        text:
-          //@ts-ignore
-          error?.response?.data?.message ??
+      showSnackbar(
+        // @ts-ignore
+        error?.response?.data?.message ??
           "Something went wrong in fetching transactions",
-        backgroundColor: Colors.errorBg,
-        duration: Snackbar.LENGTH_LONG,
-      });
+        Colors.errorBg
+      );
     }
+
     setFetchingTxns(false);
   };
 
@@ -90,7 +153,7 @@ const StudentFeeHistory = () => {
     return (
       <>
         <TextInput
-          label={"Admission No."}
+          label="Admission No."
           value={admissionNo}
           onChangeText={(text) => {
             setAdmissionNo(text);
@@ -98,25 +161,32 @@ const StudentFeeHistory = () => {
           mode="outlined"
           autoCapitalize="characters"
         />
+
         <View style={styles.marginBottomX5} />
 
         <MonthDropdown
           setSelectedMonth={setSelectedMonth}
           selectedMonth={selectedMonth}
         />
+
         <View style={styles.marginBottomX5} />
 
-        <Text style={{ textAlign: "center" }}>OR</Text>
+        <Text style={{ textAlign: "center" }}>
+          OR
+        </Text>
 
         <TextInput
-          label={"Date (DD/MM/YYYY)"}
+          label="Date (DD/MM/YYYY)"
           value={date}
           onChangeText={(text) => {
-            setSelectedMonth((selectedMonth) => (text ? null : selectedMonth));
+            setSelectedMonth((selectedMonth) =>
+              text ? null : selectedMonth
+            );
             setDate(text);
           }}
           mode="outlined"
         />
+
         <View style={styles.marginBottomX5} />
 
         <Button
@@ -127,9 +197,23 @@ const StudentFeeHistory = () => {
         >
           Generate
         </Button>
+
         <View style={styles.marginBottomX5} />
 
         {txns.map(renderTransaction)}
+
+        <Snackbar
+          visible={snackbarVisible}
+          onDismiss={() =>
+            setSnackbarVisible(false)
+          }
+          duration={3000}
+          style={{
+            backgroundColor: snackbarColor,
+          }}
+        >
+          {snackbarMessage}
+        </Snackbar>
       </>
     );
   };
@@ -148,7 +232,9 @@ const StudentFeeHistory = () => {
 };
 
 const useStyles = makeStyles(() => ({
-  marginBottomX5: { marginBottom: Metrics.x5 },
+  marginBottomX5: {
+    marginBottom: Metrics.x5,
+  },
 }));
 
 export { StudentFeeHistory };

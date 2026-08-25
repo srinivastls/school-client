@@ -24,7 +24,7 @@ const TransactionItem = ({
 }) => {
   const styles = useStyles();
   const navigation: NativeStackNavigationProp<RootStackParamList> =
-    useNavigation().getParent("RootStack");
+    useNavigation().getParent();
 
   return (
     <Card

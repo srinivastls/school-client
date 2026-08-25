@@ -1,41 +1,197 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useEffect } from "react";
-import { useUserStore } from "../store";
-import { RootStackParamList, RootStackScreenNames } from "../types";
+import {
+  ActivityIndicator,
+  View,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import {
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack";
+
+import {
+  useUserStore,
+} from "../store";
+
+import {
+  RootStackParamList,
+  RootStackScreenNames,
+} from "../types";
+
+import {
+  Colors,
+} from "../theme";
+
+
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  RootStackScreenNames.SplashScreen
+>;
+
 
 const SplashScreen = ({
   navigation,
-}: {
-  navigation: NativeStackNavigationProp<
-    RootStackParamList,
-    RootStackScreenNames.SplashScreen
-  >;
-}) => {
-  let userLoggedIn = false;
-  const { user, accessToken, accessTokenTTL, accessTokenFetchedAt } =
-    useUserStore.getState();
+}: Props) => {
+
+  const user = useUserStore(
+    (state) => state.user
+  );
+
+  const accessToken = useUserStore(
+    (state) => state.accessToken
+  );
+
+  const hasHydrated = useUserStore(
+    (state) => state.hasHydrated
+  );
+
 
   useEffect(() => {
-    if (user && accessToken && accessTokenTTL && accessTokenFetchedAt) {
-      const accessTokenExpired =
-        Date.now() - accessTokenFetchedAt > accessTokenTTL - 3600; //1 hour less just to be safe
-      userLoggedIn = !accessTokenExpired;
+
+    const checkStorage = async () => {
+
+      try {
+
+        const raw =
+          await AsyncStorage.getItem(
+            "userStore"
+          );
+
+        console.log(
+          "================================="
+        );
+
+        console.log(
+          "🔥 SPLASH AUTH DEBUG"
+        );
+
+        console.log(
+          "ZUSTAND HYDRATED:",
+          hasHydrated
+        );
+
+        console.log(
+          "ZUSTAND USER:",
+          user
+        );
+
+        console.log(
+          "ZUSTAND TOKEN:",
+          Boolean(accessToken)
+        );
+
+        console.log(
+          "ASYNC STORAGE userStore:",
+          raw
+        );
+
+        console.log(
+          "================================="
+        );
+
+      } catch (error) {
+
+        console.error(
+          "SPLASH STORAGE ERROR:",
+          error
+        );
+
+      }
+
+    };
+
+    checkStorage();
+
+  }, [
+    hasHydrated,
+    user,
+    accessToken,
+  ]);
+
+
+  useEffect(() => {
+
+    if (!hasHydrated) {
+      return;
     }
 
-    if (userLoggedIn) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: RootStackScreenNames.Home }],
-      });
-    } else {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: RootStackScreenNames.Login }],
-      });
-    }
-  }, []);
 
-  return <></>;
+    if (
+      user &&
+      accessToken
+    ) {
+
+      console.log(
+        "🔥 SPLASH → HOME"
+      );
+
+      navigation.reset({
+
+        index: 0,
+
+        routes: [
+          {
+            name:
+              RootStackScreenNames.Home,
+          },
+        ],
+
+      });
+
+      return;
+    }
+
+
+    console.log(
+      "🔥 SPLASH → LOGIN"
+    );
+
+    navigation.reset({
+
+      index: 0,
+
+      routes: [
+        {
+          name:
+            RootStackScreenNames.Login,
+        },
+      ],
+
+    });
+
+  }, [
+    hasHydrated,
+    user,
+    accessToken,
+    navigation,
+  ]);
+
+
+  return (
+
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor:
+          Colors.background,
+      }}
+    >
+
+      <ActivityIndicator
+        size="large"
+        color={
+          Colors.brandPrimary
+        }
+      />
+
+    </View>
+
+  );
 };
 
-export { SplashScreen };
+
+export {
+  SplashScreen,
+};

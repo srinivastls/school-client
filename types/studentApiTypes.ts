@@ -3,7 +3,7 @@ import { CommonResponse } from "./commonApiTypes";
 import { Coupon, Sibling, Student } from "./entityTypes";
 
 export type GetStudentRequest = Pick<Student, "admissionNo">;
-export type GetStudentResponse = CommonResponse | Student;
+export type GetStudentResponse = Student;
 
 export type CreateStudentRequest = Omit<
   Student,
@@ -50,3 +50,38 @@ export type ClassStudentCountsResponse = CommonResponse & {
 
 export type PromoteDemoteRequest = { fromClass: string; toClass: string };
 export type PromoteDemoteResponse = CommonResponse;
+
+export type StudentRegistrationSection = {
+  id: string;
+  sectionName: string;
+};
+
+export type StudentRegistrationClass = {
+  id: string;
+  classNumber: string;
+  displayName: string;
+
+  tuitionFee: string;
+  textBookFee: string;
+  noteBookFee: string;
+  diaryFee: string;
+
+  sections: StudentRegistrationSection[];
+};
+
+export type StudentRegistrationAcademicYear = {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+
+  classes: StudentRegistrationClass[];
+};
+
+export type StudentRegistrationOptionsResponse = {
+  academicYears: StudentRegistrationAcademicYear[];
+  classes: StudentRegistrationClass[];
+  sections: StudentRegistrationSection[];
+
+};
