@@ -15,6 +15,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  type DimensionValue,
   useWindowDimensions,
 } from "react-native";
 
@@ -2658,7 +2659,7 @@ type StatCardProps = {
   icon: string;
   iconBackground: string;
   iconColor: string;
-  width: string;
+  width: DimensionValue;
   trend?: string;
 };
 
@@ -2676,9 +2677,9 @@ const StatCard = ({
   <Card
     style={[
       styles.statCard,
-      // {
-      //   width,
-      // },
+      {
+        width,
+      },
     ]}
   >
 
