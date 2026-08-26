@@ -44,6 +44,7 @@ export type SchoolUser = {
 
 export type SigninRequest = {
   schoolCode: string;
+  identifier: string;
   email: string;
   password: string;
 };

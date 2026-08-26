@@ -1497,10 +1497,10 @@ const PlatformAdminDashboard = ({
               }
             >
 
-              <Button
+              {/* <Button
                 mode="contained"
 
-                icon="plus"
+                //icon="plus"
 
                 compact
 
@@ -1525,7 +1525,25 @@ const PlatformAdminDashboard = ({
                 }
               >
                 Add School
-              </Button>
+              </Button> */}
+
+              <Button
+  mode="contained"
+  compact
+  onPress={() => {
+    navigation.navigate(
+      RootStackScreenNames.PlatformAdminCreateSchool
+    );
+  }}
+  style={styles.primaryAction}
+  contentStyle={styles.primaryActionContent}
+  labelStyle={styles.primaryActionLabel}
+>
+  <View style={styles.addSchoolButtonContent}>
+    <Text style={styles.addSchoolPlus}>+</Text>
+    <Text style={styles.addSchoolText}>Add School</Text>
+  </View>
+</Button>
 
             </View>
 
@@ -3125,8 +3143,7 @@ const styles =
 
 
     listContent: {
-      paddingTop:
-        Metrics.x3,
+      paddingTop:45,
 
       paddingBottom:
         Metrics.x8,
@@ -3381,28 +3398,38 @@ const styles =
         "flex-start",
     },
 
+    addSchoolButtonContent: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+addSchoolPlus: {
+  fontSize: 20,
+  fontWeight: "500",
+  lineHeight: 20,
+  marginRight: 8,
+},
+
+addSchoolText: {
+  fontSize: 13,
+  fontWeight: "800",
+},
+
 
     primaryAction: {
-      borderRadius:
-        12,
-    },
+  borderRadius: 12,
+},
 
+primaryActionContent: {
+  minHeight: 42,
+  paddingHorizontal: 14,
+},
 
-    primaryActionContent: {
-      minHeight:
-        42,
-
-      paddingHorizontal:
-        Metrics.x2,
-    },
-
-
-    primaryActionLabel: {
-      fontSize: 12,
-
-      fontWeight:
-        "800",
-    },
+primaryActionLabel: {
+  margin: 0,
+  padding: 0,
+},
 
 
     /* ========================================================

@@ -129,9 +129,6 @@ const LoginScreen = ({
   } = useMutation(
     async () => {
 
-      console.log(
-        "🔥 LOGIN CALL STARTED"
-      );
 
       /*
        * IMPORTANT:
@@ -149,7 +146,7 @@ const LoginScreen = ({
               schoolCode:
                 schoolCode.trim().toUpperCase(),
 
-              email:
+              identifier:
                 email.trim(),
 
               password,
@@ -412,47 +409,86 @@ const LoginScreen = ({
 
   const onPress = () => {
 
+  console.log(
+    "🔥 LOGIN BUTTON PRESSED"
+  );
+
+
+  if (isLoading) {
+
     console.log(
-      "🔥 LOGIN BUTTON PRESSED"
+      "🔥 LOGIN ALREADY IN PROGRESS"
     );
 
-
-    if (isLoading) {
-
-      console.log(
-        "🔥 LOGIN ALREADY IN PROGRESS"
-      );
-
-      return;
-    }
+    return;
+  }
 
 
-    let hasError = false;
+  let hasError = false;
 
 
-    /* ------------------------------------------------------------------------
-       CLEAR PREVIOUS SCHOOL CODE ERROR
-    ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------
+     CLEAR PREVIOUS ERRORS
+  ------------------------------------------------------------------------ */
 
-    setSchoolCodeError("");
+  setSchoolCodeError("");
+  setEmailError("");
 
 
-    /* ------------------------------------------------------------------------
-       EMAIL
-    ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------
+     DETERMINE LOGIN TYPE
 
-    if (!email.trim()) {
+     School code present:
+       → SCHOOL LOGIN
+       → Email OR mobile number allowed
 
-      setEmailError(
-        "Email is required"
-      );
+     School code empty:
+       → PLATFORM LOGIN
+       → Email required
+  ------------------------------------------------------------------------ */
 
-      hasError = true;
+  const isSchoolLogin =
+    !!schoolCode.trim();
 
-    } else if (
-      !isEmailValid(
-        email.trim()
-      )
+
+  console.log(
+    "🔥 LOGIN TYPE:",
+    isSchoolLogin
+      ? "SCHOOL"
+      : "PLATFORM"
+  );
+
+
+  /* ------------------------------------------------------------------------
+     IDENTIFIER VALIDATION
+  ------------------------------------------------------------------------ */
+
+  const identifier =
+    email.trim();
+
+
+  if (!identifier) {
+
+    setEmailError(
+      isSchoolLogin
+        ? "Email or mobile number is required"
+        : "Email is required"
+    );
+
+    hasError = true;
+
+  } else if (!isSchoolLogin) {
+
+    /*
+     * --------------------------------------------------------
+     * PLATFORM LOGIN
+     *
+     * Platform admin uses email only.
+     * --------------------------------------------------------
+     */
+
+    if (
+      !isEmailValid(identifier)
     ) {
 
       setEmailError(
@@ -460,67 +496,104 @@ const LoginScreen = ({
       );
 
       hasError = true;
-
-    } else {
-
-      setEmailError("");
     }
 
+  } else {
 
-    /* ------------------------------------------------------------------------
-       PASSWORD
-    ------------------------------------------------------------------------ */
+    /*
+     * --------------------------------------------------------
+     * SCHOOL LOGIN
+     *
+     * Accept:
+     *
+     *   principal@email.com
+     *
+     * OR
+     *
+     *   9876543210
+     *
+     * --------------------------------------------------------
+     */
 
-    if (!password) {
+    const isEmail =
+      isEmailValid(identifier);
 
-      setPasswordError(
-        "Password is required"
+
+    const normalizedPhone =
+      identifier.replace(
+        /\D/g,
+        ""
+      );
+
+
+    const isMobile =
+      normalizedPhone.length === 10;
+
+
+    if (
+      !isEmail &&
+      !isMobile
+    ) {
+
+      setEmailError(
+        "Enter a valid email or 10-digit mobile number"
       );
 
       hasError = true;
-
-    } else {
-
-      setPasswordError("");
     }
+  }
 
 
-    /* ------------------------------------------------------------------------
-       VALIDATION FAILED
-    ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------
+     PASSWORD
+  ------------------------------------------------------------------------ */
 
-    if (hasError) {
+  if (!password) {
 
-      console.log(
-        "🔥 LOGIN VALIDATION FAILED"
-      );
-
-      return;
-    }
-
-
-    /* ------------------------------------------------------------------------
-       LOGIN
-       
-       School code is OPTIONAL.
-       
-       Empty:
-         → platform login
-       
-       Present:
-         → school login
-    ------------------------------------------------------------------------ */
-
-    console.log(
-      "🔥 LOGIN TYPE:",
-      schoolCode.trim()
-        ? "SCHOOL"
-        : "PLATFORM"
+    setPasswordError(
+      "Password is required"
     );
 
+    hasError = true;
 
-    login();
-  };
+  } else {
+
+    setPasswordError("");
+  }
+
+
+  /* ------------------------------------------------------------------------
+     VALIDATION FAILED
+  ------------------------------------------------------------------------ */
+
+  if (hasError) {
+
+    console.log(
+      "🔥 LOGIN VALIDATION FAILED"
+    );
+
+    return;
+  }
+
+
+  /* ------------------------------------------------------------------------
+     LOGIN
+  ------------------------------------------------------------------------ */
+
+  console.log(
+    "🔥 LOGIN VALIDATION PASSED"
+  );
+
+  console.log(
+    "🔥 LOGIN TYPE:",
+    isSchoolLogin
+      ? "SCHOOL"
+      : "PLATFORM"
+  );
+
+
+  login();
+};
 
 
   /* ==========================================================================

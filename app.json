@@ -18,14 +18,30 @@
       "**/*"
     ],
     "ios": {
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "This app requires Bluetooth access to print fee receipts.",
+        "NSBluetoothPeripheralUsageDescription": "This app requires Bluetooth access to print fee receipts.",
+        "NSLocalNetworkUsageDescription": "This app requires local network access to print fee receipts."
+      },
       "supportsTablet": true,
       "bundleIdentifier": "com.school.app"
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
+      "permissions": [
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "ACCESS_FINE_LOCATION",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CHANGE_WIFI_MULTICAST_STATE"
+      ],
       "package": "com.school.app"
     },
     "web": {

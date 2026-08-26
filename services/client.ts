@@ -3,8 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const api = axios.create({
   baseURL:
-      //"http://localhost:3000/api",
-    "https://school-server-production-41f8.up.railway.app/api",
+      "http://localhost:3000/api",
+    //"https://school-server-production-41f8.up.railway.app/api",
 
   headers: {
     "Content-Type": "application/json",
@@ -30,16 +30,6 @@ api.interceptors.request.use(
           "userStore does not exist in AsyncStorage"
         );
 
-        console.log(
-          "API REQUEST:",
-          config.method?.toUpperCase(),
-          config.url
-        );
-
-        console.log(
-          "TOKEN PRESENT:",
-          false
-        );
 
         return config;
       }
@@ -52,16 +42,7 @@ api.interceptors.request.use(
       const accessToken =
         parsed?.state?.accessToken;
 
-      console.log(
-        "API REQUEST:",
-        config.method?.toUpperCase(),
-        config.url
-      );
 
-      console.log(
-        "TOKEN PRESENT:",
-        Boolean(accessToken)
-      );
 
       if (accessToken) {
         config.headers =
@@ -100,34 +81,7 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "🔥 API RESPONSE"
-    );
-
-    console.log(
-      "STATUS:",
-      response.status
-    );
-
-    console.log(
-      "URL:",
-      response.config?.url
-    );
-
-    console.log(
-      "RESPONSE DATA:",
-      response.data
-    );
-
-    console.log(
-      "RESPONSE DATA TYPE:",
-      typeof response.data
-    );
-
+    
     if (
       response.data &&
       typeof response.data === "object"
@@ -138,27 +92,10 @@ api.interceptors.response.use(
       );
     }
 
-    console.log(
-      "================================="
-    );
-
     return response;
   },
 
   (error) => {
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "🔥 API RESPONSE ERROR"
-    );
-
-    console.log(
-      "STATUS:",
-      error?.response?.status
-    );
-
     console.log(
       "URL:",
       error?.config?.url
@@ -167,10 +104,6 @@ api.interceptors.response.use(
     console.log(
       "ERROR DATA:",
       error?.response?.data
-    );
-
-    console.log(
-      "================================="
     );
 
     return Promise.reject(error);

@@ -157,7 +157,10 @@ const PlatformAdminSchoolDetails = () => {
 
 
   const isMobile =
-    width < 700;
+    width < 600;
+
+  const isSmallMobile =
+    width < 380;
 
 
   const {
@@ -649,8 +652,9 @@ const PlatformAdminSchoolDetails = () => {
           false
         }
 
-        contentContainerStyle={
-          styles.container
+        contentContainerStyle={[
+          styles.container,
+          isMobile && styles.containerMobile,]
         }
       >
 
@@ -756,40 +760,47 @@ const PlatformAdminSchoolDetails = () => {
         ==================================================== */}
 
         <Card
-          style={
-            styles.heroCard
-          }
+          style={[
+            styles.heroCard,
+            isMobile && styles.heroCardMobile,
+          ]}
         >
 
           <Card.Content
-            style={
-              styles.heroContent
-            }
+            style={[
+              styles.heroContent,
+              isMobile && styles.heroContentMobile,
+            ]}
           >
 
             <View
-              style={
-                styles.heroTop
-              }
+              style={[
+                styles.heroTop,
+                isMobile && styles.heroTopMobile,
+              ]}
             >
 
               <View
-                style={
-                  styles.schoolIdentity
-                }
+                style={[
+                  styles.schoolIdentity,
+                  isMobile && styles.schoolIdentityMobile,
+                ]}
               >
 
                 <View
-                  style={
-                    styles.schoolAvatar
-                  }
+                  style={[
+                    styles.schoolAvatar,
+                    isMobile && styles.schoolAvatarMobile,
+                  ]}
                 >
 
                   <Avatar.Icon
                     size={
-                      isMobile
-                        ? 54
-                        : 64
+                      isSmallMobile
+                        ? 44
+                        : isMobile
+                          ? 50
+                          : 64
                     }
 
                     icon="school"
@@ -811,9 +822,10 @@ const PlatformAdminSchoolDetails = () => {
                 >
 
                   <Text
-                    style={
-                      styles.schoolTitle
-                    }
+                    style={[
+                      styles.schoolTitle,
+                      isMobile && styles.schoolTitleMobile,
+                    ]}
 
                     numberOfLines={2}
                   >
@@ -833,9 +845,10 @@ const PlatformAdminSchoolDetails = () => {
 
 
                   <View
-                    style={
-                      styles.heroMeta
-                    }
+                    style={[
+                      styles.heroMeta,
+                      isMobile && styles.heroMetaMobile,
+                    ]}
                   >
 
                     <StatusBadge
@@ -1073,17 +1086,19 @@ const PlatformAdminSchoolDetails = () => {
 
 
         <View
-          style={
-            styles.statsGrid
-          }
+          style={[
+            styles.statsGrid,
+            isMobile && styles.statsGridMobile,
+          ]}
         >
 
           <StatCard
-            icon="account-school"
+            icon="school-outline"
             label="Students"
             value={
               counts.students
             }
+            compact={isMobile}
           />
 
 
@@ -1093,6 +1108,7 @@ const PlatformAdminSchoolDetails = () => {
             value={
               counts.staff
             }
+            compact={isMobile}
           />
 
 
@@ -1102,15 +1118,17 @@ const PlatformAdminSchoolDetails = () => {
             value={
               counts.admins
             }
+            compact={isMobile}
           />
 
 
           <StatCard
-            icon="teach"
+            icon="account-tie"
             label="Teachers"
             value={
               counts.teachers
             }
+            compact={isMobile}
           />
 
 
@@ -1120,6 +1138,7 @@ const PlatformAdminSchoolDetails = () => {
             value={
               counts.parents
             }
+            compact={isMobile}
           />
 
         </View>
@@ -1143,9 +1162,10 @@ const PlatformAdminSchoolDetails = () => {
           ================================================== */}
 
           <View
-            style={
-              styles.primaryColumn
-            }
+            style={[
+              styles.primaryColumn,
+              isMobile && styles.primaryColumnMobile,
+            ]}
           >
 
             {/* =================================================
@@ -1381,9 +1401,10 @@ const PlatformAdminSchoolDetails = () => {
           ================================================== */}
 
           <View
-            style={
-              styles.secondaryColumn
-            }
+            style={[
+              styles.secondaryColumn,
+              isMobile && styles.secondaryColumnMobile,
+            ]}
           >
 
             {/* =================================================
@@ -1727,7 +1748,9 @@ const SectionCard = ({
       }
     >
 
-      <Card.Content>
+      <Card.Content
+        style={styles.cardContent}
+      >
 
         <View
           style={
@@ -1879,23 +1902,33 @@ const StatCard = ({
   icon,
   label,
   value,
+  compact = false,
 }: {
   icon: string;
 
   label: string;
 
   value: number;
+
+  compact?: boolean;
 }) => {
 
   return (
 
     <Card
-      style={
-        styles.statCard
-      }
+      style={[
+        styles.statCard,
+        compact && styles.statCardMobile,
+      ]}
     >
 
-      <Card.Content>
+      <Card.Content
+        style={
+          compact
+            ? styles.statCardContentMobile
+            : undefined
+        }
+      >
 
         <View
           style={
@@ -1904,7 +1937,7 @@ const StatCard = ({
         >
 
           <Avatar.Icon
-            size={42}
+            size={compact ? 34 : 42}
 
             icon={icon}
 
@@ -1915,9 +1948,10 @@ const StatCard = ({
 
 
           <Text
-            style={
-              styles.statValue
-            }
+            style={[
+              styles.statValue,
+              compact && styles.statValueMobile,
+            ]}
           >
             {value}
           </Text>
@@ -1926,9 +1960,10 @@ const StatCard = ({
 
 
         <Text
-          style={
-            styles.statLabel
-          }
+          style={[
+            styles.statLabel,
+            compact && styles.statLabelMobile,
+          ]}
         >
           {label}
         </Text>
@@ -2239,6 +2274,13 @@ const styles =
     },
 
 
+    containerMobile: {
+      paddingHorizontal: 12,
+      paddingTop: 40,
+      paddingBottom: 24,
+    },
+
+
     /* ========================================================
        LOADING
     ======================================================== */
@@ -2497,6 +2539,48 @@ const styles =
     },
 
 
+    pageHeaderMobile: {
+      minHeight: 44,
+      marginBottom: 10,
+    },
+
+
+    heroCardMobile: {
+      borderRadius: 14,
+      marginBottom: 18,
+    },
+
+    heroContentMobile: {
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+    },
+
+    heroTopMobile: {
+      flexDirection: "column",
+      alignItems: "stretch",
+    },
+
+    schoolIdentityMobile: {
+      alignItems: "flex-start",
+    },
+
+    schoolAvatarMobile: {
+      width: 50,
+      height: 50,
+      borderRadius: 14,
+      marginRight: 12,
+    },
+
+    schoolTitleMobile: {
+      fontSize: 20,
+      lineHeight: 25,
+    },
+
+    heroMetaMobile: {
+      marginTop: 8,
+      gap: 6,
+    },
+
     /* ========================================================
        HERO
     ======================================================== */
@@ -2671,11 +2755,9 @@ const styles =
 
 
     mobileHeroAction: {
-      marginTop:
-        Metrics.x4,
+      marginTop: 12,
 
-      paddingTop:
-        Metrics.x3,
+      paddingTop: 12,
 
       borderTopWidth:
         1,
@@ -2686,8 +2768,8 @@ const styles =
 
 
     fullWidthAction: {
-      borderRadius:
-        22,
+      borderRadius: 12,
+      minHeight: 46,
     },
 
 
@@ -2913,6 +2995,10 @@ const styles =
     },
 
 
+    statValueMobile: {
+      fontSize: 22,
+    },
+
     statLabel: {
       marginTop:
         Metrics.x2,
@@ -2925,6 +3011,33 @@ const styles =
 
       color:
         Colors.subtext,
+    },
+
+
+    statsGridMobile: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      marginBottom: 18,
+    },
+
+    statCardMobile: {
+      width: "48%",
+      flexGrow: 0,
+      flexBasis: "48%",
+      minWidth: 0,
+      borderRadius: 12,
+      marginBottom: 8,
+    },
+
+    statCardContentMobile: {
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+    },
+
+    statLabelMobile: {
+      marginTop: 6,
+      fontSize: 12,
     },
 
 
@@ -2971,9 +3084,25 @@ const styles =
     },
 
 
+    primaryColumnMobile: {
+      width: "100%",
+      flex: 1,
+    },
+
+    secondaryColumnMobile: {
+      width: "100%",
+      maxWidth: "100%",
+      flex: 1,
+    },
+
     /* ========================================================
        CARD
     ======================================================== */
+
+    cardContent: {
+      paddingHorizontal: 16,
+      paddingVertical: 16,
+    },
 
     card: {
       borderRadius:

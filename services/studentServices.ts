@@ -12,6 +12,7 @@ import {
   StudentRegistrationOptionsResponse,
 } from "../types";
 
+import { useUserStore } from "../store/useUserStore";
 import { api } from "./client";
 
 
@@ -102,6 +103,9 @@ const createStudent = async (
   payload: CreateStudentFormFields
 ): Promise<CreateStudentResponse> => {
 
+
+  //const user = useUserStore((state) => state.user);
+
   /*
    * Middleware requires `siblings`.
    */
@@ -134,6 +138,9 @@ const createStudent = async (
 
     phone:
       payload.phoneNo,
+
+    parentName:
+      payload.fatherName,
 
     academicYearId:
       payload.academicYearId,
@@ -192,6 +199,9 @@ const createStudent = async (
 
         })
       ),
+
+    parentRelationship:
+      payload.parentRelationship,
   };
 
 

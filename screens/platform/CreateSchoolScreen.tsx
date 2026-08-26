@@ -986,7 +986,7 @@ const CreateSchoolScreen = () => {
             <Avatar.Icon
               size={52}
 
-              icon="school-plus"
+              icon="school-outline"
 
               color="#FFFFFF"
 
@@ -1641,7 +1641,7 @@ const CreateSchoolScreen = () => {
 
                 left={
                   <TextInput.Icon
-                    icon="account-school-outline"
+                    icon="school-outline"
                   />
                 }
 
@@ -1873,7 +1873,7 @@ const CreateSchoolScreen = () => {
           <Button
             mode="contained"
 
-            icon="school-plus"
+            icon="school-outline"
 
             onPress={
               onCreateSchool

@@ -41,45 +41,58 @@ import { StudentDetails } from "./screens/StudentDetails";
 import { StudentRegistration } from "./screens/StudentRegistration";
 import { AdminDashboard } from "./screens/dashboards/AdminDashboard";
 import { TeacherDashboard } from "./screens/dashboards/TeacherDashboard";
-import { ParentDashboard } from "./screens/dashboards/ParentDashboard";
+import { ParentDashboardScreen } from "./screens/dashboards/ParentDashboard";
 import { PlatformSchoolsScreen } from "./screens/platform/PlatformSchoolsScreen";
 import { PlatformAdminDashboard } from "./screens/platform/PlatformAdminDashboard";
 import {CreateSchoolScreen} from "./screens/platform/CreateSchoolScreen";
 import {CreatePrincipalScreen} from "./screens/platform/CreatePrincipalScreen";
+//import {PrincipalDefaultersScreen} from "./screens/principal/PrincipalDefaultersScreen";
 import {
   PrincipalStudentsScreen,
-} from "./screens/dashboards/PrincipalStudentsScreen";
+} from "./screens/principal/PrincipalStudentsScreen";
 
 import {
   PlatformAdminSchoolDetails,
 } from "./screens/platform/PlatformAdminSchoolDetails";
 import {
   PrincipalTeachersScreen,
-} from "./screens/dashboards/PrincipalTeachersScreen";
+} from "./screens/principal/PrincipalTeachersScreen";
 
 import {
   PrincipalParentsScreen,
-} from "./screens/dashboards/PrincipalParentsScreen";
+} from "./screens/principal/PrincipalParentsScreen";
 
 import {
   PrincipalClassesScreen,
-} from "./screens/dashboards/PrincipalClassesScreen";
+} from "./screens/principal/PrincipalClassesScreen";
 
 import {
   PrincipalClassStudentsScreen,
-} from "./screens/dashboards/PrincipalClassStudentsScreen";
+} from "./screens/principal/PrincipalClassStudentsScreen";
 
 import {
   PrincipalFinanceScreen,
-} from "./screens/dashboards/PrincipalFinanceScreen";
+} from "./screens/principal/PrincipalFinanceScreen";
 
 import {
   PrincipalAcademicsScreen,
-} from "./screens/dashboards/PrincipalAcademicsScreen";
+} from "./screens/principal/PrincipalAcademicsScreen";
+
+import {PrincipalDashboard} from "./screens/principal/PrincipalDashboard";
 
 import {StudentRegistrationFormScreen} from "./screens/StudentRegistrationFormScreen";
 import {EditStudentScreen} from "./screens/EditStudentScreen";
 import {OldStudentRegistrationFormScreen} from "./screens/OldStudentRegistrationFormScreen";
+import { PrincipalCreateTeacherScreen } from "./screens/principal/PrincipalCreateTeacherScreen";
+import { PrincipalTeacherDetailsScreen } from "./screens/principal/PrincipalTeacherDetailsScreen";
+import { ParentChildDetailsScreen } from "./screens/dashboards/ParentChildDetailsScreen";
+import { PrincipalParentDetailsScreen } from "./screens/principal/PrincipalParentDetailsScreen";
+import { PrincipalCreateAdminScreen } from "./screens/principal/PrincipalCreateAdminScreen";
+import { PrincipalAdminsScreen } from "./screens/principal/PrincipalAdminsScreen";
+import { PrincipalAdminDetailsScreen } from "./screens/principal/PrincipalAdminDetailsScreen";
+import { PrincipalCollectFeeScreen } from "./screens/principal/PrincipalCollectFeeScreen";
+import { Invoice } from "./screens/Invoice";
+import { PrincipalPendingDuesScreen } from "./screens/principal/PrincipalPendingDuesScreen";
 const RootStack =
   createNativeStackNavigator<RootStackParamList>();
 
@@ -344,7 +357,7 @@ export default function App() {
                 RootStackScreenNames.ParentDashboard
               }
               component={
-                ParentDashboard
+                ParentDashboardScreen
               }
             />
 
@@ -372,7 +385,118 @@ export default function App() {
             }}
             />
 
-                  
+          <RootStack.Screen
+            name={
+              RootStackScreenNames.PrincipalDashboard
+            }
+            component={
+              PrincipalDashboard
+            }
+            options={{
+              headerTitle: "Principal Dashboard",headerShown: false,
+            }}
+          />
+
+          <RootStack.Screen
+            name={
+              RootStackScreenNames.PrincipalParentDetails
+            }
+            component={
+              PrincipalParentDetailsScreen
+            }
+            options={{
+              headerTitle: "Principal Academics",headerShown: false,
+            }}
+          />
+
+          <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalCreateTeacher
+  }
+  component={
+    PrincipalCreateTeacherScreen
+  }
+/>
+
+        <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalTeacherDetails
+  }
+  component={PrincipalTeacherDetailsScreen}
+/>
+        <RootStack.Screen
+  name={
+    RootStackScreenNames.ParentChildDetails
+  }
+  component={
+    ParentChildDetailsScreen
+  }
+/>
+
+        <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalCreateAdmin
+  }
+  component={
+    PrincipalCreateAdminScreen
+  }
+/>
+
+  <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalAdminDetails
+  }
+  component={
+    PrincipalAdminDetailsScreen
+  }
+/>
+
+<RootStack.Screen
+  name={
+    RootStackScreenNames.AdminList
+  }
+  component={
+    PrincipalAdminsScreen
+  }
+/>
+        <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalFeeCollection
+  }
+  component={
+    PrincipalCollectFeeScreen
+  }
+/>
+
+  <RootStack.Screen
+  name={
+    RootStackScreenNames.Invoice
+  }
+  component={
+    Invoice
+  }
+/>
+
+    <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalPendingDues
+  }
+  component={
+    PrincipalPendingDuesScreen
+  }
+/>
+
+    <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalDefaulterStudents
+  }
+  component={
+    PrincipalPendingDuesScreen
+  }
+/>
+
+
+
           </RootStack.Navigator>
 
         </NavigationContainer>

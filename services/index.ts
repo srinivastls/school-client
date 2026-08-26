@@ -4,3 +4,6 @@ export * from "./couponServices";
 export * from "./txnServices";
 export * from "./reportServices";
 export * from "./studentServices";
+export * from "./parentServices";
+export * from "./principalServices";
+export * from "./financeServices";

@@ -18,6 +18,13 @@ export type CreateStudentRequest = Omit<
   classNumber: string;
   couponCode: string;
   siblings: Omit<Sibling, "name">[];
+
+  parentRelationship:
+    | "FATHER"
+    | "MOTHER"
+    | "GUARDIAN";
+  
+
 };
 export type CreateStudentResponse = CommonResponse;
 export type CreateStudentFormFields = Omit<
@@ -28,6 +35,7 @@ export type CreateStudentFormFields = Omit<
   diary: string;
   belt: string;
   arrears: string;
+
 };
 
 export type GetStudentByCouponRequest = Pick<Coupon, "code">;

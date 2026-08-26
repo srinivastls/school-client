@@ -7,7 +7,6 @@ import {
 
 import { api } from "./client";
 
-
 /* ============================================================================
    ENDPOINTS
 ============================================================================ */
@@ -37,20 +36,15 @@ const signin = async (
   );
 
 
-  /*
-   * ========================================================================
-   * DETERMINE LOGIN TYPE
-   * ========================================================================
-   *
-   * No schoolCode:
-   *
-   *   /api/auth/platform/signin
-   *
-   * SchoolCode provided:
-   *
-   *   /api/auth/signin
-   * ========================================================================
-   */
+  /* ==========================================================================
+     DETERMINE LOGIN TYPE
+
+     No schoolCode:
+       /api/auth/platform/signin
+
+     SchoolCode provided:
+       /api/auth/signin
+  ========================================================================== */
 
   const schoolCode =
     payload.schoolCode?.trim();
@@ -76,24 +70,34 @@ const signin = async (
   );
 
 
-  /*
-   * ========================================================================
-   * BUILD REQUEST PAYLOAD
-   * ========================================================================
-   *
-   * For platform login, don't send schoolCode.
-   *
-   * For school login, send the normalized schoolCode.
-   * ========================================================================
-   */
+  /* ==========================================================================
+     BUILD REQUEST PAYLOAD
+
+     PLATFORM LOGIN
+       email
+       password
+
+     SCHOOL LOGIN
+       schoolCode
+       identifier
+       password
+
+     identifier can be:
+       - Email
+       - Parent mobile number
+  ========================================================================== */
 
   const requestPayload =
     schoolCode
       ? {
-          ...payload,
-
           schoolCode:
             schoolCode.toUpperCase(),
+
+          identifier:
+            payload.identifier.trim(),
+
+          password:
+            payload.password,
         }
       : {
           email:
@@ -108,16 +112,15 @@ const signin = async (
     "🔥🔥 LOGIN REQUEST:",
     {
       ...requestPayload,
+
       password: "***",
     }
   );
 
 
-  /*
-   * ========================================================================
-   * API CALL
-   * ========================================================================
-   */
+  /* ==========================================================================
+     API CALL
+  ========================================================================== */
 
   const response =
     await api.post(
@@ -153,12 +156,32 @@ const signin = async (
 // const signup = (
 //   payload: SignupRequest
 // ) => {
-
-//   return api.post<SignupResponse>(
+//   return api.post<SigninResponse>(
 //     endpoints.signup,
 //     payload
 //   );
 // };
+
+
+/* ============================================================================
+   UPDATE TEACHER STATUS
+============================================================================ */
+
+const updateTeacherStatus = async (
+  userId: string,
+  isActive: boolean
+) => {
+
+  const response =
+    await api.patch(
+      `/auth/teacher/${userId}/status`,
+      {
+        isActive,
+      }
+    );
+
+  return response.data;
+};
 
 
 /* ============================================================================
@@ -181,6 +204,11 @@ const deleteUser = (
 ============================================================================ */
 
 export const userServices = {
+
   signin,
+
   deleteUser,
+
+  updateTeacherStatus,
+
 };

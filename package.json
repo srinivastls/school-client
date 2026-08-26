@@ -19,6 +19,7 @@
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
     "expo": "~50.0.20",
+    "expo-file-system": "~16.0.9",
     "expo-print": "~12.8.1",
     "expo-sharing": "~11.10.0",
     "expo-splash-screen": "~0.26.5",
@@ -29,6 +30,7 @@
     "react-hook-form": "^7.37.0",
     "react-native": "0.73.6",
     "react-native-dropdown-picker": "^5.4.2",
+    "react-native-esc-pos-printer": "^4.5.0",
     "react-native-gesture-handler": "~2.14.0",
     "react-native-paper": "^5.0.0-rc.5",
     "react-native-reanimated": "~3.6.2",
@@ -38,6 +40,7 @@
     "react-native-vector-icons": "^9.2.0",
     "react-native-web": "~0.19.6",
     "react-query": "^3.39.2",
+    "xlsx": "^0.18.5",
     "zustand": "^4.1.1"
   },
   "devDependencies": {

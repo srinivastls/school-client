@@ -1,38 +1,78 @@
+import { api } from "./client";
+
 import {
-  GetTotalTxnAmountRequest,
-  GetTotalTxnAmountResponse,
   RecordTxnRequest,
   RecordTxnResponse,
   StudentTxnsRequest,
   StudentTxnsResponse,
+  GetTotalTxnAmountRequest,
+  GetTotalTxnAmountResponse,
 } from "../types";
-import { api } from "./client";
+
+/* ============================================================
+   ENDPOINTS
+============================================================ */
 
 const endpoints = {
-  record: "/txn/record",
-  getByStudent: "/txn/getByStudent",
-  getTotalTxnAmount: "/txn/getTotalTxnAmount",
+  recordTxn: "/txn/record",
+  studentTxns: "/txn/getByStudent",
+  totalTxnAmount: "/txn/getTotalTxnAmount",
 };
 
-const recordTxn = async (payload: RecordTxnRequest) => {
-  const { data } = await api.post<RecordTxnResponse>(endpoints.record, payload);
-  return data;
+/* ============================================================
+   RECORD TRANSACTION
+============================================================ */
+
+const recordTxn = async (
+  payload: RecordTxnRequest
+): Promise<RecordTxnResponse> => {
+  const response =
+    await api.post<RecordTxnResponse>(
+      endpoints.recordTxn,
+      payload
+    );
+
+  return response.data;
 };
 
-const getStudentTxns = async (payload: StudentTxnsRequest) => {
-  const { data } = await api.post<StudentTxnsResponse>(
-    endpoints.getByStudent,
-    payload
-  );
-  return data;
+/* ============================================================
+   GET STUDENT TRANSACTIONS
+============================================================ */
+
+const getStudentTxns = async (
+  payload: StudentTxnsRequest
+): Promise<StudentTxnsResponse> => {
+  const response =
+    await api.post<StudentTxnsResponse>(
+      endpoints.studentTxns,
+      payload
+    );
+
+  return response.data;
 };
 
-const getTotalTxnAmount = async (payload: GetTotalTxnAmountRequest) => {
-  const { data } = await api.post<GetTotalTxnAmountResponse>(
-    endpoints.getTotalTxnAmount,
-    payload
-  );
-  return data;
+/* ============================================================
+   GET TOTAL TRANSACTION AMOUNT
+============================================================ */
+
+const getTotalTxnAmount = async (
+  payload: GetTotalTxnAmountRequest
+): Promise<GetTotalTxnAmountResponse> => {
+  const response =
+    await api.post<GetTotalTxnAmountResponse>(
+      endpoints.totalTxnAmount,
+      payload
+    );
+
+  return response.data;
 };
 
-export const txnServices = { recordTxn, getStudentTxns, getTotalTxnAmount };
+/* ============================================================
+   EXPORT
+============================================================ */
+
+export const txnServices = {
+  recordTxn,
+  getStudentTxns,
+  getTotalTxnAmount,
+};

@@ -16,6 +16,6 @@ export * from "./MonthOrDateFeeHistory";
 export * from "./StudentFeeHistory";
 export * from "./StudentDetails";
 export * from "./Invoice";
-export * from "./Payment";
+//export * from "./Payment";
 export * from "./SplashScreen";
-export * from "./PrincipalDashboard";
+export * from "./principal/PrincipalDashboard";

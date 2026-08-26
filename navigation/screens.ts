@@ -7,7 +7,7 @@ import {
   LoginScreen,
   MonthOrDateFeeHistory,
   OldStudentRegistrationFormScreen,
-  Payment,
+  //Payment,
   PercentageUnpaidFeeScreen,
   SplashScreen,
   StudentDetails,
@@ -18,14 +18,14 @@ import {
 import { RootStackScreenNames, Screen } from "../types";
 import { HomeScreen } from "../screens/HomeScreen";
 
-import { PrincipalAcademicsScreen } from "../screens/dashboards/PrincipalAcademicsScreen";
+import { PrincipalAcademicsScreen } from "../screens/principal/PrincipalAcademicsScreen";
 
-import { PrincipalStudentsScreen } from "../screens/dashboards/PrincipalStudentsScreen";
-import { PrincipalTeachersScreen } from "../screens/dashboards/PrincipalTeachersScreen";
-import { PrincipalParentsScreen } from "../screens/dashboards/PrincipalParentsScreen";
-import { PrincipalClassesScreen } from "../screens/dashboards/PrincipalClassesScreen";
-import { PrincipalClassStudentsScreen } from "../screens/dashboards/PrincipalClassStudentsScreen";
-import { PrincipalFinanceScreen } from "../screens/dashboards/PrincipalFinanceScreen";
+import { PrincipalStudentsScreen } from "../screens/principal/PrincipalStudentsScreen";
+import { PrincipalTeachersScreen } from "../screens/principal/PrincipalTeachersScreen";
+import { PrincipalParentsScreen } from "../screens/principal/PrincipalParentsScreen";
+import { PrincipalClassesScreen } from "../screens/principal/PrincipalClassesScreen";
+import { PrincipalClassStudentsScreen } from "../screens/principal/PrincipalClassStudentsScreen";
+import { PrincipalFinanceScreen } from "../screens/principal/PrincipalFinanceScreen";
 import { Component } from "react";
 
 export const RootScreens: Screen[] = [
@@ -98,11 +98,11 @@ export const RootScreens: Screen[] = [
     component: Invoice,
     options: { headerTitle: "Invoice" },
   },
-  {
-    name: RootStackScreenNames.Payment,
-    component: Payment,
-    options: { headerTitle: "Payment" },
-  },
+  // {
+  //   name: RootStackScreenNames.Payment,
+  //   component: Payment,
+  //   options: { headerTitle: "Payment" },
+  // },
   {
     name: RootStackScreenNames.SplashScreen,
     component: SplashScreen,
