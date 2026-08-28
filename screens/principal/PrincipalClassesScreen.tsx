@@ -101,7 +101,7 @@ const PrincipalClassesScreen = () => {
     [
       "principal-class-student-counts",
     ],
-    studentServices.getClassStudentCounts
+    () => studentServices.getClassStudentCounts()
   );
 
 
@@ -122,9 +122,9 @@ const PrincipalClassesScreen = () => {
   ) => {
 
     navigation.navigate(
-      RootStackScreenNames.PrincipalClassStudents,
+      RootStackScreenNames.PrincipalClassDetails,
       {
-        classNumber,
+        classNumber: classNumber,
       }
     );
 

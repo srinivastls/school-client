@@ -116,14 +116,15 @@ type RegistrationOptionsResponse = {
   academicYears: RegistrationAcademicYear[];
 };
 
-type ClassDetailsResponse = {
-  data?: {
-    tuitionFee?: string | number;
-    textBookFee?: string | number;
-    noteBookFee?: string | number;
-    diaryFee?: string | number;
-  };
-};
+// type ClassDetailsResponse = {
+//   data?: {
+    
+//     tuitionFee?: string | number;
+//     textBookFee?: string | number;
+//     noteBookFee?: string | number;
+//     diaryFee?: string | number;
+//   };
+// };
 
 
 /* ============================================================================
@@ -3047,26 +3048,26 @@ const StudentRegistrationFormScreen = ({
      CLASS DETAILS
   ========================================================================== */
 
-  const {
-    data: classDetails,
-    refetch:
-      refetchClassDetails,
-    isFetching:
-      fetchingClassDetails,
-  } = useQuery<ClassDetailsResponse>(
-    [
-      "class-details",
-      selectedAcademicYearId,
-      selectedClass,
-    ],
-    () =>
-      classServices.getClassDetails(
-        selectedClass ?? ""
-      ),
-    {
-      enabled: false,
-    }
-  );
+  // const {
+  //   data: classDetails,
+  //   refetch:
+  //     refetchClassDetails,
+  //   isFetching:
+  //     fetchingClassDetails,
+  // } = useQuery<ClassDetailsResponse>(
+  //   // [
+  //   //   "class-details",
+  //   //   selectedAcademicYearId,
+  //   //   selectedClass,
+  //   // ],
+  //   () =>
+  //     classServices.getClassDetails(
+  //       selectedClass ?? ""
+  //     ),
+  //   {
+  //     enabled: false,
+  //   }
+  // );
 
 
   /* ==========================================================================
@@ -3185,14 +3186,14 @@ const StudentRegistrationFormScreen = ({
 
     }
 
-    refetchClassDetails();
+   // refetchClassDetails();
 
   }, [
     selectedClass,
     selectedAcademicYearId,
     availableSections,
     selectedSectionName,
-    refetchClassDetails,
+    //refetchClassDetails,
   ]);
 
 
@@ -5240,9 +5241,7 @@ const StudentRegistrationFormScreen = ({
               String(
                 selectedClassDetails
                   ?.tuitionFee ??
-                classDetails
-                  ?.data
-                  ?.tuitionFee ??
+                // classDetails.tuitionFee ??
                 ""
               )
             }
@@ -5260,9 +5259,8 @@ const StudentRegistrationFormScreen = ({
               String(
                 selectedClassDetails
                   ?.textBookFee ??
-                classDetails
-                  ?.data
-                  ?.textBookFee ??
+                // classDetails
+                //   ?.textBookFee ??
                 ""
               )
             }
@@ -5280,9 +5278,8 @@ const StudentRegistrationFormScreen = ({
               String(
                 selectedClassDetails
                   ?.noteBookFee ??
-                classDetails
-                  ?.data
-                  ?.noteBookFee ??
+                // classDetails
+                //   ?.noteBookFee ??
                 ""
               )
             }
@@ -5578,8 +5575,8 @@ const StudentRegistrationFormScreen = ({
           disabled={
             loading ||
             loadingRegistrationOptions ||
-            fetchingRegistrationOptions ||
-            fetchingClassDetails
+            fetchingRegistrationOptions 
+            //fetchingClassDetails
           }
           onPress={
             handleSubmit(onSubmit)

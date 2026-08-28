@@ -1,12 +1,24 @@
 import { useNavigation } from "@react-navigation/native";
+
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+
 import React, { useEffect, useState } from "react";
+
 import { View } from "react-native";
+
 import { Button, Snackbar, TextInput } from "react-native-paper";
+
 import { Page } from "../components";
+
 import { classServices } from "../services";
+
 import { Colors, makeStyles, Metrics } from "../theme";
-import { Class, RootStackParamList, RootStackScreenNames } from "../types";
+
+import {
+  Class,
+  RootStackParamList,
+  RootStackScreenNames,
+} from "../types";
 
 const ClassFeeFormScreen = ({
   route,
@@ -14,11 +26,18 @@ const ClassFeeFormScreen = ({
   RootStackParamList,
   RootStackScreenNames.ClassFeeForm
 >) => {
+
   const navigation = useNavigation();
 
   const { preFetchedClass } = route.params ?? {};
 
+
+  /* ==========================================================================
+     PAYLOAD
+  ========================================================================== */
+
   const [payload, setPayload] = useState<Class>({
+    id: preFetchedClass?.id ?? "",
     classNumber: "",
     textBookFee: "",
     noteBookFee: "",
@@ -27,60 +46,161 @@ const ClassFeeFormScreen = ({
     ...(preFetchedClass ?? {}),
   });
 
+
   const styles = useStyles();
 
+
+  /* ==========================================================================
+     HEADER
+  ========================================================================== */
+
   useEffect(() => {
+
     if (!preFetchedClass) {
-      navigation.setOptions({ headerTitle: "Create New Class" });
+
+      navigation.setOptions({
+        headerTitle: "Create New Class",
+      });
+
     } else {
-      navigation.setOptions({ headerTitle: "Edit Class" });
+
+      navigation.setOptions({
+        headerTitle: "Edit Class",
+      });
+
     }
-  }, [preFetchedClass]);
+
+  }, [preFetchedClass, navigation]);
+
+
+  /* ==========================================================================
+     LOADING
+  ========================================================================== */
 
   const [loading, setLoading] = useState(false);
+
+
+  /* ==========================================================================
+     SNACKBAR
+  ========================================================================== */
+
   const [showSnackBar, setShowSnackBar] = useState(false);
+
   const [snackBarText, setSnackBarText] = useState(
     "Something went wrong. Please try again later."
   );
-  const [snackBarBg, setSnackBarBg] = useState(Colors.errorBg);
+
+  const [snackBarBg, setSnackBarBg] = useState(
+    Colors.errorBg
+  );
+
+
+  /* ==========================================================================
+     SUBMIT
+  ========================================================================== */
 
   const onPress = async () => {
-    const { classNumber, tuitionFee, textBookFee, noteBookFee, year } = payload;
-    if (!classNumber || !tuitionFee || !textBookFee || !noteBookFee || !year) {
-      setSnackBarText("Please enter all fields");
-      setSnackBarBg(Colors.errorBg);
+
+    const {
+      classNumber,
+      tuitionFee,
+      textBookFee,
+      noteBookFee,
+      year,
+    } = payload;
+
+
+    if (
+      !classNumber ||
+      !tuitionFee ||
+      !textBookFee ||
+      !noteBookFee ||
+      !year
+    ) {
+
+      setSnackBarText(
+        "Please enter all fields"
+      );
+
+      setSnackBarBg(
+        Colors.errorBg
+      );
+
       setShowSnackBar(true);
+
       return;
     }
 
+
     setLoading(true);
 
+
     try {
-      preFetchedClass
-        ? await classServices.editClassDetails(payload)
-        : await classServices.createClass(payload);
+
+      if (preFetchedClass) {
+
+        await classServices.editClassDetails(
+          payload
+        );
+
+      } else {
+
+        await classServices.createClass(
+          payload
+        );
+
+      }
+
+
       setSnackBarText(
         preFetchedClass
           ? "Edited class details successfully"
           : "Class created successfully"
       );
-      setSnackBarBg(Colors.successBg);
+
+      setSnackBarBg(
+        Colors.successBg
+      );
+
       setShowSnackBar(true);
-    } catch (error) {
+
+    } catch (error: any) {
+
       const errorMessage =
-        //@ts-ignore
         error?.response?.data?.message ??
         "Something went wrong. Please try again later.";
-      setSnackBarText(errorMessage);
-      setSnackBarBg(Colors.errorBg);
+
+      setSnackBarText(
+        errorMessage
+      );
+
+      setSnackBarBg(
+        Colors.errorBg
+      );
+
       setShowSnackBar(true);
+
+    } finally {
+
+      setLoading(false);
+
     }
 
-    setLoading(false);
   };
 
+
+  /* ==========================================================================
+     UI
+  ========================================================================== */
+
   return (
+
     <Page>
+
+      {/* ======================================================================
+          CLASS NUMBER
+      ====================================================================== */}
+
       <TextInput
         label="Class number"
         value={payload.classNumber}
@@ -94,6 +214,11 @@ const ClassFeeFormScreen = ({
         style={styles.marginBottomX4}
         keyboardType="numeric"
       />
+
+
+      {/* ======================================================================
+          TUITION FEE
+      ====================================================================== */}
 
       <TextInput
         label="Tuition fee"
@@ -109,6 +234,11 @@ const ClassFeeFormScreen = ({
         keyboardType="numeric"
       />
 
+
+      {/* ======================================================================
+          TEXTBOOK FEE
+      ====================================================================== */}
+
       <TextInput
         label="Textbook amount"
         value={payload.textBookFee}
@@ -122,6 +252,11 @@ const ClassFeeFormScreen = ({
         style={styles.marginBottomX4}
         keyboardType="numeric"
       />
+
+
+      {/* ======================================================================
+          NOTEBOOK FEE
+      ====================================================================== */}
 
       <TextInput
         label="Notebook amount"
@@ -137,25 +272,45 @@ const ClassFeeFormScreen = ({
         keyboardType="numeric"
       />
 
+
+      {/* ======================================================================
+          YEAR
+      ====================================================================== */}
+
       {!preFetchedClass ? (
+
         <TextInput
           label="Year"
           value={payload.year}
           onChangeText={(text) => {
-            setPayload((payload) => {
-              let year = payload.year;
-              if (/^[0-9]*$/.test(text) && text.length <= 4) {
-                year = text;
-              }
-              return { ...payload, year };
-            });
+
+            if (
+              /^[0-9]*$/.test(text) &&
+              text.length <= 4
+            ) {
+
+              setPayload((payload) => ({
+                ...payload,
+                year: text,
+              }));
+
+            }
+
           }}
           mode="outlined"
           style={styles.marginBottomX4}
           keyboardType="numeric"
         />
+
       ) : null}
+
+
+      {/* ======================================================================
+          SAVE BUTTON
+      ====================================================================== */}
+
       <View style={styles.marginBottomX4} />
+
 
       <Button
         mode="contained"
@@ -165,22 +320,43 @@ const ClassFeeFormScreen = ({
       >
         SAVE
       </Button>
+
+
+      {/* ======================================================================
+          SNACKBAR
+      ====================================================================== */}
+
       <Snackbar
         visible={showSnackBar}
         onDismiss={() => {
           setShowSnackBar(false);
         }}
-        style={{ backgroundColor: snackBarBg }}
+        style={{
+          backgroundColor: snackBarBg,
+        }}
         duration={2000}
       >
         {snackBarText}
       </Snackbar>
+
     </Page>
+
   );
+
 };
 
+
+/* ============================================================================
+   STYLES
+============================================================================ */
+
 const useStyles = makeStyles(() => ({
-  marginBottomX4: { marginBottom: Metrics.x4 },
+
+  marginBottomX4: {
+    marginBottom: Metrics.x4,
+  },
+
 }));
+
 
 export { ClassFeeFormScreen };

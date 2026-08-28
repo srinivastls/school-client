@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -44,7 +45,9 @@ import {
 import {
   studentServices,
 } from "../../services/studentServices";
-
+import {
+  principalServices,
+} from "../../services/principalServices";
 import {
   Colors,
   makeStyles,
@@ -55,14 +58,22 @@ import {
   useUserStore,
 } from "../../store";
 
-
 /* ============================================================
    TYPES
 ============================================================ */
 
-type ClassData = {
-  classNumber: string;
-  count: string;
+type Student = {
+  id?: string | number;
+  _id?: string;
+  name?: string;
+  studentName?: string;
+
+  admissionNo?: string;
+  admissionNumber?: string;
+
+  classNumber?: string;
+  class?: string;
+  className?: string;
 };
 
 
@@ -82,6 +93,7 @@ const PrincipalStudentsScreen = () => {
 
   const { width } =
     useWindowDimensions();
+
 
   /* ==========================================================
      RESPONSIVE
@@ -188,10 +200,9 @@ const PrincipalStudentsScreen = () => {
     refetch,
   } = useQuery(
     [
-      "principal-class-student-counts",
+      "principal-all-students",
     ],
-    studentServices
-      .getClassStudentCounts
+    principalServices.getStudents
   );
 
 
@@ -199,7 +210,7 @@ const PrincipalStudentsScreen = () => {
      ERROR
   ========================================================== */
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!error) {
       return;
     }
@@ -215,12 +226,47 @@ const PrincipalStudentsScreen = () => {
 
 
   /* ==========================================================
-     CLASS DATA
+     STUDENT DATA
   ========================================================== */
 
-  const classData =
-    (data?.countData ??
-      []) as ClassData[];
+  const students =
+    useMemo(() => {
+      /*
+       * Supports these common API shapes:
+       *
+       * {
+       *   students: [...]
+       * }
+       *
+       * {
+       *   data: [...]
+       * }
+       *
+       * [...]
+       */
+
+      if (Array.isArray(data)) {
+        return data as Student[];
+      }
+
+      if (
+        Array.isArray(
+          data?.students
+        )
+      ) {
+        return data.students as Student[];
+      }
+
+      if (
+        Array.isArray(
+          data?.data
+        )
+      ) {
+        return data.data as Student[];
+      }
+
+      return [];
+    }, [data]);
 
 
   /* ==========================================================
@@ -232,22 +278,44 @@ const PrincipalStudentsScreen = () => {
       .trim()
       .toLowerCase();
 
-  const filteredClasses =
+  const filteredStudents =
     useMemo(() => {
       if (!searchValue) {
-        return classData;
+        return students;
       }
 
-      return classData.filter(
-        (item) =>
-          item.classNumber
-            .toLowerCase()
-            .includes(
+      return students.filter(
+        (student) => {
+          const studentName =
+            (
+              student.name ??
+              student.studentName ??
+              ""
+            )
+              .toString()
+              .toLowerCase();
+
+          const admissionNo =
+            (
+              student.admissionNo ??
+              student.admissionNumber ??
+              ""
+            )
+              .toString()
+              .toLowerCase();
+
+          return (
+            studentName.includes(
+              searchValue
+            ) ||
+            admissionNo.includes(
               searchValue
             )
+          );
+        }
       );
     }, [
-      classData,
+      students,
       searchValue,
     ]);
 
@@ -257,14 +325,7 @@ const PrincipalStudentsScreen = () => {
   ========================================================== */
 
   const totalStudents =
-    useMemo(() => {
-      return classData.reduce(
-        (total, item) =>
-          total +
-          Number(item.count || 0),
-        0
-      );
-    }, [classData]);
+    students.length;
 
 
   /* ==========================================================
@@ -416,6 +477,7 @@ const PrincipalStudentsScreen = () => {
                   styles.dropdownDivider
                 }
               />
+
 
               {/* PROFILE */}
 
@@ -770,8 +832,8 @@ const PrincipalStudentsScreen = () => {
                 styles.pageSubtitle
               }
             >
-              Manage students across all
-              classes in your school.
+              Manage all students
+              across your school.
             </Text>
 
           </View>
@@ -798,7 +860,7 @@ const PrincipalStudentsScreen = () => {
 
 
   /* ==========================================================
-     SUMMARY CARDS
+     SUMMARY
   ========================================================== */
 
   const renderSummary =
@@ -866,7 +928,7 @@ const PrincipalStudentsScreen = () => {
           </Card>
 
 
-          {/* CLASSES */}
+          {/* CURRENT RESULTS */}
 
           <Card
             style={
@@ -884,7 +946,7 @@ const PrincipalStudentsScreen = () => {
 
                 <Avatar.Icon
                   size={44}
-                  icon="google-classroom"
+                  icon="account-search-outline"
                   color="#16834B"
                   style={[
                     styles.summaryIcon,
@@ -902,7 +964,9 @@ const PrincipalStudentsScreen = () => {
                   styles.summaryValue
                 }
               >
-                {classData.length}
+                {formatNumber(
+                  filteredStudents.length
+                )}
               </Text>
 
               <Text
@@ -910,7 +974,7 @@ const PrincipalStudentsScreen = () => {
                   styles.summaryLabel
                 }
               >
-                Classes
+                Matching Students
               </Text>
 
             </Card.Content>
@@ -1008,7 +1072,7 @@ const PrincipalStudentsScreen = () => {
                     styles.searchTitle
                   }
                 >
-                  Find a Class
+                  Find a Student
                 </Text>
 
                 <Text
@@ -1016,7 +1080,8 @@ const PrincipalStudentsScreen = () => {
                     styles.searchSubtitle
                   }
                 >
-                  Search by class number
+                  Search by student name
+                  or admission number
                 </Text>
 
               </View>
@@ -1042,13 +1107,13 @@ const PrincipalStudentsScreen = () => {
 
             <TextInput
               mode="outlined"
-              label="Search class"
-              placeholder="Enter class number"
+              label="Search student"
+              placeholder="Enter name or admission number"
               value={search}
               onChangeText={
                 setSearch
               }
-              autoCapitalize="characters"
+              autoCapitalize="none"
               autoCorrect={false}
               left={
                 <TextInput.Icon
@@ -1071,39 +1136,49 @@ const PrincipalStudentsScreen = () => {
 
 
   /* ==========================================================
-     CLASS ITEM
+     STUDENT ITEM
   ========================================================== */
 
-  const renderClass = ({
+  const renderStudent = ({
     item,
   }: {
-    item: ClassData;
+    item: Student;
   }) => {
-    const studentCount =
-      Number(
-        item.count || 0
-      );
+
+    const studentName =
+      item.name ??
+      item.studentName ??
+      "Unnamed Student";
+
+    const admissionNo =
+      item.admissionNo ??
+      item.admissionNumber ??
+      "N/A";
+
+    const className =
+      item.classNumber ??
+      item.className ??
+      item.class ??
+      "";
 
     return (
       <TouchableOpacity
         activeOpacity={0.88}
-        onPress={() => {
-          navigation.navigate(
-            RootStackScreenNames.PrincipalClassStudents,
-            {
-              classNumber:
-                item.classNumber,
-            }
-          );
-        }}
         style={
-          styles.classTouchable
+          styles.studentTouchable
         }
+        onPress={() => {
+          /*
+           * Add student details navigation
+           * here if you have a student-details
+           * route.
+           */
+        }}
       >
 
         <Card
           style={
-            styles.classCard
+            styles.studentCard
           }
         >
 
@@ -1111,18 +1186,20 @@ const PrincipalStudentsScreen = () => {
 
             <View
               style={
-                styles.classCardRow
+                styles.studentCardRow
               }
             >
 
-              {/* ICON */}
+              {/* AVATAR */}
 
-              <Avatar.Icon
+              <Avatar.Text
                 size={50}
-                icon="google-classroom"
-                color="#4F46E5"
+                label={getInitials(
+                  studentName
+                )}
+                color="#FFFFFF"
                 style={
-                  styles.classIcon
+                  styles.studentAvatar
                 }
               />
 
@@ -1131,32 +1208,39 @@ const PrincipalStudentsScreen = () => {
 
               <View
                 style={
-                  styles.classInfo
+                  styles.studentInfo
                 }
               >
 
                 <Text
                   style={
-                    styles.classTitle
+                    styles.studentName
                   }
+                  numberOfLines={1}
                 >
-                  Class{" "}
-                  {item.classNumber}
+                  {studentName}
                 </Text>
 
                 <Text
                   style={
-                    styles.classSubtitle
+                    styles.studentAdmission
                   }
+                  numberOfLines={1}
                 >
-                  {formatNumber(
-                    studentCount
-                  )}{" "}
-                  student
-                  {studentCount === 1
-                    ? ""
-                    : "s"}
+                  Admission No:{" "}
+                  {admissionNo}
                 </Text>
+
+                {className ? (
+                  <Text
+                    style={
+                      styles.studentClass
+                    }
+                    numberOfLines={1}
+                  >
+                    Class: {className}
+                  </Text>
+                ) : null}
 
               </View>
 
@@ -1165,29 +1249,29 @@ const PrincipalStudentsScreen = () => {
 
               <View
                 style={
-                  styles.classRight
+                  styles.studentRight
                 }
               >
 
                 <View
                   style={
-                    styles.studentBadge
+                    styles.admissionBadge
                   }
                 >
 
                   <Text
                     style={
-                      styles.studentBadgeText
+                      styles.admissionBadgeText
                     }
                   >
-                    {studentCount}
+                    {admissionNo}
                   </Text>
 
                 </View>
 
                 <Text
                   style={
-                    styles.classArrow
+                    styles.studentArrow
                   }
                 >
                   →
@@ -1230,7 +1314,7 @@ const PrincipalStudentsScreen = () => {
               icon={
                 searchValue
                   ? "magnify"
-                  : "school-outline"
+                  : "account-group-outline"
               }
               color="#4F46E5"
               style={
@@ -1246,8 +1330,8 @@ const PrincipalStudentsScreen = () => {
             }
           >
             {searchValue
-              ? "No matching classes"
-              : "No classes found"}
+              ? "No matching students"
+              : "No students found"}
           </Text>
 
           <Text
@@ -1256,8 +1340,8 @@ const PrincipalStudentsScreen = () => {
             }
           >
             {searchValue
-              ? "Try a different class number."
-              : "There are currently no class records available."}
+              ? "Try a different student name or admission number."
+              : "There are currently no student records available."}
           </Text>
 
           {searchValue && (
@@ -1311,7 +1395,7 @@ const PrincipalStudentsScreen = () => {
 
             <Avatar.Icon
               size={64}
-              icon="school-outline"
+              icon="account-group-outline"
               color={
                 Colors.brandPrimary
               }
@@ -1343,8 +1427,8 @@ const PrincipalStudentsScreen = () => {
                 styles.loadingText
               }
             >
-              Fetching student information
-              for your school.
+              Fetching all student
+              information for your school.
             </Text>
 
           </View>
@@ -1371,17 +1455,39 @@ const PrincipalStudentsScreen = () => {
 
       <FlatList
         data={
-          filteredClasses
+          filteredStudents
         }
+
         renderItem={
-          renderClass
+          renderStudent
         }
-        keyExtractor={(item) =>
-          item.classNumber
+
+        keyExtractor={(
+          item,
+          index
+        ) =>
+          String(
+            item.id ??
+            item._id ??
+            item.admissionNo ??
+            item.admissionNumber ??
+            index
+          )
         }
+
+        /*
+         * Render around 15 items initially
+         * and process additional items in
+         * batches of 15.
+         */
+        initialNumToRender={15}
+        maxToRenderPerBatch={15}
+        windowSize={5}
+
         showsVerticalScrollIndicator={
           false
         }
+
         contentContainerStyle={[
           styles.listContent,
           {
@@ -1389,6 +1495,7 @@ const PrincipalStudentsScreen = () => {
               horizontalPadding,
           },
         ]}
+
         ListHeaderComponent={
           <>
             {renderNavbar()}
@@ -1396,45 +1503,47 @@ const PrincipalStudentsScreen = () => {
             {renderSummary()}
             {renderSearch()}
 
-            {filteredClasses.length >
+            {filteredStudents.length >
               0 && (
               <View
                 style={
-                  styles.classesHeader
+                  styles.studentsHeader
                 }
               >
 
                 <View>
+
                   <Text
                     style={
-                      styles.classesTitle
+                      styles.studentsTitle
                     }
                   >
-                    Classes
+                    Students
                   </Text>
 
                   <Text
                     style={
-                      styles.classesSubtitle
+                      styles.studentsSubtitle
                     }
                   >
-                    Select a class to view
-                    its students.
+                    Showing students from
+                    your school.
                   </Text>
+
                 </View>
 
                 <View
                   style={
-                    styles.classesCountBadge
+                    styles.studentsCountBadge
                   }
                 >
 
                   <Text
                     style={
-                      styles.classesCountText
+                      styles.studentsCountText
                     }
                   >
-                    {filteredClasses.length}
+                    {filteredStudents.length}
                   </Text>
 
                 </View>
@@ -1443,12 +1552,15 @@ const PrincipalStudentsScreen = () => {
             )}
           </>
         }
+
         ListEmptyComponent={
           renderEmpty()
         }
+
         refreshing={
           isFetching
         }
+
         onRefresh={
           refetch
         }
@@ -1486,7 +1598,7 @@ const getInitials = (
   name?: string | null
 ) => {
   if (!name) {
-    return "P";
+    return "ST";
   }
 
   const parts =
@@ -1605,8 +1717,7 @@ const useStyles = makeStyles(
 
         borderRadius: 12,
 
-        alignItems:
-          "center",
+        alignItems: "center",
 
         justifyContent:
           "center",
@@ -1956,10 +2067,10 @@ const useStyles = makeStyles(
 
 
       /* ======================================================
-         CLASSES HEADER
+         STUDENTS HEADER
       ====================================================== */
 
-      classesHeader: {
+      studentsHeader: {
         flexDirection:
           "row",
 
@@ -1973,7 +2084,7 @@ const useStyles = makeStyles(
           Metrics.x3,
       },
 
-      classesTitle: {
+      studentsTitle: {
         fontSize: 20,
 
         fontWeight: "800",
@@ -1981,7 +2092,7 @@ const useStyles = makeStyles(
         color: "#171717",
       },
 
-      classesSubtitle: {
+      studentsSubtitle: {
         fontSize: 12,
 
         color:
@@ -1990,7 +2101,7 @@ const useStyles = makeStyles(
         marginTop: 2,
       },
 
-      classesCountBadge: {
+      studentsCountBadge: {
         minWidth: 36,
 
         height: 36,
@@ -2000,8 +2111,7 @@ const useStyles = makeStyles(
 
         borderRadius: 12,
 
-        alignItems:
-          "center",
+        alignItems: "center",
 
         justifyContent:
           "center",
@@ -2010,26 +2120,25 @@ const useStyles = makeStyles(
           "#EEF2FF",
       },
 
-      classesCountText: {
+      studentsCountText: {
         fontSize: 13,
 
         fontWeight: "800",
 
-        color:
-          "#4F46E5",
+        color: "#4F46E5",
       },
 
 
       /* ======================================================
-         CLASS CARD
+         STUDENT CARD
       ====================================================== */
 
-      classTouchable: {
+      studentTouchable: {
         marginBottom:
           Metrics.x3,
       },
 
-      classCard: {
+      studentCard: {
         backgroundColor:
           "#FFFFFF",
 
@@ -2043,7 +2152,7 @@ const useStyles = makeStyles(
         elevation: 1,
       },
 
-      classCardRow: {
+      studentCardRow: {
         flexDirection:
           "row",
 
@@ -2053,21 +2162,21 @@ const useStyles = makeStyles(
         minHeight: 78,
       },
 
-      classIcon: {
+      studentAvatar: {
         backgroundColor:
-          "#EEF2FF",
+          Colors.brandPrimary,
 
         marginRight:
           Metrics.x3,
       },
 
-      classInfo: {
+      studentInfo: {
         flex: 1,
 
         minWidth: 0,
       },
 
-      classTitle: {
+      studentName: {
         fontSize: 17,
 
         fontWeight: "800",
@@ -2075,7 +2184,7 @@ const useStyles = makeStyles(
         color: "#171717",
       },
 
-      classSubtitle: {
+      studentAdmission: {
         fontSize: 13,
 
         color:
@@ -2085,7 +2194,16 @@ const useStyles = makeStyles(
           Metrics.x1,
       },
 
-      classRight: {
+      studentClass: {
+        fontSize: 12,
+
+        color:
+          Colors.subtext,
+
+        marginTop: 3,
+      },
+
+      studentRight: {
         flexDirection:
           "row",
 
@@ -2096,18 +2214,17 @@ const useStyles = makeStyles(
           Metrics.x2,
       },
 
-      studentBadge: {
-        minWidth: 42,
+      admissionBadge: {
+        maxWidth: 110,
 
-        height: 32,
+        minHeight: 32,
 
         paddingHorizontal:
           Metrics.x2,
 
         borderRadius: 10,
 
-        alignItems:
-          "center",
+        alignItems: "center",
 
         justifyContent:
           "center",
@@ -2116,15 +2233,15 @@ const useStyles = makeStyles(
           "#F3F4F6",
       },
 
-      studentBadgeText: {
-        fontSize: 12,
+      admissionBadgeText: {
+        fontSize: 11,
 
         fontWeight: "800",
 
         color: "#374151",
       },
 
-      classArrow: {
+      studentArrow: {
         fontSize: 22,
 
         color:
@@ -2384,8 +2501,7 @@ const useStyles = makeStyles(
 
         borderRadius: 12,
 
-        alignItems:
-          "center",
+        alignItems: "center",
 
         justifyContent:
           "center",

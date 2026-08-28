@@ -53,7 +53,7 @@ const ClassFeeStructure = () => {
     try {
       const res = await classServices.getClassDetails(selectedClass);
 
-      setClassDetails(res.data);
+      setClassDetails(res);
     } catch (error) {
       setSnackBarText(
         //@ts-ignore

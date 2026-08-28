@@ -89,10 +89,15 @@ import { ParentChildDetailsScreen } from "./screens/dashboards/ParentChildDetail
 import { PrincipalParentDetailsScreen } from "./screens/principal/PrincipalParentDetailsScreen";
 import { PrincipalCreateAdminScreen } from "./screens/principal/PrincipalCreateAdminScreen";
 import { PrincipalAdminsScreen } from "./screens/principal/PrincipalAdminsScreen";
-import { PrincipalAdminDetailsScreen } from "./screens/principal/PrincipalAdminDetailsScreen";
+import { PrincipalAdminDetailsScreen } from "./screens/principal/AdminDetailsScreen";
 import { PrincipalCollectFeeScreen } from "./screens/principal/PrincipalCollectFeeScreen";
 import { Invoice } from "./screens/Invoice";
 import { PrincipalPendingDuesScreen } from "./screens/principal/PrincipalPendingDuesScreen";
+import { PrincipalAttendanceDashboardScreen } from "./screens/principal/PrincipalAttendanceDashboardScreen";
+import { PrincipalClassDetailsScreen } from "./screens/principal/ClassDetailsScreen";
+import { AcademicYearManagementScreen } from "./screens/principal/AcademicYearManagementScreen";
+import ClassManagementScreen from "./screens/principal/ClassManagementScreen";
+import { PrincipalClassTeachersScreen } from "./screens/principal/PrincipalClassTeachersScreen";
 const RootStack =
   createNativeStackNavigator<RootStackParamList>();
 
@@ -236,6 +241,36 @@ export default function App() {
               }}
             />
 
+            <RootStack.Screen
+              name={
+                RootStackScreenNames.PrincipalClassDetails
+              }
+              component={PrincipalClassDetailsScreen}
+              options={{
+                headerTitle: "Class Details",
+              }}
+            />
+
+            <RootStack.Screen
+              name={
+                RootStackScreenNames.PrincipalAcademicYearManagement
+              }
+              component={AcademicYearManagementScreen}
+              options={{
+                headerTitle: "Academic Year Management",
+              }}
+            />
+
+            <RootStack.Screen
+              name={
+                RootStackScreenNames.ClassManagement
+              }
+              component={ClassManagementScreen}
+              options={{
+                headerTitle: "Class Management",
+              }}
+            />
+
             {/* ⭐ FINANCE ⭐ */}
 
             <RootStack.Screen
@@ -270,6 +305,13 @@ export default function App() {
                 RootStackScreenNames.StudentRegistration
               }
               component={StudentRegistration}
+            />
+
+            <RootStack.Screen
+              name={
+                RootStackScreenNames.PrincipalClassTeachers
+              }
+              component={PrincipalClassTeachersScreen}
             />
 
             <RootStack.Screen
@@ -492,6 +534,15 @@ export default function App() {
   }
   component={
     PrincipalPendingDuesScreen
+  }
+/>
+
+    <RootStack.Screen
+  name={
+    RootStackScreenNames.PrincipalAttendanceDashboard
+  }
+  component={
+    PrincipalAttendanceDashboardScreen
   }
 />
 

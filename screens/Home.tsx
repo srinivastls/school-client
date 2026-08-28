@@ -17,7 +17,7 @@ import {
 import { Icon, IconProps } from "../components";
 import { Colors, makeStyles, Metrics } from "../theme";
 import { ClassFeeStructure } from "./ClassFeeStructure";
-import { Dashboard } from "./Dashboard";
+//import { Dashboard } from "./Dashboard";
 import { PromotionDemotion } from "./PromotionDemotion";
 import { Report } from "./Report";
 import { RootStackScreenNames, Screen } from "../types";
@@ -59,19 +59,19 @@ const renderDrawerIcon = (
 };
 
 const DrawerScreens: DrawerScreen[] = [
-  {
-    name: DrawerScreenNames.Dashboard,
-    component: Dashboard,
-    options: {
-      title: "Dashboard",
-      drawerLabel: "Dashboard",
-      drawerIcon: (drawerProps) =>
-        renderDrawerIcon(drawerProps, {
-          name: "dashboard",
-          size: "lg",
-        }),
-    },
-  },
+  // {
+  //   name: DrawerScreenNames.Dashboard,
+  //   //component: Dashboard,
+  //   options: {
+  //     title: "Dashboard",
+  //     drawerLabel: "Dashboard",
+  //     drawerIcon: (drawerProps) =>
+  //       renderDrawerIcon(drawerProps, {
+  //         name: "dashboard",
+  //         size: "lg",
+  //       }),
+  //   },
+  // },
   {
     name: DrawerScreenNames.ClassFeeStructure,
     component: ClassFeeStructure,

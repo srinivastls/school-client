@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  useMemo,
+  useState,
+} from "react";
 
 import {
   FlatList,
@@ -41,16 +44,22 @@ import {
   useUserStore,
 } from "../../store";
 
+
 /* ============================================================
    TYPES
 ============================================================ */
 
 type PrincipalTile = {
   title: string;
+
   subtitle: string;
+
   icon: string;
+
   iconBackground: string;
+
   iconColor: string;
+
   section:
     | "People & Users"
     | "Academics"
@@ -61,49 +70,65 @@ type PrincipalTile = {
   onPress: () => void;
 };
 
+
 /* ============================================================
    COMPONENT
 ============================================================ */
 
 const PrincipalDashboard = () => {
+
   const styles = useStyles();
 
   const navigation =
     useNavigation<
-      NativeStackNavigationProp<RootStackParamList>
+      NativeStackNavigationProp<
+        RootStackParamList
+      >
     >();
+
 
   /* ==========================================================
      RESPONSIVE
   ========================================================== */
 
-  const { width } = useWindowDimensions();
+  const { width } =
+    useWindowDimensions();
 
-  const isSmallScreen = width < 600;
+  const isSmallScreen =
+    width < 600;
 
   const isTablet =
-    width >= 600 && width < 1024;
+    width >= 600 &&
+    width < 1024;
 
   const isDesktop =
     width >= 1024;
 
-  const horizontalPadding = isSmallScreen
-    ? Metrics.x3
-    : isTablet
-      ? Metrics.x4
-      : Metrics.x6;
+
+  const horizontalPadding =
+    isSmallScreen
+      ? Metrics.x3
+      : isTablet
+        ? Metrics.x4
+        : Metrics.x6;
+
 
   /* ==========================================================
      STORE
   ========================================================== */
 
-  const user = useUserStore(
-    (state) => state.user
-  );
+  const user =
+    useUserStore(
+      state =>
+        state.user
+    );
 
-  const logout = useUserStore(
-    (state) => state.logout
-  );
+  const logout =
+    useUserStore(
+      state =>
+        state.logout
+    );
+
 
   /* ==========================================================
      LOCAL STATE
@@ -112,42 +137,71 @@ const PrincipalDashboard = () => {
   const [
     showSnackbar,
     setShowSnackbar,
-  ] = useState(false);
+  ] =
+    useState(false);
 
   const [
     snackbarText,
     setSnackbarText,
-  ] = useState("");
+  ] =
+    useState("");
 
   const [
     profileMenuVisible,
     setProfileMenuVisible,
-  ] = useState(false);
+  ] =
+    useState(false);
+
 
   /* ==========================================================
      AUTHORIZATION
   ========================================================== */
 
   if (!user) {
+
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>
+      <View
+        style={
+          styles.center
+        }
+      >
+        <Text
+          style={
+            styles.errorText
+          }
+        >
           Session not found.
         </Text>
       </View>
     );
+
   }
 
-  if (user.role !== "PRINCIPAL") {
+
+  if (
+    user.role !==
+    "PRINCIPAL"
+  ) {
+
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>
-          You are not authorized to access
-          the Principal Dashboard.
+      <View
+        style={
+          styles.center
+        }
+      >
+        <Text
+          style={
+            styles.errorText
+          }
+        >
+          You are not authorized to
+          access the Principal Dashboard.
         </Text>
       </View>
     );
+
   }
+
 
   /* ==========================================================
      HELPERS
@@ -156,150 +210,345 @@ const PrincipalDashboard = () => {
   const comingSoon = (
     message: string
   ) => {
-    setSnackbarText(message);
-    setShowSnackbar(true);
+
+    setSnackbarText(
+      message
+    );
+
+    setShowSnackbar(
+      true
+    );
+
   };
 
+
   const handleLogout = () => {
-    setProfileMenuVisible(false);
+
+    setProfileMenuVisible(
+      false
+    );
 
     logout();
 
     navigation.reset({
+
       index: 0,
+
       routes: [
         {
           name:
             RootStackScreenNames.Login,
         },
       ],
+
     });
+
   };
+
 
   /* ==========================================================
      PRINCIPAL TILES
   ========================================================== */
 
   const tiles: PrincipalTile[] = [
+
     /* ========================================================
-       PEOPLE / USERS
+       PEOPLE & USERS
     ======================================================== */
 
     {
       title: "Students",
+
       subtitle:
         "View and manage students",
-      icon: "school-outline",
-      iconBackground: "#EEF2FF",
-      iconColor: "#4F46E5",
-      section: "People & Users",
+
+      icon:
+        "school-outline",
+
+      iconBackground:
+        "#EEF2FF",
+
+      iconColor:
+        "#4F46E5",
+
+      section:
+        "People & Users",
 
       onPress: () => {
+
         navigation.navigate(
           RootStackScreenNames.PrincipalStudents
         );
+
       },
+
     },
+
 
     {
       title: "Teachers",
+
       subtitle:
         "Manage school teachers",
-      icon: "human-male-board",
-      iconBackground: "#EFFAF5",
-      iconColor: "#16834B",
-      section: "People & Users",
+
+      icon:
+        "human-male-board",
+
+      iconBackground:
+        "#EFFAF5",
+
+      iconColor:
+        "#16834B",
+
+      section:
+        "People & Users",
 
       onPress: () => {
+
         navigation.navigate(
           RootStackScreenNames.PrincipalTeachers
         );
+
       },
+
     },
+
 
     {
       title: "Parents",
+
       subtitle:
         "Manage parent accounts",
-      icon: "account-group",
-      iconBackground: "#FFF5ED",
-      iconColor: "#C55A11",
-      section: "People & Users",
+
+      icon:
+        "account-group",
+
+      iconBackground:
+        "#FFF5ED",
+
+      iconColor:
+        "#C55A11",
+
+      section:
+        "People & Users",
 
       onPress: () => {
+
         navigation.navigate(
           RootStackScreenNames.PrincipalParents
         );
+
       },
+
     },
+
 
     {
       title: "School Admins",
+
       subtitle:
         "Manage school administrators",
-      icon: "account-cog",
-      iconBackground: "#EEF6FF",
-      iconColor: "#2775CA",
-      section: "People & Users",
+
+      icon:
+        "account-cog",
+
+      iconBackground:
+        "#EEF6FF",
+
+      iconColor:
+        "#2775CA",
+
+      section:
+        "People & Users",
 
       onPress: () => {
+
         navigation.navigate(
           RootStackScreenNames.AdminList
         );
+
       },
+
     },
 
-    // {
-    //   title: "Create Admin",
-    //   subtitle:
-    //     "Create a school administrator",
-    //   icon: "account-plus",
-    //   iconBackground: "#EAF8F0",
-    //   iconColor: "#16834B",
-    //   section: "People & Users",
-
-    //   onPress: () => {
-    //     navigation.navigate(
-    //       RootStackScreenNames.Signup
-    //     );
-    //   },
-    // },
 
     /* ========================================================
        ACADEMICS
     ======================================================== */
 
     {
-      title: "Academics",
+      title: "Academic Years",
+
       subtitle:
-        "School-wide academic reports",
-      icon: "book-open-page-variant",
-      iconBackground: "#F1EEFF",
-      iconColor: "#6D4AFF",
-      section: "Academics",
+        "Create and manage academic years",
+
+      icon:
+        "calendar-school",
+
+      iconBackground:
+        "#F1EEFF",
+
+      iconColor:
+        "#6D4AFF",
+
+      section:
+        "Academics",
 
       onPress: () => {
+
         navigation.navigate(
-          RootStackScreenNames.PrincipalAcademics
+          RootStackScreenNames.PrincipalAcademicYearManagement
         );
+
       },
+
     },
+
 
     {
       title: "Classes",
+
       subtitle:
-        "View classes and students",
-      icon: "google-classroom",
-      iconBackground: "#EEF2FF",
-      iconColor: "#4F46E5",
-      section: "Academics",
+        "Manage classes and class structure",
+
+      icon:
+        "google-classroom",
+
+      iconBackground:
+        "#EEF2FF",
+
+      iconColor:
+        "#4F46E5",
+
+      section:
+        "Academics",
 
       onPress: () => {
+
         navigation.navigate(
           RootStackScreenNames.PrincipalClasses
         );
+
       },
+
     },
+
+
+    {
+      title: "Sections",
+
+      subtitle:
+        "Manage sections for each class",
+
+      icon:
+        "view-grid-outline",
+
+      iconBackground:
+        "#EEF6FF",
+
+      iconColor:
+        "#2775CA",
+
+      section:
+        "Academics",
+
+      onPress: () => {
+
+        // navigation.navigate(
+        //   RootStackScreenNames.PrincipalClassDetails
+        // );
+
+      },
+
+    },
+
+
+    {
+      title: "Class Teachers",
+
+      subtitle:
+        "Assign teachers to class sections",
+
+      icon:
+        "account-tie",
+
+      iconBackground:
+        "#EFFAF5",
+
+      iconColor:
+        "#16834B",
+
+      section:
+        "Academics",
+
+      onPress: () => {
+
+        navigation.navigate(
+          RootStackScreenNames.PrincipalClassTeachers,
+        );
+
+      },
+
+    },
+
+
+    {
+      title: "Student Promotion",
+
+      subtitle:
+        "Promote students to the next academic year",
+
+      icon:
+        "account-arrow-up-outline",
+
+      iconBackground:
+        "#FFF5ED",
+
+      iconColor:
+        "#C55A11",
+
+      section:
+        "Academics",
+
+      onPress: () => {
+
+        // navigation.navigate(
+        //   RootStackScreenNames.PromotionDemotion
+        // );
+
+      },
+
+    },
+
+
+    {
+      title: "Academics",
+
+      subtitle:
+        "School-wide academic reports",
+
+      icon:
+        "book-open-page-variant",
+
+      iconBackground:
+        "#F1EEFF",
+
+      iconColor:
+        "#6D4AFF",
+
+      section:
+        "Academics",
+
+      onPress: () => {
+
+        navigation.navigate(
+          RootStackScreenNames.PrincipalAcademics
+        );
+
+      },
+
+    },
+
 
     /* ========================================================
        FINANCE
@@ -307,35 +556,61 @@ const PrincipalDashboard = () => {
 
     {
       title: "Finance",
+
       subtitle:
         "School-wide financial reports",
-      icon: "cash-multiple",
-      iconBackground: "#EAF8F0",
-      iconColor: "#16834B",
-      section: "Finance",
+
+      icon:
+        "cash-multiple",
+
+      iconBackground:
+        "#EAF8F0",
+
+      iconColor:
+        "#16834B",
+
+      section:
+        "Finance",
 
       onPress: () => {
+
         navigation.navigate(
           RootStackScreenNames.PrincipalFinance
         );
+
       },
+
     },
+
 
     {
       title: "Fee Collection",
+
       subtitle:
         "View school fee collection",
-      icon: "cash-check",
-      iconBackground: "#FFF6DF",
-      iconColor: "#B7791F",
-      section: "Finance",
+
+      icon:
+        "cash-check",
+
+      iconBackground:
+        "#FFF6DF",
+
+      iconColor:
+        "#B7791F",
+
+      section:
+        "Finance",
 
       onPress: () => {
+
         navigation.navigate(
           RootStackScreenNames.PrincipalFeeCollection
         );
+
       },
+
     },
+
 
     /* ========================================================
        ADMINISTRATION
@@ -343,51 +618,90 @@ const PrincipalDashboard = () => {
 
     {
       title: "Complaints",
+
       subtitle:
         "Manage parent complaints",
-      icon: "bullhorn-outline",
-      iconBackground: "#FFF0F0",
-      iconColor: "#D64545",
-      section: "Administration",
+
+      icon:
+        "bullhorn-outline",
+
+      iconBackground:
+        "#FFF0F0",
+
+      iconColor:
+        "#D64545",
+
+      section:
+        "Administration",
 
       onPress: () => {
+
         comingSoon(
           "Complaint management coming next."
         );
+
       },
+
     },
+
 
     {
       title: "School Settings",
+
       subtitle:
         "Configure school settings",
-      icon: "cog-outline",
-      iconBackground: "#EEF6FF",
-      iconColor: "#2775CA",
-      section: "Administration",
+
+      icon:
+        "cog-outline",
+
+      iconBackground:
+        "#EEF6FF",
+
+      iconColor:
+        "#2775CA",
+
+      section:
+        "Administration",
 
       onPress: () => {
+
         comingSoon(
           "School settings coming next."
         );
+
       },
+
     },
+
 
     {
       title: "Audit Logs",
+
       subtitle:
         "View all user activities",
-      icon: "shield-search-outline",
-      iconBackground: "#F1EEFF",
-      iconColor: "#6D4AFF",
-      section: "Administration",
+
+      icon:
+        "shield-search-outline",
+
+      iconBackground:
+        "#F1EEFF",
+
+      iconColor:
+        "#6D4AFF",
+
+      section:
+        "Administration",
 
       onPress: () => {
+
         comingSoon(
           "Audit logs coming next."
         );
+
       },
+
     },
+
 
     /* ========================================================
        COMMUNICATION
@@ -395,724 +709,904 @@ const PrincipalDashboard = () => {
 
     {
       title: "Announcements",
+
       subtitle:
         "Send school announcements",
-      icon: "bullhorn",
-      iconBackground: "#FFF5ED",
-      iconColor: "#C55A11",
-      section: "Communication",
+
+      icon:
+        "bullhorn",
+
+      iconBackground:
+        "#FFF5ED",
+
+      iconColor:
+        "#C55A11",
+
+      section:
+        "Communication",
 
       onPress: () => {
+
         comingSoon(
           "Announcements coming next."
         );
+
       },
+
     },
+
   ];
+
 
   /* ==========================================================
      GROUP TILES
   ========================================================== */
 
-  const groupedTiles = useMemo(() => {
-    const sections = [
-      "People & Users",
-      "Academics",
-      "Finance",
-      "Administration",
-      "Communication",
-    ] as const;
+  const groupedTiles =
+    useMemo(() => {
 
-    return sections.map((section) => ({
-      section,
-      items: tiles.filter(
-        (tile) =>
-          tile.section === section
-      ),
-    }));
-  }, []);
+      const sections = [
+
+        "People & Users",
+
+        "Academics",
+
+        "Finance",
+
+        "Administration",
+
+        "Communication",
+
+      ] as const;
+
+
+      return sections.map(
+        section => ({
+
+          section,
+
+          items:
+            tiles.filter(
+              tile =>
+                tile.section ===
+                section
+            ),
+
+        })
+      );
+
+    }, []);
+
 
   /* ==========================================================
      HEADER
   ========================================================== */
 
-  const renderHeader = () => {
-    return (
-      <View>
+  const renderHeader =
+    () => {
 
-        {/* ==================================================
-            TOP NAVBAR
-        ================================================== */}
+      return (
+        <View>
 
-        <View
-          style={[
-            styles.platformHeader,
-            isDesktop &&
-              styles.platformHeaderDesktop,
-          ]}
-        >
+          {/* ==================================================
+              TOP NAVBAR
+          ================================================== */}
 
-          {/* BRAND */}
           <View
-            style={styles.platformBrand}
+            style={[
+              styles.platformHeader,
+
+              isDesktop &&
+                styles.platformHeaderDesktop,
+            ]}
           >
 
-            <Avatar.Icon
-              size={
-                isSmallScreen
-                  ? 42
-                  : 48
-              }
-              icon="school"
-              color="#FFFFFF"
-              style={
-                styles.platformLogo
-              }
-            />
+            {/* BRAND */}
 
             <View
               style={
-                styles.platformBrandText
+                styles.platformBrand
+              }
+            >
+
+              <Avatar.Icon
+                size={
+                  isSmallScreen
+                    ? 42
+                    : 48
+                }
+                icon="school"
+                color="#FFFFFF"
+                style={
+                  styles.platformLogo
+                }
+              />
+
+
+              <View
+                style={
+                  styles.platformBrandText
+                }
+              >
+
+                <Text
+                  style={
+                    styles.platformName
+                  }
+                  numberOfLines={1}
+                >
+                  {
+                    user.schoolName ||
+                    "School Platform"
+                  }
+                </Text>
+
+
+                <Text
+                  style={
+                    styles.platformSubtitle
+                  }
+                >
+                  Principal Administration
+                </Text>
+
+              </View>
+
+            </View>
+
+
+            {/* ACTIONS */}
+
+            <View
+              style={
+                styles.platformActions
+              }
+            >
+
+              <IconButton
+                icon="refresh"
+                size={
+                  isSmallScreen
+                    ? 20
+                    : 22
+                }
+                iconColor={
+                  Colors.brandPrimary
+                }
+                onPress={() => {
+
+                  comingSoon(
+                    "Dashboard refresh will be available when reports are connected."
+                  );
+
+                }}
+                style={
+                  styles.refreshButton
+                }
+              />
+
+
+              {/* PROFILE */}
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+
+                  setProfileMenuVisible(
+                    true
+                  );
+
+                }}
+                style={[
+                  styles.profileButton,
+
+                  profileMenuVisible &&
+                    styles.profileButtonActive,
+                ]}
+              >
+
+                <Avatar.Text
+                  size={
+                    isSmallScreen
+                      ? 38
+                      : 42
+                  }
+                  label={
+                    getInitials(
+                      user.name
+                    )
+                  }
+                  color="#FFFFFF"
+                  style={
+                    styles.profileAvatar
+                  }
+                />
+
+
+                {!isSmallScreen ? (
+
+                  <View
+                    style={
+                      styles.profileDetails
+                    }
+                  >
+
+                    <Text
+                      style={
+                        styles.profileName
+                      }
+                      numberOfLines={1}
+                    >
+                      {
+                        user.name ||
+                        "Principal"
+                      }
+                    </Text>
+
+
+                    <Text
+                      style={
+                        styles.profileRole
+                      }
+                    >
+                      Principal
+                    </Text>
+
+                  </View>
+
+                ) : null}
+
+
+                <Text
+                  style={
+                    styles.profileArrow
+                  }
+                >
+                  {
+                    profileMenuVisible
+                      ? "⌃"
+                      : "⌄"
+                  }
+                </Text>
+
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+
+
+          {/* ==================================================
+              GREETING
+          ================================================== */}
+
+          <View
+            style={
+              styles.dashboardHeading
+            }
+          >
+
+            <View
+              style={
+                styles.greetingContainer
               }
             >
 
               <Text
                 style={
-                  styles.platformName
+                  styles.greeting
                 }
-                numberOfLines={1}
               >
-                {user.schoolName ||
-                  "School Platform"}
+                Good{" "}
+                {getGreeting()}
+                ,{" "}
+                {getFirstName(
+                  user.name
+                )} 👋
               </Text>
+
 
               <Text
                 style={
-                  styles.platformSubtitle
+                  styles.pageTitle
                 }
               >
-                Principal Administration
+                Principal Dashboard
+              </Text>
+
+
+              <Text
+                style={
+                  styles.pageSubtitle
+                }
+              >
+                Manage your school,
+                people, academics,
+                finance and daily
+                operations from one place.
               </Text>
 
             </View>
 
           </View>
 
-          {/* ACTIONS */}
-          <View
+
+          {/* ==================================================
+              SCHOOL INFO HERO
+          ================================================== */}
+
+          <Card
             style={
-              styles.platformActions
+              styles.schoolHero
             }
           >
 
-            <IconButton
-              icon="refresh"
-              size={
-                isSmallScreen
-                  ? 20
-                  : 22
-              }
-              iconColor={
-                Colors.brandPrimary
-              }
-              onPress={() => {
-                comingSoon(
-                  "Dashboard refresh will be available when reports are connected."
-                );
-              }}
-              style={
-                styles.refreshButton
-              }
-            />
+            <Card.Content>
 
-            {/* PROFILE */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                setProfileMenuVisible(
-                  true
-                );
-              }}
-              style={[
-                styles.profileButton,
-                profileMenuVisible &&
-                  styles.profileButtonActive,
-              ]}
-            >
-
-              <Avatar.Text
-                size={
-                  isSmallScreen
-                    ? 38
-                    : 42
-                }
-                label={getInitials(
-                  user.name
-                )}
-                color="#FFFFFF"
+              <View
                 style={
-                  styles.profileAvatar
+                  styles.schoolHeroRow
                 }
-              />
+              >
 
-              {!isSmallScreen ? (
                 <View
                   style={
-                    styles.profileDetails
+                    styles.schoolHeroText
                   }
                 >
 
                   <Text
                     style={
-                      styles.profileName
+                      styles.schoolHeroEyebrow
                     }
-                    numberOfLines={1}
                   >
-                    {user.name ||
-                      "Principal"}
+                    SCHOOL OVERVIEW
                   </Text>
+
 
                   <Text
                     style={
-                      styles.profileRole
+                      styles.schoolHeroTitle
+                    }
+                    numberOfLines={2}
+                  >
+                    {
+                      user.schoolName ||
+                      "School"
+                    }
+                  </Text>
+
+
+                  <Text
+                    style={
+                      styles.schoolHeroSubtitle
+                    }
+                  >
+                    School Code:{" "}
+                    {
+                      user.schoolCode ||
+                      "Not available"
+                    }
+                  </Text>
+
+                </View>
+
+
+                <View
+                  style={
+                    styles.schoolHeroIconContainer
+                  }
+                >
+
+                  <Avatar.Icon
+                    size={62}
+                    icon="school-outline"
+                    color="#FFFFFF"
+                    style={
+                      styles.schoolHeroIcon
+                    }
+                  />
+
+                </View>
+
+              </View>
+
+            </Card.Content>
+
+          </Card>
+
+        </View>
+      );
+
+    };
+
+
+  /* ==========================================================
+     SECTION HEADER
+  ========================================================== */
+
+  const renderSectionHeading =
+    (
+      title: string,
+      subtitle: string
+    ) => {
+
+      return (
+        <View
+          style={
+            styles.sectionHeading
+          }
+        >
+
+          <Text
+            style={
+              styles.sectionMainTitle
+            }
+          >
+            {title}
+          </Text>
+
+
+          <Text
+            style={
+              styles.sectionSubtitle
+            }
+          >
+            {subtitle}
+          </Text>
+
+        </View>
+      );
+
+    };
+
+
+  /* ==========================================================
+     TILE
+  ========================================================== */
+
+  const renderTile =
+    ({
+      item,
+    }: {
+      item: PrincipalTile;
+    }) => {
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.88}
+          onPress={
+            item.onPress
+          }
+          style={[
+            styles.tileTouchable,
+
+            isDesktop &&
+              styles.tileTouchableDesktop,
+          ]}
+        >
+
+          <Card
+            style={
+              styles.tile
+            }
+          >
+
+            <Card.Content>
+
+              <View
+                style={
+                  styles.tileTop
+                }
+              >
+
+                <Avatar.Icon
+                  size={48}
+                  icon={item.icon}
+                  color={
+                    item.iconColor
+                  }
+                  style={[
+                    styles.tileIcon,
+                    {
+                      backgroundColor:
+                        item.iconBackground,
+                    },
+                  ]}
+                />
+
+
+                <Text
+                  style={
+                    styles.tileArrow
+                  }
+                >
+                  →
+                </Text>
+
+              </View>
+
+
+              <Text
+                style={
+                  styles.tileTitle
+                }
+                numberOfLines={1}
+              >
+                {item.title}
+              </Text>
+
+
+              <Text
+                style={
+                  styles.tileSubtitle
+                }
+                numberOfLines={2}
+              >
+                {item.subtitle}
+              </Text>
+
+            </Card.Content>
+
+          </Card>
+
+        </TouchableOpacity>
+      );
+
+    };
+
+
+  /* ==========================================================
+     SECTION LIST
+  ========================================================== */
+
+  const renderSection =
+    ({
+      section,
+      items,
+    }: {
+      section:
+        PrincipalTile["section"];
+
+      items:
+        PrincipalTile[];
+    }) => {
+
+      return (
+        <View
+          style={
+            styles.sectionContainer
+          }
+        >
+
+          {renderSectionHeading(
+            section,
+            getSectionSubtitle(
+              section
+            )
+          )}
+
+
+          <View
+            style={[
+              styles.tilesGrid,
+
+              isSmallScreen &&
+                styles.tilesGridMobile,
+            ]}
+          >
+
+            {items.map(
+              item => (
+
+                <View
+                  key={
+                    item.title
+                  }
+                  style={[
+                    styles.tileWrapper,
+
+                    !isSmallScreen &&
+                      styles.tileWrapperDesktop,
+                  ]}
+                >
+
+                  {renderTile({
+                    item,
+                  })}
+
+                </View>
+
+              )
+            )}
+
+          </View>
+
+        </View>
+      );
+
+    };
+
+
+  /* ==========================================================
+     PROFILE DROPDOWN
+  ========================================================== */
+
+  const renderProfileDropdown =
+    () => {
+
+      if (
+        !profileMenuVisible
+      ) {
+        return null;
+      }
+
+
+      return (
+        <Modal
+          visible={
+            profileMenuVisible
+          }
+          transparent
+          animationType="fade"
+          statusBarTranslucent
+          onRequestClose={() => {
+
+            setProfileMenuVisible(
+              false
+            );
+
+          }}
+        >
+
+          <Pressable
+            style={
+              styles.modalOverlay
+            }
+            onPress={() => {
+
+              setProfileMenuVisible(
+                false
+              );
+
+            }}
+          >
+
+            <View
+              style={[
+                styles.profileDropdown,
+
+                isSmallScreen
+                  ? styles.profileDropdownMobile
+                  : styles.profileDropdownDesktop,
+              ]}
+            >
+
+              {/* PROFILE HEADER */}
+
+              <View
+                style={
+                  styles.dropdownProfileHeader
+                }
+              >
+
+                <Avatar.Text
+                  size={46}
+                  label={
+                    getInitials(
+                      user.name
+                    )
+                  }
+                  color="#FFFFFF"
+                  style={
+                    styles.dropdownAvatar
+                  }
+                />
+
+
+                <View
+                  style={
+                    styles.dropdownUserInfo
+                  }
+                >
+
+                  <Text
+                    style={
+                      styles.dropdownUserName
+                    }
+                    numberOfLines={1}
+                  >
+                    {user.name}
+                  </Text>
+
+
+                  <Text
+                    style={
+                      styles.dropdownUserEmail
+                    }
+                    numberOfLines={1}
+                  >
+                    {user.email || ""}
+                  </Text>
+
+
+                  <Text
+                    style={
+                      styles.dropdownUserRole
                     }
                   >
                     Principal
                   </Text>
 
                 </View>
-              ) : null}
-
-              <Text
-                style={
-                  styles.profileArrow
-                }
-              >
-                {profileMenuVisible
-                  ? "⌃"
-                  : "⌄"}
-              </Text>
-
-            </TouchableOpacity>
-
-          </View>
-
-        </View>
-
-        {/* ==================================================
-            GREETING
-        ================================================== */}
-
-        <View
-          style={
-            styles.dashboardHeading
-          }
-        >
-
-          <View
-            style={
-              styles.greetingContainer
-            }
-          >
-
-            <Text
-              style={styles.greeting}
-            >
-              Good {getGreeting()},{" "}
-              {getFirstName(
-                user.name
-              )} 👋
-            </Text>
-
-            <Text
-              style={styles.pageTitle}
-            >
-              Principal Dashboard
-            </Text>
-
-            <Text
-              style={styles.pageSubtitle}
-            >
-              Manage your school, people,
-              academics, finance and daily
-              operations from one place.
-            </Text>
-
-          </View>
-
-        </View>
-
-        {/* ==================================================
-            SCHOOL INFO HERO
-        ================================================== */}
-
-        <Card
-          style={
-            styles.schoolHero
-          }
-        >
-          <Card.Content>
-
-            <View
-              style={
-                styles.schoolHeroRow
-              }
-            >
-
-              <View
-                style={
-                  styles.schoolHeroText
-                }
-              >
-
-                <Text
-                  style={
-                    styles.schoolHeroEyebrow
-                  }
-                >
-                  SCHOOL OVERVIEW
-                </Text>
-
-                <Text
-                  style={
-                    styles.schoolHeroTitle
-                  }
-                  numberOfLines={2}
-                >
-                  {user.schoolName}
-                </Text>
-
-                <Text
-                  style={
-                    styles.schoolHeroSubtitle
-                  }
-                >
-                  School Code:{" "}
-                  {user.schoolCode ||
-                    "Not available"}
-                </Text>
 
               </View>
 
-              <View
+
+              <Divider
                 style={
-                  styles.schoolHeroIconContainer
-                }
-              >
-
-                <Avatar.Icon
-                  size={62}
-                  icon="school-outline"
-                  color="#FFFFFF"
-                  style={
-                    styles.schoolHeroIcon
-                  }
-                />
-
-              </View>
-
-            </View>
-
-          </Card.Content>
-        </Card>
-
-      </View>
-    );
-  };
-
-  /* ==========================================================
-     SECTION HEADER
-  ========================================================== */
-
-  const renderSectionHeading = (
-    title: string,
-    subtitle: string
-  ) => {
-    return (
-      <View
-        style={
-          styles.sectionHeading
-        }
-      >
-
-        <Text
-          style={
-            styles.sectionMainTitle
-          }
-        >
-          {title}
-        </Text>
-
-        <Text
-          style={
-            styles.sectionSubtitle
-          }
-        >
-          {subtitle}
-        </Text>
-
-      </View>
-    );
-  };
-
-  /* ==========================================================
-     TILE
-  ========================================================== */
-
-  const renderTile = ({
-    item,
-  }: {
-    item: PrincipalTile;
-  }) => {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.88}
-        onPress={item.onPress}
-        style={[
-          styles.tileTouchable,
-          isDesktop &&
-            styles.tileTouchableDesktop,
-        ]}
-      >
-
-        <Card
-          style={styles.tile}
-        >
-
-          <Card.Content>
-
-            <View
-              style={styles.tileTop}
-            >
-
-              <Avatar.Icon
-                size={48}
-                icon={item.icon}
-                color={item.iconColor}
-                style={[
-                  styles.tileIcon,
-                  {
-                    backgroundColor:
-                      item.iconBackground,
-                  },
-                ]}
-              />
-
-              <Text
-                style={styles.tileArrow}
-              >
-                →
-              </Text>
-
-            </View>
-
-            <Text
-              style={styles.tileTitle}
-              numberOfLines={1}
-            >
-              {item.title}
-            </Text>
-
-            <Text
-              style={styles.tileSubtitle}
-              numberOfLines={2}
-            >
-              {item.subtitle}
-            </Text>
-
-          </Card.Content>
-
-        </Card>
-
-      </TouchableOpacity>
-    );
-  };
-
-  /* ==========================================================
-     SECTION LIST
-  ========================================================== */
-
-  const renderSection = ({
-    section,
-    items,
-  }: {
-    section: PrincipalTile["section"];
-    items: PrincipalTile[];
-  }) => {
-    return (
-      <View
-        style={
-          styles.sectionContainer
-        }
-      >
-
-        {renderSectionHeading(
-          section,
-          getSectionSubtitle(section)
-        )}
-
-        <View
-          style={[
-            styles.tilesGrid,
-            isSmallScreen &&
-              styles.tilesGridMobile,
-          ]}
-        >
-
-          {items.map((item) => (
-            <View
-              key={item.title}
-              style={[
-                styles.tileWrapper,
-                !isSmallScreen &&
-                  styles.tileWrapperDesktop,
-              ]}
-            >
-              {renderTile({
-                item,
-              })}
-            </View>
-          ))}
-
-        </View>
-
-      </View>
-    );
-  };
-
-  /* ==========================================================
-     PROFILE DROPDOWN
-  ========================================================== */
-
-  const renderProfileDropdown = () => {
-    if (!profileMenuVisible) {
-      return null;
-    }
-
-    return (
-      <Modal
-        visible={profileMenuVisible}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => {
-          setProfileMenuVisible(
-            false
-          );
-        }}
-      >
-
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => {
-            setProfileMenuVisible(
-              false
-            );
-          }}
-        >
-
-          <View
-            style={[
-              styles.profileDropdown,
-              isSmallScreen
-                ? styles.profileDropdownMobile
-                : styles.profileDropdownDesktop,
-            ]}
-          >
-
-            {/* PROFILE HEADER */}
-            <View
-              style={
-                styles.dropdownProfileHeader
-              }
-            >
-
-              <Avatar.Text
-                size={46}
-                label={getInitials(
-                  user.name
-                )}
-                color="#FFFFFF"
-                style={
-                  styles.dropdownAvatar
+                  styles.dropdownDivider
                 }
               />
 
-              <View
+
+              {/* PROFILE */}
+
+              <TouchableOpacity
+                activeOpacity={0.7}
                 style={
-                  styles.dropdownUserInfo
+                  styles.dropdownItem
+                }
+                onPress={() => {
+
+                  setProfileMenuVisible(
+                    false
+                  );
+
+                  comingSoon(
+                    "Principal profile coming next."
+                  );
+
+                }}
+              >
+
+                <View
+                  style={
+                    styles.dropdownIconContainer
+                  }
+                >
+
+                  <Text
+                    style={
+                      styles.dropdownIcon
+                    }
+                  >
+                    👤
+                  </Text>
+
+                </View>
+
+
+                <View
+                  style={
+                    styles.dropdownItemTextContainer
+                  }
+                >
+
+                  <Text
+                    style={
+                      styles.dropdownItemTitle
+                    }
+                  >
+                    Profile
+                  </Text>
+
+
+                  <Text
+                    style={
+                      styles.dropdownItemSubtitle
+                    }
+                  >
+                    View your principal profile
+                  </Text>
+
+                </View>
+
+              </TouchableOpacity>
+
+
+              {/* LOGOUT */}
+
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[
+                  styles.dropdownItem,
+                  styles.logoutItem,
+                ]}
+                onPress={
+                  handleLogout
                 }
               >
 
-                <Text
-                  style={
-                    styles.dropdownUserName
-                  }
-                  numberOfLines={1}
+                <View
+                  style={[
+                    styles.dropdownIconContainer,
+                    styles.logoutIconContainer,
+                  ]}
                 >
-                  {user.name}
-                </Text>
 
-                <Text
+                  <Text
+                    style={[
+                      styles.dropdownIcon,
+                      styles.logoutIcon,
+                    ]}
+                  >
+                    ↪
+                  </Text>
+
+                </View>
+
+
+                <View
                   style={
-                    styles.dropdownUserEmail
-                  }
-                  numberOfLines={1}
-                >
-                  {user.email || ""}
-                </Text>
-
-                <Text
-                  style={
-                    styles.dropdownUserRole
+                    styles.dropdownItemTextContainer
                   }
                 >
-                  Principal
-                </Text>
 
-              </View>
+                  <Text
+                    style={[
+                      styles.dropdownItemTitle,
+                      styles.logoutTitle,
+                    ]}
+                  >
+                    Logout
+                  </Text>
+
+
+                  <Text
+                    style={
+                      styles.dropdownItemSubtitle
+                    }
+                  >
+                    Sign out of this account
+                  </Text>
+
+                </View>
+
+              </TouchableOpacity>
 
             </View>
 
-            <Divider
-              style={
-                styles.dropdownDivider
-              }
-            />
+          </Pressable>
 
-            {/* PROFILE */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={
-                styles.dropdownItem
-              }
-              onPress={() => {
-                setProfileMenuVisible(
-                  false
-                );
+        </Modal>
+      );
 
-                comingSoon(
-                  "Principal profile coming next."
-                );
-              }}
-            >
+    };
 
-              <View
-                style={
-                  styles.dropdownIconContainer
-                }
-              >
-                <Text
-                  style={
-                    styles.dropdownIcon
-                  }
-                >
-                  👤
-                </Text>
-              </View>
-
-              <View
-                style={
-                  styles.dropdownItemTextContainer
-                }
-              >
-
-                <Text
-                  style={
-                    styles.dropdownItemTitle
-                  }
-                >
-                  Profile
-                </Text>
-
-                <Text
-                  style={
-                    styles.dropdownItemSubtitle
-                  }
-                >
-                  View your principal profile
-                </Text>
-
-              </View>
-
-            </TouchableOpacity>
-
-            {/* LOGOUT */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={[
-                styles.dropdownItem,
-                styles.logoutItem,
-              ]}
-              onPress={handleLogout}
-            >
-
-              <View
-                style={[
-                  styles.dropdownIconContainer,
-                  styles.logoutIconContainer,
-                ]}
-              >
-
-                <Text
-                  style={[
-                    styles.dropdownIcon,
-                    styles.logoutIcon,
-                  ]}
-                >
-                  ↪
-                </Text>
-
-              </View>
-
-              <View
-                style={
-                  styles.dropdownItemTextContainer
-                }
-              >
-
-                <Text
-                  style={[
-                    styles.dropdownItemTitle,
-                    styles.logoutTitle,
-                  ]}
-                >
-                  Logout
-                </Text>
-
-                <Text
-                  style={
-                    styles.dropdownItemSubtitle
-                  }
-                >
-                  Sign out of this account
-                </Text>
-
-              </View>
-
-            </TouchableOpacity>
-
-          </View>
-
-        </Pressable>
-
-      </Modal>
-    );
-  };
 
   /* ==========================================================
      MAIN UI
   ========================================================== */
 
   return (
-    <View style={styles.page}>
+    <View
+      style={
+        styles.page
+      }
+    >
 
       <FlatList
-        data={groupedTiles}
-        keyExtractor={(item) =>
-          item.section
+        data={
+          groupedTiles
         }
-        renderItem={({ item }) =>
+        keyExtractor={
+          item =>
+            item.section
+        }
+        renderItem={({
+          item,
+        }) =>
           renderSection(
             item
           )
@@ -1125,6 +1619,7 @@ const PrincipalDashboard = () => {
         }
         contentContainerStyle={[
           styles.listContent,
+
           {
             paddingHorizontal:
               horizontalPadding,
@@ -1132,14 +1627,24 @@ const PrincipalDashboard = () => {
         ]}
       />
 
+
       {renderProfileDropdown()}
 
+
       <Snackbar
-        visible={showSnackbar}
+        visible={
+          showSnackbar
+        }
         onDismiss={() => {
-          setShowSnackbar(false);
+
+          setShowSnackbar(
+            false
+          );
+
         }}
-        duration={2500}
+        duration={
+          2500
+        }
         style={
           styles.snackbar
         }
@@ -1149,35 +1654,64 @@ const PrincipalDashboard = () => {
 
     </View>
   );
+
 };
+
 
 /* ============================================================
    SECTION SUBTITLES
 ============================================================ */
 
 const getSectionSubtitle = (
-  section: PrincipalTile["section"]
+  section:
+    PrincipalTile["section"]
 ) => {
+
   switch (section) {
+
     case "People & Users":
-      return "Manage students, teachers, parents and administrators.";
+
+      return (
+        "Manage students, teachers, parents and administrators."
+      );
+
 
     case "Academics":
-      return "Monitor classes and school-wide academic performance.";
+
+      return (
+        "Manage academic years, classes, sections, teachers and student progression."
+      );
+
 
     case "Finance":
-      return "Manage school finances and fee collection.";
+
+      return (
+        "Manage school finances and fee collection."
+      );
+
 
     case "Administration":
-      return "Manage school operations, settings and activity.";
+
+      return (
+        "Manage school operations, settings and activity."
+      );
+
 
     case "Communication":
-      return "Keep your school community informed.";
+
+      return (
+        "Keep your school community informed."
+      );
+
 
     default:
+
       return "";
+
   }
+
 };
+
 
 /* ============================================================
    INITIALS
@@ -1186,26 +1720,39 @@ const getSectionSubtitle = (
 const getInitials = (
   name?: string | null
 ) => {
+
   if (!name) {
     return "P";
   }
 
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
 
-  if (parts.length === 1) {
+  const parts =
+    name
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+
+  if (
+    parts.length === 1
+  ) {
+
     return parts[0]
       .slice(0, 2)
       .toUpperCase();
+
   }
+
 
   return (
     parts[0][0] +
-    parts[parts.length - 1][0]
+    parts[
+      parts.length - 1
+    ][0]
   ).toUpperCase();
+
 };
+
 
 /* ============================================================
    FIRST NAME
@@ -1214,674 +1761,818 @@ const getInitials = (
 const getFirstName = (
   name?: string | null
 ) => {
+
   if (!name) {
     return "Principal";
   }
 
+
   return name
     .trim()
     .split(/\s+/)[0];
+
 };
+
 
 /* ============================================================
    GREETING
 ============================================================ */
 
 const getGreeting = () => {
+
   const hour =
     new Date().getHours();
 
-  if (hour < 12) {
+
+  if (
+    hour < 12
+  ) {
     return "morning";
   }
 
-  if (hour < 17) {
+
+  if (
+    hour < 17
+  ) {
     return "afternoon";
   }
 
+
   return "evening";
+
 };
+
 
 /* ============================================================
    STYLES
 ============================================================ */
 
-const useStyles = makeStyles(() => {
-  return {
-    /* ========================================================
-       PAGE
-    ======================================================== */
+const useStyles =
+  makeStyles(() => {
 
-    page: {
-      flex: 1,
-      backgroundColor: "#F7F8FC",
-    },
+    return {
 
-    listContent: {
-      paddingTop: Metrics.x4,
-      paddingBottom: Metrics.x8,
-    },
+      /* ======================================================
+         PAGE
+      ====================================================== */
 
-    /* ========================================================
-       TOP NAVBAR
-    ======================================================== */
+      page: {
+        flex: 1,
 
-    platformHeader: {
-      minHeight: 72,
+        backgroundColor:
+          "#F7F8FC",
+      },
 
-      paddingHorizontal:
-        Metrics.x3,
 
-      paddingVertical:
-        Metrics.x2,
+      listContent: {
+        paddingTop:
+          Metrics.x4,
 
-      flexDirection: "row",
+        paddingBottom:
+          Metrics.x8,
+      },
 
-      alignItems: "center",
 
-      justifyContent:
-        "space-between",
+      /* ======================================================
+         TOP NAVBAR
+      ====================================================== */
 
-      backgroundColor: "#FFFFFF",
+      platformHeader: {
+        minHeight: 72,
 
-      borderWidth: 1,
+        paddingHorizontal:
+          Metrics.x3,
 
-      borderColor: "#E9EAF0",
+        paddingVertical:
+          Metrics.x2,
 
-      borderRadius: 16,
+        flexDirection:
+          "row",
 
-      marginBottom:
-        Metrics.x5,
+        alignItems:
+          "center",
 
-      elevation: 1,
-    },
+        justifyContent:
+          "space-between",
 
-    platformHeaderDesktop: {
-      minHeight: 76,
-    },
+        backgroundColor:
+          "#FFFFFF",
 
-    platformBrand: {
-      flexDirection: "row",
+        borderWidth: 1,
 
-      alignItems: "center",
+        borderColor:
+          "#E9EAF0",
 
-      flex: 1,
+        borderRadius: 16,
 
-      minWidth: 0,
-    },
+        marginBottom:
+          Metrics.x5,
 
-    platformLogo: {
-      backgroundColor:
-        Colors.brandPrimary,
+        elevation: 1,
+      },
 
-      marginRight:
-        Metrics.x2,
-    },
 
-    platformBrandText: {
-      flex: 1,
+      platformHeaderDesktop: {
+        minHeight: 76,
+      },
 
-      minWidth: 0,
-    },
 
-    platformName: {
-      fontSize: 16,
+      platformBrand: {
+        flexDirection:
+          "row",
 
-      fontWeight: "800",
+        alignItems:
+          "center",
 
-      color: "#171717",
-    },
+        flex: 1,
 
-    platformSubtitle: {
-      marginTop: 2,
+        minWidth: 0,
+      },
 
-      fontSize: 11,
 
-      color: Colors.subtext,
-    },
+      platformLogo: {
+        backgroundColor:
+          Colors.brandPrimary,
 
-    platformActions: {
-      flexDirection: "row",
+        marginRight:
+          Metrics.x2,
+      },
 
-      alignItems: "center",
 
-      marginLeft:
-        Metrics.x2,
-    },
+      platformBrandText: {
+        flex: 1,
 
-    refreshButton: {
-      margin: 0,
+        minWidth: 0,
+      },
 
-      marginRight:
-        Metrics.x1,
-    },
 
-    /* ========================================================
-       PROFILE BUTTON
-    ======================================================== */
+      platformName: {
+        fontSize: 16,
 
-    profileButton: {
-      flexDirection: "row",
+        fontWeight: "800",
 
-      alignItems: "center",
+        color: "#171717",
+      },
 
-      paddingVertical:
-        Metrics.x1,
 
-      paddingHorizontal:
-        Metrics.x1,
+      platformSubtitle: {
+        marginTop: 2,
 
-      borderRadius: 24,
-    },
+        fontSize: 11,
 
-    profileButtonActive: {
-      backgroundColor: "#F4F5F9",
-    },
+        color:
+          Colors.subtext,
+      },
 
-    profileAvatar: {
-      backgroundColor:
-        Colors.brandPrimary,
-    },
 
-    profileDetails: {
-      marginLeft:
-        Metrics.x2,
+      platformActions: {
+        flexDirection:
+          "row",
 
-      maxWidth: 150,
-    },
+        alignItems:
+          "center",
 
-    profileName: {
-      fontSize: 13,
+        marginLeft:
+          Metrics.x2,
+      },
 
-      fontWeight: "700",
 
-      color: "#171717",
-    },
+      refreshButton: {
+        margin: 0,
 
-    profileRole: {
-      fontSize: 11,
+        marginRight:
+          Metrics.x1,
+      },
 
-      color: Colors.subtext,
 
-      marginTop: 1,
-    },
+      /* ======================================================
+         PROFILE BUTTON
+      ====================================================== */
 
-    profileArrow: {
-      fontSize: 17,
+      profileButton: {
+        flexDirection:
+          "row",
 
-      color: Colors.subtext,
+        alignItems:
+          "center",
 
-      marginLeft:
-        Metrics.x1,
-    },
+        paddingVertical:
+          Metrics.x1,
 
-    /* ========================================================
-       DASHBOARD HEADING
-    ======================================================== */
+        paddingHorizontal:
+          Metrics.x1,
 
-    dashboardHeading: {
-      marginBottom:
-        Metrics.x5,
-    },
+        borderRadius: 24,
+      },
 
-    greetingContainer: {
-      flex: 1,
-    },
 
-    greeting: {
-      fontSize: 14,
+      profileButtonActive: {
+        backgroundColor:
+          "#F4F5F9",
+      },
 
-      color: Colors.subtext,
 
-      fontWeight: "600",
+      profileAvatar: {
+        backgroundColor:
+          Colors.brandPrimary,
+      },
 
-      marginBottom:
-        Metrics.x1,
-    },
 
-    pageTitle: {
-      fontSize: 30,
+      profileDetails: {
+        marginLeft:
+          Metrics.x2,
 
-      fontWeight: "800",
+        maxWidth: 150,
+      },
 
-      color: "#171717",
-    },
 
-    pageSubtitle: {
-      marginTop:
-        Metrics.x1,
+      profileName: {
+        fontSize: 13,
 
-      fontSize: 14,
+        fontWeight: "700",
 
-      lineHeight: 21,
+        color: "#171717",
+      },
 
-      color: Colors.subtext,
 
-      maxWidth: 700,
-    },
+      profileRole: {
+        fontSize: 11,
 
-    /* ========================================================
-       SCHOOL HERO
-    ======================================================== */
+        color:
+          Colors.subtext,
 
-    schoolHero: {
-      marginBottom:
-        Metrics.x6,
+        marginTop: 1,
+      },
 
-      borderRadius: 18,
 
-      backgroundColor:
-        Colors.brandPrimary,
+      profileArrow: {
+        fontSize: 17,
 
-      elevation: 2,
-    },
+        color:
+          Colors.subtext,
 
-    schoolHeroRow: {
-      flexDirection: "row",
+        marginLeft:
+          Metrics.x1,
+      },
 
-      alignItems: "center",
 
-      justifyContent:
-        "space-between",
-    },
+      /* ======================================================
+         DASHBOARD HEADING
+      ====================================================== */
 
-    schoolHeroText: {
-      flex: 1,
+      dashboardHeading: {
+        marginBottom:
+          Metrics.x5,
+      },
 
-      paddingRight:
-        Metrics.x3,
-    },
 
-    schoolHeroEyebrow: {
-      fontSize: 10,
+      greetingContainer: {
+        flex: 1,
+      },
 
-      fontWeight: "800",
 
-      letterSpacing: 1,
+      greeting: {
+        fontSize: 14,
 
-      color:
-        "rgba(255,255,255,0.72)",
+        color:
+          Colors.subtext,
 
-      marginBottom:
-        Metrics.x1,
-    },
+        fontWeight: "600",
 
-    schoolHeroTitle: {
-      fontSize: 23,
+        marginBottom:
+          Metrics.x1,
+      },
 
-      fontWeight: "800",
 
-      color: "#FFFFFF",
-    },
+      pageTitle: {
+        fontSize: 30,
 
-    schoolHeroSubtitle: {
-      marginTop:
-        Metrics.x1,
+        fontWeight: "800",
 
-      fontSize: 13,
+        color: "#171717",
+      },
 
-      color:
-        "rgba(255,255,255,0.78)",
-    },
 
-    schoolHeroIconContainer: {
-      width: 72,
+      pageSubtitle: {
+        marginTop:
+          Metrics.x1,
 
-      height: 72,
+        fontSize: 14,
 
-      borderRadius: 20,
+        lineHeight: 21,
 
-      alignItems: "center",
+        color:
+          Colors.subtext,
 
-      justifyContent: "center",
+        maxWidth: 700,
+      },
 
-      backgroundColor:
-        "rgba(255,255,255,0.14)",
-    },
 
-    schoolHeroIcon: {
-      backgroundColor:
-        "rgba(255,255,255,0.12)",
-    },
+      /* ======================================================
+         SCHOOL HERO
+      ====================================================== */
 
-    /* ========================================================
-       SECTION
-    ======================================================== */
+      schoolHero: {
+        marginBottom:
+          Metrics.x6,
 
-    sectionContainer: {
-      marginBottom:
-        Metrics.x4,
-    },
+        borderRadius: 18,
 
-    sectionHeading: {
-      marginBottom:
-        Metrics.x3,
+        backgroundColor:
+          Colors.brandPrimary,
 
-      paddingHorizontal:
-        Metrics.x1,
-    },
+        elevation: 2,
+      },
 
-    sectionMainTitle: {
-      fontSize: 20,
 
-      fontWeight: "800",
+      schoolHeroRow: {
+        flexDirection:
+          "row",
 
-      color: "#171717",
-    },
+        alignItems:
+          "center",
 
-    sectionSubtitle: {
-      fontSize: 13,
+        justifyContent:
+          "space-between",
+      },
 
-      color: Colors.subtext,
 
-      marginTop: 3,
+      schoolHeroText: {
+        flex: 1,
 
-      lineHeight: 19,
-    },
+        paddingRight:
+          Metrics.x3,
+      },
 
-    /* ========================================================
-       TILES GRID
-    ======================================================== */
 
-    tilesGrid: {
-      flexDirection: "row",
+      schoolHeroEyebrow: {
+        fontSize: 10,
 
-      flexWrap: "wrap",
+        fontWeight: "800",
 
-      marginHorizontal:
-        -Metrics.x2,
-    },
+        letterSpacing: 1,
 
-    tilesGridMobile: {
-      flexDirection: "column",
-    },
+        color:
+          "rgba(255,255,255,0.72)",
 
-    tileWrapper: {
-      width: "100%",
-    },
+        marginBottom:
+          Metrics.x1,
+      },
 
-    tileWrapperDesktop: {
-      width: "50%",
-    },
 
-    tileTouchable: {
-      flex: 1,
+      schoolHeroTitle: {
+        fontSize: 23,
 
-      margin:
-        Metrics.x2,
-    },
+        fontWeight: "800",
 
-    tileTouchableDesktop: {
-      flex: 1,
-    },
+        color: "#FFFFFF",
+      },
 
-    tile: {
-      minHeight: 160,
 
-      backgroundColor: "#FFFFFF",
+      schoolHeroSubtitle: {
+        marginTop:
+          Metrics.x1,
 
-      borderRadius: 18,
+        fontSize: 13,
 
-      borderWidth: 1,
+        color:
+          "rgba(255,255,255,0.78)",
+      },
 
-      borderColor: "#E9EAF0",
 
-      elevation: 1,
-    },
+      schoolHeroIconContainer: {
+        width: 72,
 
-    tileTop: {
-      flexDirection: "row",
+        height: 72,
 
-      alignItems: "center",
+        borderRadius: 20,
 
-      justifyContent:
-        "space-between",
+        alignItems:
+          "center",
 
-      marginBottom:
-        Metrics.x3,
-    },
+        justifyContent:
+          "center",
 
-    tileIcon: {
-      margin: 0,
-    },
+        backgroundColor:
+          "rgba(255,255,255,0.14)",
+      },
 
-    tileArrow: {
-      fontSize: 22,
 
-      color: "#9CA3AF",
-    },
+      schoolHeroIcon: {
+        backgroundColor:
+          "rgba(255,255,255,0.12)",
+      },
 
-    tileTitle: {
-      fontSize: 17,
 
-      fontWeight: "800",
+      /* ======================================================
+         SECTION
+      ====================================================== */
 
-      color: "#171717",
-    },
+      sectionContainer: {
+        marginBottom:
+          Metrics.x4,
+      },
 
-    tileSubtitle: {
-      fontSize: 13,
 
-      lineHeight: 19,
+      sectionHeading: {
+        marginBottom:
+          Metrics.x3,
 
-      color: Colors.subtext,
+        paddingHorizontal:
+          Metrics.x1,
+      },
 
-      marginTop:
-        Metrics.x1,
-    },
 
-    /* ========================================================
-       PROFILE MODAL
-    ======================================================== */
+      sectionMainTitle: {
+        fontSize: 20,
 
-    modalOverlay: {
-      flex: 1,
+        fontWeight: "800",
 
-      backgroundColor:
-        "rgba(0,0,0,0.08)",
-    },
+        color: "#171717",
+      },
 
-    profileDropdown: {
-      position: "absolute",
 
-      top: 82,
+      sectionSubtitle: {
+        fontSize: 13,
 
-      right: Metrics.x4,
+        color:
+          Colors.subtext,
 
-      width: 310,
+        marginTop: 3,
 
-      backgroundColor: "#FFFFFF",
+        lineHeight: 19,
+      },
 
-      borderRadius: 18,
 
-      borderWidth: 1,
+      /* ======================================================
+         TILES GRID
+      ====================================================== */
 
-      borderColor: "#E5E7EB",
+      tilesGrid: {
+        flexDirection:
+          "row",
 
-      padding:
-        Metrics.x2,
+        flexWrap:
+          "wrap",
 
-      elevation: 8,
-    },
+        marginHorizontal:
+          -Metrics.x2,
+      },
 
-    profileDropdownMobile: {
-      left: Metrics.x3,
 
-      right: Metrics.x3,
+      tilesGridMobile: {
+        flexDirection:
+          "column",
+      },
 
-      width: undefined,
-    },
 
-    profileDropdownDesktop: {},
+      tileWrapper: {
+        width: "100%",
+      },
 
-    dropdownProfileHeader: {
-      flexDirection: "row",
 
-      alignItems: "center",
+      tileWrapperDesktop: {
+        width: "50%",
+      },
 
-      padding:
-        Metrics.x2,
-    },
 
-    dropdownAvatar: {
-      backgroundColor:
-        Colors.brandPrimary,
-    },
+      tileTouchable: {
+        flex: 1,
 
-    dropdownUserInfo: {
-      flex: 1,
+        margin:
+          Metrics.x2,
+      },
 
-      marginLeft:
-        Metrics.x2,
-    },
 
-    dropdownUserName: {
-      fontSize: 15,
+      tileTouchableDesktop: {
+        flex: 1,
+      },
 
-      fontWeight: "800",
 
-      color: "#171717",
-    },
+      tile: {
+        minHeight: 160,
 
-    dropdownUserEmail: {
-      fontSize: 12,
+        backgroundColor:
+          "#FFFFFF",
 
-      color: Colors.subtext,
+        borderRadius: 18,
 
-      marginTop: 2,
-    },
+        borderWidth: 1,
 
-    dropdownUserRole: {
-      fontSize: 11,
+        borderColor:
+          "#E9EAF0",
 
-      color:
-        Colors.brandPrimary,
+        elevation: 1,
+      },
 
-      fontWeight: "700",
 
-      marginTop: 3,
-    },
+      tileTop: {
+        flexDirection:
+          "row",
 
-    dropdownDivider: {
-      marginVertical:
-        Metrics.x1,
-    },
+        alignItems:
+          "center",
 
-    dropdownItem: {
-      flexDirection: "row",
+        justifyContent:
+          "space-between",
 
-      alignItems: "center",
+        marginBottom:
+          Metrics.x3,
+      },
 
-      paddingVertical:
-        Metrics.x2,
 
-      paddingHorizontal:
-        Metrics.x1,
+      tileIcon: {
+        margin: 0,
+      },
 
-      borderRadius: 12,
-    },
 
-    dropdownIconContainer: {
-      width: 40,
+      tileArrow: {
+        fontSize: 22,
 
-      height: 40,
+        color:
+          "#9CA3AF",
+      },
 
-      borderRadius: 12,
 
-      alignItems: "center",
+      tileTitle: {
+        fontSize: 17,
 
-      justifyContent: "center",
+        fontWeight: "800",
 
-      backgroundColor: "#F3F4F6",
-    },
+        color: "#171717",
+      },
 
-    dropdownIcon: {
-      fontSize: 18,
-    },
 
-    dropdownItemTextContainer: {
-      flex: 1,
+      tileSubtitle: {
+        fontSize: 13,
 
-      marginLeft:
-        Metrics.x2,
-    },
+        lineHeight: 19,
 
-    dropdownItemTitle: {
-      fontSize: 14,
+        color:
+          Colors.subtext,
 
-      fontWeight: "700",
+        marginTop:
+          Metrics.x1,
+      },
 
-      color: "#171717",
-    },
 
-    dropdownItemSubtitle: {
-      fontSize: 11,
+      /* ======================================================
+         PROFILE MODAL
+      ====================================================== */
 
-      color: Colors.subtext,
+      modalOverlay: {
+        flex: 1,
 
-      marginTop: 2,
-    },
+        backgroundColor:
+          "rgba(0,0,0,0.08)",
+      },
 
-    logoutItem: {
-      marginTop:
-        Metrics.x1,
 
-      backgroundColor: "#FFF5F5",
-    },
+      profileDropdown: {
+        position:
+          "absolute",
 
-    logoutIconContainer: {
-      backgroundColor:
-        "#FDECEC",
-    },
+        top: 82,
 
-    logoutIcon: {
-      color: "#D64545",
-    },
+        right:
+          Metrics.x4,
 
-    logoutTitle: {
-      color: "#D64545",
-    },
+        width: 310,
 
-    /* ========================================================
-       SNACKBAR
-    ======================================================== */
+        backgroundColor:
+          "#FFFFFF",
 
-    snackbar: {
-      backgroundColor:
-        Colors.errorBg,
-    },
+        borderRadius: 18,
 
-    /* ========================================================
-       AUTH ERROR
-    ======================================================== */
+        borderWidth: 1,
 
-    center: {
-      flex: 1,
+        borderColor:
+          "#E5E7EB",
 
-      justifyContent:
-        "center",
+        padding:
+          Metrics.x2,
 
-      alignItems:
-        "center",
+        elevation: 8,
+      },
 
-      padding:
-        Metrics.x5,
 
-      backgroundColor:
-        "#F7F8FC",
-    },
+      profileDropdownMobile: {
+        left:
+          Metrics.x3,
 
-    errorText: {
-      color:
-        Colors.error,
+        right:
+          Metrics.x3,
 
-      textAlign:
-        "center",
+        width:
+          undefined,
+      },
 
-      fontSize: 16,
-    },
-  };
-});
+
+      profileDropdownDesktop: {},
+
+
+      dropdownProfileHeader: {
+        flexDirection:
+          "row",
+
+        alignItems:
+          "center",
+
+        padding:
+          Metrics.x2,
+      },
+
+
+      dropdownAvatar: {
+        backgroundColor:
+          Colors.brandPrimary,
+      },
+
+
+      dropdownUserInfo: {
+        flex: 1,
+
+        marginLeft:
+          Metrics.x2,
+      },
+
+
+      dropdownUserName: {
+        fontSize: 15,
+
+        fontWeight: "800",
+
+        color: "#171717",
+      },
+
+
+      dropdownUserEmail: {
+        fontSize: 12,
+
+        color:
+          Colors.subtext,
+
+        marginTop: 2,
+      },
+
+
+      dropdownUserRole: {
+        fontSize: 11,
+
+        color:
+          Colors.brandPrimary,
+
+        fontWeight: "700",
+
+        marginTop: 3,
+      },
+
+
+      dropdownDivider: {
+        marginVertical:
+          Metrics.x1,
+      },
+
+
+      dropdownItem: {
+        flexDirection:
+          "row",
+
+        alignItems:
+          "center",
+
+        paddingVertical:
+          Metrics.x2,
+
+        paddingHorizontal:
+          Metrics.x1,
+
+        borderRadius: 12,
+      },
+
+
+      dropdownIconContainer: {
+        width: 40,
+
+        height: 40,
+
+        borderRadius: 12,
+
+        alignItems:
+          "center",
+
+        justifyContent:
+          "center",
+
+        backgroundColor:
+          "#F3F4F6",
+      },
+
+
+      dropdownIcon: {
+        fontSize: 18,
+      },
+
+
+      dropdownItemTextContainer: {
+        flex: 1,
+
+        marginLeft:
+          Metrics.x2,
+      },
+
+
+      dropdownItemTitle: {
+        fontSize: 14,
+
+        fontWeight: "700",
+
+        color: "#171717",
+      },
+
+
+      dropdownItemSubtitle: {
+        fontSize: 11,
+
+        color:
+          Colors.subtext,
+
+        marginTop: 2,
+      },
+
+
+      logoutItem: {
+        marginTop:
+          Metrics.x1,
+
+        backgroundColor:
+          "#FFF5F5",
+      },
+
+
+      logoutIconContainer: {
+        backgroundColor:
+          "#FDECEC",
+      },
+
+
+      logoutIcon: {
+        color:
+          "#D64545",
+      },
+
+
+      logoutTitle: {
+        color:
+          "#D64545",
+      },
+
+
+      /* ======================================================
+         SNACKBAR
+      ====================================================== */
+
+      snackbar: {
+        backgroundColor:
+          Colors.errorBg,
+      },
+
+
+      /* ======================================================
+         AUTH ERROR
+      ====================================================== */
+
+      center: {
+        flex: 1,
+
+        justifyContent:
+          "center",
+
+        alignItems:
+          "center",
+
+        padding:
+          Metrics.x5,
+
+        backgroundColor:
+          "#F7F8FC",
+      },
+
+
+      errorText: {
+        color:
+          Colors.error,
+
+        textAlign:
+          "center",
+
+        fontSize: 16,
+      },
+
+    };
+
+  });
+
 
 export {
   PrincipalDashboard,

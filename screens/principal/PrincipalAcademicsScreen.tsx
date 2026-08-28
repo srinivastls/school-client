@@ -215,8 +215,8 @@ const PrincipalAcademicsScreen = () => {
 
       onPress: () => {
 
-        comingSoon(
-          "Attendance reports coming next."
+        navigation.navigate(
+          RootStackScreenNames.PrincipalAttendanceDashboard
         );
 
       },

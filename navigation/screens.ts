@@ -5,7 +5,6 @@ import {
   CreateCouponScreen,
   Invoice,
   LoginScreen,
-  MonthOrDateFeeHistory,
   OldStudentRegistrationFormScreen,
   //Payment,
   PercentageUnpaidFeeScreen,
@@ -78,11 +77,11 @@ export const RootScreens: Screen[] = [
     component: PercentageUnpaidFeeScreen,
     options: { headerTitle: "Report" },
   },
-  {
-    name: RootStackScreenNames.MonthOrDateFeeHistory,
-    component: MonthOrDateFeeHistory,
-    options: { headerTitle: "Report" },
-  },
+  // {
+  //   name: RootStackScreenNames.MonthOrDateFeeHistory,
+  //   component: MonthOrDateFeeHistory,
+  //   options: { headerTitle: "Report" },
+  // },
   {
     name: RootStackScreenNames.StudentFeeHistory,
     component: StudentFeeHistory,

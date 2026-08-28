@@ -76,6 +76,7 @@ export type PlatformAdminSigninResponse = {
 };
 
 export type Class = {
+  id: string;
   classNumber: string;
   tuitionFee: string;
   textBookFee: string;

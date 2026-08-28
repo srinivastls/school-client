@@ -96,6 +96,13 @@ const updateAdminStatus = async (
   return response.data;
 };
 
+export const getStudents=async () => {
+  const response = await api.get(
+    "/students/getAll"
+  );
+  return response.data;
+};
+
 export const principalServices = {
   getTeachers,
   getParents,
@@ -104,4 +111,5 @@ export const principalServices = {
   createAdmin,
   updateParentStatus,
   updateAdminStatus,
+  getStudents,
 };

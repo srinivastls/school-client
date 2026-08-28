@@ -25,7 +25,7 @@ const ClassList = ({
     refetch,
     isFetching,
   } = useQuery("classList", classServices.getAllClasses, { enabled: false });
-  const classes = response?.data?.classes;
+  const classes = response?.classes;
   const styles = useStyles();
 
   const focused = useIsFocused();

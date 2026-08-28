@@ -3,8 +3,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const api = axios.create({
   baseURL:
-     // "http://localhost:3000/api",
-    "https://school-server-production-41f8.up.railway.app/api",
+      "http://localhost:3000/api",
+    //"https://school-server-production-41f8.up.railway.app/api",
+    //"https://school-management-d0ccfbbd10d1.herokuapp.com/api",
 
   headers: {
     "Content-Type": "application/json",

@@ -1,5 +1,5 @@
 export * from "./ClassFeeStructure";
-export * from "./Dashboard";
+//export * from "./Dashboard";
 export * from "./Home";
 export * from "./PromotionDemotion";
 export * from "./Report";
@@ -12,7 +12,7 @@ export * from "./StudentRegistrationFormScreen";
 export * from "./OldStudentRegistrationFormScreen";
 export * from "./ClassFeeFormScreen";
 export * from "./PercentageUnpaidFeeScreen";
-export * from "./MonthOrDateFeeHistory";
+//export * from "./MonthOrDateFeeHistory";
 export * from "./StudentFeeHistory";
 export * from "./StudentDetails";
 export * from "./Invoice";

@@ -46,6 +46,11 @@ export enum RootStackScreenNames {
   PrincipalFeeCollection = "PrincipalFeeCollection",
   PrincipalPendingDues = "PrincipalPendingDues",
   PrincipalDefaulterStudents = "PrincipalDefaulterStudents",
+  PrincipalAttendanceDashboard = "PrincipalAttendanceDashboard",
+  PrincipalClassDetails = "PrincipalClassDetails",
+  PrincipalAcademicYearManagement = "PrincipalAcademicYearManagement",
+  ClassManagement = "ClassManagement",
+  PrincipalClassTeachers = "PrincipalClassTeachers",
 }
 
 export type ParentChild = {
@@ -75,8 +80,13 @@ export type RootStackParamList = {
   [RootStackScreenNames.CouponList]: undefined;
   [RootStackScreenNames.AdminList]: undefined;
   [RootStackScreenNames.Principaladmin]: undefined;
+  [RootStackScreenNames.PrincipalClassDetails]:{
+    classNumber: string;
+  };
   [RootStackScreenNames.PrincipalPendingDues]: undefined;
   [RootStackScreenNames.PrincipalDefaulterStudents]: undefined;
+  [RootStackScreenNames.PrincipalAttendanceDashboard]: undefined;
+  [RootStackScreenNames.ClassManagement]: undefined;
   [RootStackScreenNames.PrincipalAdminDetails]: {
     adminId: string;
   };
@@ -97,7 +107,7 @@ export type RootStackParamList = {
   };
   [RootStackScreenNames.Payment]: { student: Student };
   [RootStackScreenNames.SplashScreen]: undefined;
-  [RootStackScreenNames.PrincipalClassStudents]: { classNumber: string };
+  [RootStackScreenNames.PrincipalClassStudents]: { Section: string };
   [RootStackScreenNames.PrincipalStudents]: undefined;
   [RootStackScreenNames.PrincipalTeachers]: undefined;
   [RootStackScreenNames.PrincipalParents]: undefined;
@@ -119,6 +129,8 @@ export type RootStackParamList = {
   schoolName: string;
 },
   [RootStackScreenNames.PlatformAdminSchoolDetails]: { schoolId: string;},
+  [RootStackScreenNames.PrincipalClassTeachers]: undefined;
+  [RootStackScreenNames.PrincipalAcademicYearManagement]: undefined;
   [RootStackScreenNames.PrincipalCreateTeacher]: undefined;
   [RootStackScreenNames.PrincipalCreateAdmin]: undefined;
   [RootStackScreenNames.PrincipalTeacherDetails]: {
