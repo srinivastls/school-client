@@ -12,4 +12,11 @@ export const Colors = {
   successBg: "#66d476",
   errorBg: "#eb5454",
   warningBg: "#FFF5E0",
+  surface: "#F5F5F5",
+  border: "#E0E0E0",
+  muted: "#7C7E8C",
+  textSecondary: "#7C7E8C",
+  textDisabled: "#B0B0B0",
+  textOnPrimary: "#FFFFFF",
+  textOnSecondary: "#FFFFFF",
 };

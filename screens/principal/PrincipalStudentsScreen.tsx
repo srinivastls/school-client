@@ -32,6 +32,8 @@ import {
 import {
   RootStackParamList,
   RootStackScreenNames,
+  Class,
+  Coupon,
 } from "../../types";
 
 import {
@@ -65,15 +67,34 @@ import {
 type Student = {
   id?: string | number;
   _id?: string;
-  name?: string;
+  name: string;
   studentName?: string;
 
-  admissionNo?: string;
+  admissionNo: string;
   admissionNumber?: string;
 
-  classNumber?: string;
+  classNumber: Class;
   class?: string;
   className?: string;
+  aadhaar: string;
+  fatherName: string;
+  dob: string;
+  doj: string;
+  academicYearId: string;
+  sectionName: string;
+  phoneNo: string;
+  tie: {amount: string; pendingAmount: string};
+  diary: {amount: string; pendingAmount: string};
+  belt: {amount: string; pendingAmount: string};
+  arrears: {amount: string; pendingAmount: string};
+  pendingAmount: string;
+  siblings: [];
+  pendingTuitionFee: string;
+  pendingTextbookFee: string;
+  pendingNotebookFee: string;
+  couponCode: Coupon;
+  tcNo: string;
+
 };
 
 
@@ -1168,11 +1189,7 @@ const PrincipalStudentsScreen = () => {
           styles.studentTouchable
         }
         onPress={() => {
-          /*
-           * Add student details navigation
-           * here if you have a student-details
-           * route.
-           */
+          navigation.navigate(RootStackScreenNames.StudentDetails, { student: item });
         }}
       >
 
@@ -1238,7 +1255,7 @@ const PrincipalStudentsScreen = () => {
                     }
                     numberOfLines={1}
                   >
-                    Class: {className}
+                    Class: {className["classNumber"] }
                   </Text>
                 ) : null}
 

@@ -548,19 +548,19 @@ const StudentDetails = () => {
         label: "Tie",
         amount:
           currentStudent.tie
-            ?.pendingAmount,
+            .pendingAmount,
       },
       {
         label: "Belt",
         amount:
           currentStudent.belt
-            ?.pendingAmount,
+            .pendingAmount,
       },
       {
         label: "Arrears",
         amount:
           currentStudent.arrears
-            ?.pendingAmount,
+            .pendingAmount,
       },
     ],
     [currentStudent]

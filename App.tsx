@@ -1,6 +1,10 @@
 import React from "react";
 
 import {
+  View,
+} from "react-native";
+
+import {
   NavigationContainer,
 } from "@react-navigation/native";
 
@@ -29,6 +33,10 @@ import {
 } from "./theme";
 
 import {
+  PlatformNavigationBar,
+} from "./components";
+
+import {
   RootStackParamList,
   RootStackScreenNames,
 } from "./types";
@@ -40,7 +48,7 @@ import { SplashScreen } from "./screens/SplashScreen";
 import { StudentDetails } from "./screens/StudentDetails";
 import { StudentRegistration } from "./screens/StudentRegistration";
 import { AdminDashboard } from "./screens/dashboards/AdminDashboard";
-import { TeacherDashboard } from "./screens/dashboards/TeacherDashboard";
+import { TeacherDashboard } from "./screens/teacher/TeacherDashboard";
 import { ParentDashboardScreen } from "./screens/dashboards/ParentDashboard";
 import { PlatformSchoolsScreen } from "./screens/platform/PlatformSchoolsScreen";
 import { PlatformAdminDashboard } from "./screens/platform/PlatformAdminDashboard";
@@ -102,6 +110,47 @@ const RootStack =
   createNativeStackNavigator<RootStackParamList>();
 
 const queryClient = new QueryClient();
+
+const withPlatformNavigation = (
+  Screen: React.ComponentType<any>
+) => {
+  const PlatformScreen = (
+    props: any
+  ) => (
+    <View style={{ flex: 1 }}>
+      <PlatformNavigationBar />
+
+      <Screen {...props} />
+    </View>
+  );
+
+  return PlatformScreen;
+};
+
+const PlatformAdminDashboardScreen =
+  withPlatformNavigation(
+    PlatformAdminDashboard
+  );
+
+const PlatformSchoolsNavigationScreen =
+  withPlatformNavigation(
+    PlatformSchoolsScreen
+  );
+
+const PlatformSchoolDetailsNavigationScreen =
+  withPlatformNavigation(
+    PlatformAdminSchoolDetails
+  );
+
+const CreateSchoolNavigationScreen =
+  withPlatformNavigation(
+    CreateSchoolScreen
+  );
+
+const CreatePrincipalNavigationScreen =
+  withPlatformNavigation(
+    CreatePrincipalScreen
+  );
 
 const theme: ThemeProp = {
   ...DefaultTheme,
@@ -341,7 +390,7 @@ export default function App() {
                 RootStackScreenNames.PlatformAdminDashboard
               }
               component={
-                PlatformAdminDashboard
+                PlatformAdminDashboardScreen
               }
               options={{
     headerShown: false,
@@ -353,7 +402,7 @@ export default function App() {
                 RootStackScreenNames.PlatformSchools
               }
               component={
-                PlatformSchoolsScreen
+                PlatformSchoolsNavigationScreen
               }
               options={{
     headerShown: false,
@@ -366,11 +415,11 @@ export default function App() {
                 RootStackScreenNames.PlatformAdminCreateSchool
               }
               component={
-                CreateSchoolScreen
+                CreateSchoolNavigationScreen
               }
-  //             options={{
-  //   headerShown: false,
-  // }}
+              options={{
+                headerShown: false,
+              }}
             />
 
             <RootStack.Screen
@@ -408,7 +457,7 @@ export default function App() {
                 RootStackScreenNames.PlatformAdminSchoolDetails
               }
               component={
-                PlatformAdminSchoolDetails
+                PlatformSchoolDetailsNavigationScreen
               }
               options={{
     headerShown: false,
@@ -419,8 +468,8 @@ export default function App() {
             name={
               RootStackScreenNames.PlatformAdminCreatePrincipal
             }
-            component={
-              CreatePrincipalScreen
+              component={
+                CreatePrincipalNavigationScreen
             }
             options={{
               headerTitle: "Create Principal",headerShown: false,

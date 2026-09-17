@@ -9,3 +9,4 @@ export * from "./MonthDropdown";
 export * from "./StudentDetailsCard";
 export * from "./SiblingsForm";
 export * from "./PaymentForm";
+export * from "./PlatformNavigationBar";
