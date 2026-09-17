@@ -106,6 +106,18 @@ import { PrincipalClassDetailsScreen } from "./screens/principal/ClassDetailsScr
 import { AcademicYearManagementScreen } from "./screens/principal/AcademicYearManagementScreen";
 import ClassManagementScreen from "./screens/principal/ClassManagementScreen";
 import { PrincipalClassTeachersScreen } from "./screens/principal/PrincipalClassTeachersScreen";
+import {TeacherMyClassesScreen} from "./screens/teacher/TeacherMyClassesScreen";
+import { TeacherSectionDetailsScreen } from "./screens/teacher/TeacherSectionDetailsScreen";
+import { TeacherSectionStudentsScreen } from "./screens/teacher/TeacherSectionStudentsScreen";
+import TeacherSectionAttendanceScreen from "./screens/teacher/TeacherSectionAttendanceScreen";
+import TeacherStudentAttendanceHistoryScreen from "./screens/teacher/TeacherStudentAttendanceHistoryScreen";
+import TeacherMyStudentsScreen from "./screens/teacher/TeacherMyStudentsScreen";
+import TeacherMarksEntryScreen from "./screens/teacher/TeacherMarksEntryScreen";
+import TeacherMyAttendanceScreen from "./screens/teacher/TeacherMyAttendanceScreen";
+import TeacherLeaveScreen from "./screens/teacher/TeacherLeaveScreen";
+import TeacherProfileScreen from "./screens/teacher/TeacherProfileScreen";
+import TeacherTimetableScreen from "./screens/teacher/TeacherTimetableScreen";
+import TeacherAttendanceScreen from "./screens/teacher/TeacherAttendanceScreen";
 const RootStack =
   createNativeStackNavigator<RootStackParamList>();
 
@@ -259,6 +271,83 @@ export default function App() {
                 headerTitle: "Teachers",
               }}
             />
+
+            <RootStack.Screen
+  name={RootStackScreenNames.TeacherMyClasses}
+  component={TeacherMyClassesScreen}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherSectionDetails}
+  component={TeacherSectionDetailsScreen}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherSectionStudents}
+  component={
+    TeacherSectionStudentsScreen
+  }
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherSectionAttendance}
+  component={
+    TeacherSectionAttendanceScreen
+  }
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherStudentAttendanceHistory}
+  component={TeacherStudentAttendanceHistoryScreen}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherMyStudents}
+  component={TeacherMyStudentsScreen}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherMarksEntry}
+  component={TeacherMarksEntryScreen}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherMyAttendance}
+  component={TeacherMyAttendanceScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherLeave}
+  component={TeacherLeaveScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherProfile}
+  component={TeacherProfileScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherTimetable}
+  component={TeacherTimetableScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+name={RootStackScreenNames.TeacherAttendance}
+  component={TeacherAttendanceScreen}
+/>
 
             <RootStack.Screen
               name={

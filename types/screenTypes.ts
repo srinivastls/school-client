@@ -51,6 +51,19 @@ export enum RootStackScreenNames {
   PrincipalAcademicYearManagement = "PrincipalAcademicYearManagement",
   ClassManagement = "ClassManagement",
   PrincipalClassTeachers = "PrincipalClassTeachers",
+  TeacherTimetable = "TeacherTimetable",
+  TeacherProfile = "TeacherProfile",
+  TeacherMyClasses= "TeacherMyClasses",
+  TeacherMyStudents = "TeacherMyStudents",
+  TeacherClassDetails = "TeacherClassDetails",
+  TeacherSectionDetails = "TeacherSectionDetails",
+  TeacherSectionStudents = "TeacherSectionStudents",
+  TeacherSectionAttendance = "TeacherSectionAttendance",
+  TeacherStudentAttendanceHistory = "TeacherStudentAttendanceHistory",
+  TeacherMarksEntry = "TeacherMarksEntry",
+  TeacherMyAttendance = "TeacherMyAttendance",
+  TeacherLeave = "TeacherLeave",
+  TeacherAttendance = "TeacherAttendance",
 }
 
 export type ParentChild = {
@@ -87,6 +100,43 @@ export type RootStackParamList = {
   [RootStackScreenNames.PrincipalDefaulterStudents]: undefined;
   [RootStackScreenNames.PrincipalAttendanceDashboard]: undefined;
   [RootStackScreenNames.ClassManagement]: undefined;
+  [RootStackScreenNames.TeacherMyClasses]: undefined;
+  [RootStackScreenNames.TeacherSectionDetails]: {
+  sectionId: string;
+  classId: string;
+  classNumber?: string;
+  sectionName?: string;
+};
+[RootStackScreenNames.TeacherMyAttendance]: undefined;
+[RootStackScreenNames.TeacherMarksEntry]: undefined;
+[RootStackScreenNames.TeacherMyStudents]: undefined;
+[RootStackScreenNames.TeacherTimetable]: undefined;
+[RootStackScreenNames.TeacherAttendance]: undefined;
+[RootStackScreenNames.TeacherStudentAttendanceHistory]: {
+  studentId: string;
+  sectionId: string;
+  classId: string;
+  classNumber?: string;
+  sectionName?: string;
+  studentName?: string;
+};
+[RootStackScreenNames.TeacherLeave]: undefined;
+[RootStackScreenNames.TeacherProfile]: undefined;
+[RootStackScreenNames.TeacherSectionAttendance]: {
+  sectionId: string;
+  classId: string;
+  classNumber?: string;
+  sectionName?: string;
+};
+[RootStackScreenNames.TeacherSectionStudents]: {
+  sectionId: string;
+  classId: string;
+  classNumber?: string;
+  sectionName?: string;
+};
+  [RootStackScreenNames.TeacherClassDetails]: {
+    classId: string;
+  };
   [RootStackScreenNames.PrincipalAdminDetails]: {
     adminId: string;
   };
