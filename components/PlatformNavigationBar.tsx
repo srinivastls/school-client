@@ -1,15 +1,19 @@
 import React from "react";
 
 import {
+  Modal,
+  Pressable,
+  Platform,
   StyleSheet,
+  TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
 
 import {
   Avatar,
+  Divider,
   IconButton,
-  Menu,
   Text,
   TouchableRipple,
 } from "react-native-paper";
@@ -198,57 +202,160 @@ const PlatformNavigationBar = () => {
           );
         })}
 
-        <Menu
-          visible={profileMenuVisible}
-          onDismiss={() =>
-            setProfileMenuVisible(false)
-          }
-          anchor={
-            <TouchableRipple
-              borderless
-              onPress={() =>
-                setProfileMenuVisible(true)
-              }
-              style={styles.profileButton}
+        <TouchableRipple
+  borderless
+  onPress={() =>
+    setProfileMenuVisible(true)
+  }
+  style={styles.profileButton}
+>
+  <View style={styles.profileContent}>
+    <Avatar.Text
+      label={initials}
+      size={32}
+      style={styles.profileAvatar}
+    />
+
+    {!isCompact && (
+      <Text
+        numberOfLines={1}
+        style={styles.profileName}
+      >
+        {user?.name ?? "Platform Admin"}
+      </Text>
+    )}
+
+    <IconButton
+      icon="chevron-down"
+      size={18}
+      iconColor={Colors.subtext}
+      style={styles.profileChevron}
+    />
+  </View>
+</TouchableRipple>
+
+{profileMenuVisible && (
+  <Modal
+    visible={profileMenuVisible}
+    transparent
+    animationType="fade"
+    statusBarTranslucent
+    onRequestClose={() => {
+      setProfileMenuVisible(false);
+    }}
+  >
+    <Pressable
+      style={styles.modalOverlay}
+      onPress={() => {
+        setProfileMenuVisible(false);
+      }}
+    >
+      <View
+        style={[
+          styles.profileDropdown,
+          isCompact
+            ? styles.profileDropdownMobile
+            : styles.profileDropdownDesktop,
+        ]}
+      >
+        <View style={styles.dropdownProfileHeader}>
+          <Avatar.Text
+            size={46}
+            label={initials}
+            color="#FFFFFF"
+            style={styles.dropdownAvatar}
+          />
+
+          <View style={styles.dropdownUserInfo}>
+            <Text
+              style={styles.dropdownUserName}
+              numberOfLines={1}
             >
-              <View style={styles.profileContent}>
-                <Avatar.Text
-                  label={initials}
-                  size={32}
-                  style={styles.profileAvatar}
-                />
+              {user?.name ?? "Platform Administrator"}
+            </Text>
 
-                {!isCompact && (
-                  <Text
-                    numberOfLines={1}
-                    style={styles.profileName}
-                  >
-                    {user?.name ??
-                      "Platform Admin"}
-                  </Text>
-                )}
+            <Text
+              style={styles.dropdownUserEmail}
+              numberOfLines={1}
+            >
+              {user?.email ?? "Platform Administrator"}
+            </Text>
 
-                <IconButton
-                  icon="chevron-down"
-                  size={18}
-                  iconColor={Colors.subtext}
-                  style={styles.profileChevron}
-                />
-              </View>
-            </TouchableRipple>
-          }
+            <Text style={styles.dropdownUserRole}>
+              Platform Administrator
+            </Text>
+          </View>
+        </View>
+
+        <Divider style={styles.dropdownDivider} />
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.dropdownItem}
+          onPress={() => {
+            setProfileMenuVisible(false);
+          }}
         >
-          <Menu.Item
-            leadingIcon="account-circle-outline"
-            title="Platform administrator"
-            disabled
-          />
-          <Menu.Item
-            leadingIcon="logout"
-            title="Sign out"
-            onPress={handleLogout}
-          />
-        </Menu>
+          <View style={styles.dropdownIconContainer}>
+            <Text style={styles.dropdownIcon}>
+              👤
+            </Text>
+          </View>
+
+          <View style={styles.dropdownItemTextContainer}>
+            <Text style={styles.dropdownItemTitle}>
+              Profile
+            </Text>
+
+            <Text style={styles.dropdownItemSubtitle}>
+              View administrator profile
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={[
+            styles.dropdownItem,
+            styles.logoutItem,
+          ]}
+          onPress={handleLogout}
+        >
+          <View
+            style={[
+              styles.dropdownIconContainer,
+              styles.logoutIconContainer,
+            ]}
+          >
+            <Text
+              style={[
+                styles.dropdownIcon,
+                styles.logoutIcon,
+              ]}
+            >
+              ↪
+            </Text>
+          </View>
+
+          <View style={styles.dropdownItemTextContainer}>
+            <Text
+              style={[
+                styles.dropdownItemTitle,
+                styles.logoutTitle,
+              ]}
+            >
+              Logout
+            </Text>
+
+            <Text style={styles.dropdownItemSubtitle}>
+              Sign out of this account
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    </Pressable>
+  </Modal>
+)}
       </View>
     </View>
   );
@@ -264,7 +371,132 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#E8E8EE",
+    marginTop: Platform.OS === "web" ? 0 : 50,
   },
+modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0, 0, 0, 0.15)",
+},
+
+profileDropdown: {
+  position: "absolute",
+  backgroundColor: "#FFFFFF",
+  borderRadius: 14,
+  paddingVertical: Metrics.x2,
+  elevation: 8,
+  shadowColor: "#000000",
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.15,
+  shadowRadius: 12,
+},
+
+profileDropdownDesktop: {
+  top: 68,
+  right: Metrics.x3,
+  width: 310,
+},
+
+profileDropdownMobile: {
+  top: 64,
+  left: Metrics.x2,
+  right: Metrics.x2,
+},
+
+dropdownProfileHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: Metrics.x3,
+  paddingVertical: Metrics.x2,
+},
+
+dropdownAvatar: {
+  backgroundColor: Colors.brandPrimary,
+},
+
+dropdownUserInfo: {
+  flex: 1,
+  marginLeft: Metrics.x2,
+},
+
+dropdownUserName: {
+  fontSize: 14,
+  fontWeight: "800",
+  color: "#25252A",
+},
+
+dropdownUserEmail: {
+  marginTop: 2,
+  fontSize: 12,
+  color: Colors.subtext,
+},
+
+dropdownUserRole: {
+  marginTop: 3,
+  fontSize: 11,
+  fontWeight: "700",
+  color: Colors.brandPrimary,
+},
+
+dropdownDivider: {
+  marginVertical: Metrics.x1,
+},
+
+dropdownItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: Metrics.x3,
+  paddingVertical: Metrics.x2,
+},
+
+dropdownIconContainer: {
+  width: 38,
+  height: 38,
+  borderRadius: 10,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: Colors.brandPrimaryBg,
+},
+
+dropdownIcon: {
+  fontSize: 18,
+},
+
+dropdownItemTextContainer: {
+  flex: 1,
+  marginLeft: Metrics.x2,
+},
+
+dropdownItemTitle: {
+  fontSize: 13,
+  fontWeight: "800",
+  color: "#25252A",
+},
+
+dropdownItemSubtitle: {
+  marginTop: 2,
+  fontSize: 11,
+  color: Colors.subtext,
+},
+
+logoutItem: {
+  marginTop: Metrics.x1,
+},
+
+logoutIconContainer: {
+  backgroundColor: "#FDECEC",
+},
+
+logoutIcon: {
+  color: "#D64545",
+},
+
+logoutTitle: {
+  color: "#D64545",
+},
+  
 
   brand: {
     flexDirection: "row",
