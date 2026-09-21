@@ -45,7 +45,9 @@ import {
   useUserStore,
 } from "../../store";
 
-
+import {
+  academicYearServices,
+} from "../../services/academicYearServices";
 /* ============================================================================
    TYPES
 ============================================================================ */
@@ -86,23 +88,52 @@ const PrincipalClassesScreen = () => {
   );
 
 
+  const {
+  data: academicYear,
+  isLoading: isAcademicYearLoading,
+  isError: isAcademicYearError,
+} = useQuery(
+  [
+    "current-academic-year",
+  ],
+  () =>
+    academicYearServices.getCurrentAcademicYear()
+);
+  const academicYearId =
+  academicYear?.id;
+
+  console.log(
+    "ACADEMIC YEAR ID:",
+    academicYearId
+  );
+
+
   /* ==========================================================================
      API
   ========================================================================== */
 
+  
+
   const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useQuery(
-    [
-      "principal-class-student-counts",
-    ],
-    () => studentServices.getClassStudentCounts()
-  );
+  data,
+  isLoading,
+  isFetching,
+  isError,
+  error,
+  refetch,
+} = useQuery(
+  [
+    "principal-class-student-counts",
+    academicYearId,
+  ],
+  () =>
+    studentServices.getClassStudentCounts(
+      academicYearId as string
+    ),
+  {
+    enabled: Boolean(academicYearId),
+  }
+);
 
 
   /* ==========================================================================

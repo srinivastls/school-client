@@ -22,6 +22,9 @@ import {
   Divider,
 } from "react-native-paper";
 
+
+import { StyleSheet } from "react-native";
+
 import {
   useNavigation,
 } from "@react-navigation/native";

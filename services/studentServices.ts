@@ -364,17 +364,17 @@ const editStudent = async (
 
 const getClassStudentCounts =
   async (
-    // academicYearId?: string
+    academicYearId?: string
   ): Promise<ClassStudentCountsResponse> => {
 
     const { data } =
       await api.get<ClassStudentCountsResponse>(
         endpoints.classCounts,
-        // {
-        //   params: {
-        //     academicYearId,
-        //   },
-        // }
+        {
+          params: {
+            academicYearId,
+          },
+        }
       );
 
     return data;

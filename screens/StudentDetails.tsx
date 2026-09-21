@@ -517,54 +517,44 @@ const StudentDetails = () => {
      FEE VALUES
   ========================================================================== */
 
-  const feeRows = useMemo(
-    () => [
-      {
-        label: "Tuition Fee",
-        amount:
-          currentStudent
-            .pendingTuitionFee,
-      },
-      {
-        label: "Textbook Fee",
-        amount:
-          currentStudent
-            .pendingTextbookFee,
-      },
-      {
-        label: "Notebook Fee",
-        amount:
-          currentStudent
-            .pendingNotebookFee,
-      },
-      {
-        label: "Diary",
-        amount:
-          // @ts-ignore
-          currentStudent.diary
-            .pendingAmount,
-      },
-      {
-        label: "Tie",
-        amount:
-          currentStudent.tie
-            .pendingAmount,
-      },
-      {
-        label: "Belt",
-        amount:
-          currentStudent.belt
-            .pendingAmount,
-      },
-      {
-        label: "Arrears",
-        amount:
-          currentStudent.arrears
-            .pendingAmount,
-      },
-    ],
-    [currentStudent]
-  );
+  
+/* ==========================================================================
+   FEE VALUES
+========================================================================== */
+
+const feeRows = useMemo(
+  () => [
+    {
+      label: "Tuition Fee",
+      amount: currentStudent.pendingTuitionFee,
+    },
+    {
+      label: "Textbook Fee",
+      amount: currentStudent.pendingTextbookFee,
+    },
+    {
+      label: "Notebook Fee",
+      amount: currentStudent.pendingNotebookFee,
+    },
+    {
+      label: "Diary",
+      amount: currentStudent.diary?.pendingAmount ?? "0",
+    },
+    {
+      label: "Tie",
+      amount: currentStudent.tie?.pendingAmount ?? "0",
+    },
+    {
+      label: "Belt",
+      amount: currentStudent.belt?.pendingAmount ?? "0",
+    },
+    {
+      label: "Arrears",
+      amount: currentStudent.arrears?.pendingAmount ?? "0",
+    },
+  ],
+  [currentStudent]
+);
 
 
   /* ==========================================================================

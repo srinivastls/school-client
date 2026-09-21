@@ -2694,13 +2694,27 @@ type SectionStudentsResponse = {
 };
 
 
-/* ============================================================
-   SCREEN
-============================================================ */
+// type PrincipalClassStudentsScreenProps = {
+//   route: {
+//     params: {
+//       sectionId: string;
+//     };
+//   };
+// };
 
 const PrincipalClassStudentsScreen = ({
   route,
 }: PrincipalClassStudentsScreenProps) => {
+  const { sectionId } = route.params;
+
+
+/* ============================================================
+   SCREEN
+============================================================ */
+
+// const PrincipalClassStudentsScreen = ({
+//   route,
+// }: PrincipalClassStudentsScreenProps) => {
 
   const styles = useStyles();
 
@@ -2742,11 +2756,10 @@ const PrincipalClassStudentsScreen = ({
         : Metrics.x6;
 
 
-  /* ==========================================================
-     ROUTE
-  ========================================================== */
+    console.log("SECTION ID:", sectionId
+  );
 
-  const { Section } = route.params;
+
 
 
   /* ==========================================================
@@ -2856,18 +2869,18 @@ const PrincipalClassStudentsScreen = ({
   >(
     [
       "principal-section-students",
-      Section,
+      sectionId,
     ],
 
     () =>
       sectionServices
         .getStudentsBySection(
-          Section
+          sectionId
         ),
 
     {
       enabled:
-        !!Section,
+        !!sectionId,
 
       retry: 1,
     }

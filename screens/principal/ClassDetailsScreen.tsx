@@ -410,7 +410,7 @@ const PrincipalClassDetailsScreen = ({
     navigation.navigate(
       RootStackScreenNames.PrincipalClassStudents,
       {
-        Section: sectionId,
+        sectionId: sectionId,
       }
     );
   };

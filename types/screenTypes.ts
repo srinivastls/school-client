@@ -157,7 +157,7 @@ export type RootStackParamList = {
   };
   [RootStackScreenNames.Payment]: { student: Student };
   [RootStackScreenNames.SplashScreen]: undefined;
-  [RootStackScreenNames.PrincipalClassStudents]: { Section: string };
+  [RootStackScreenNames.PrincipalClassStudents]: { sectionId: string};
   [RootStackScreenNames.PrincipalStudents]: undefined;
   [RootStackScreenNames.PrincipalTeachers]: undefined;
   [RootStackScreenNames.PrincipalParents]: undefined;
