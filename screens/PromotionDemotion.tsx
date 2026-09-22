@@ -76,7 +76,7 @@ const PromotionDemotion = () => {
     isFetching: loadingCounts,
   } = useQuery(
     ["principal-class-student-counts"],
-    studentServices.getClassStudentCounts
+    () => studentServices.getClassStudentCounts()
   );
 
   /*

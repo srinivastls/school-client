@@ -64,6 +64,19 @@ export enum RootStackScreenNames {
   TeacherMyAttendance = "TeacherMyAttendance",
   TeacherLeave = "TeacherLeave",
   TeacherAttendance = "TeacherAttendance",
+  // Admin Module
+AdminFeatureMenu = "AdminFeatureMenu",
+
+AdminStudentManagement = "AdminStudentManagement",
+AdminStudentRegistration = "AdminStudentRegistration",
+AdminStudentDetails = "AdminStudentDetails",
+AdminStudentEdit = "AdminStudentEdit",
+AdminFinanceManagement = "AdminFinanceManagement",
+AdminStaffManagement = "AdminStaffManagement",
+AdminAttendanceCalendar = "AdminAttendanceCalendar",
+AdminCommunication = "AdminCommunication",
+AdminSchoolSettings = "AdminSchoolSettings",
+AdminReports = "AdminReports",
 }
 
 export type ParentChild = {
@@ -101,6 +114,10 @@ export type RootStackParamList = {
   [RootStackScreenNames.PrincipalAttendanceDashboard]: undefined;
   [RootStackScreenNames.ClassManagement]: undefined;
   [RootStackScreenNames.TeacherMyClasses]: undefined;
+  [RootStackScreenNames.AdminStudentRegistration]: undefined;
+  [RootStackScreenNames.AdminStudentDetails]: {
+    admissionNo: string;
+  };
   [RootStackScreenNames.TeacherSectionDetails]: {
   sectionId: string;
   classId: string;
@@ -112,6 +129,27 @@ export type RootStackParamList = {
 [RootStackScreenNames.TeacherMyStudents]: undefined;
 [RootStackScreenNames.TeacherTimetable]: undefined;
 [RootStackScreenNames.TeacherAttendance]: undefined;
+[RootStackScreenNames.AdminFeatureMenu]: undefined;
+
+[RootStackScreenNames.AdminStudentManagement]: undefined;
+
+[RootStackScreenNames.AdminFinanceManagement]: undefined;
+
+[RootStackScreenNames.AdminStaffManagement]: undefined;
+
+[RootStackScreenNames.AdminAttendanceCalendar]: undefined;
+
+[RootStackScreenNames.AdminCommunication]: undefined;
+
+[RootStackScreenNames.AdminSchoolSettings]: undefined;
+
+[RootStackScreenNames.AdminReports]: undefined;
+[RootStackScreenNames.AdminStudentDetails]: {
+  admissionNo: string;
+};
+[RootStackScreenNames.AdminStudentEdit]: {
+  admissionNo: string;
+};
 [RootStackScreenNames.TeacherStudentAttendanceHistory]: {
   studentId: string;
   sectionId: string;

@@ -45,6 +45,19 @@ import { LoginScreen } from "./screens/LoginScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { SplashScreen } from "./screens/SplashScreen";
 
+import { AdminFeatureMenu } from "./screens/admin/AdminFeatureMenuScreen";
+import { AdminStudentManagement } from "./screens/admin/AdminStudentManagement";
+import { AdminStudentRegistration } from "./screens/admin/AdminStudentRegistration";
+import { AdminStudentEdit } from "./screens/admin/AdminStudentEdit";
+import { AdminStudentDetails } from "./screens/admin/AdminStudentDetails";
+
+import { AdminFinanceManagement } from "./screens/admin/AdminFinanceManagement";
+import { AdminStaffManagement } from "./screens/admin/AdminStaffManagement";
+import { AdminAttendanceCalendar } from "./screens/admin/AdminAttendanceCalendar";
+import { AdminCommunication } from "./screens/admin/AdminCommunication";
+import { AdminSchoolSettings } from "./screens/admin/AdminSchoolSettings";
+import { AdminReports } from "./screens/admin/AdminReports";
+
 import { StudentDetails } from "./screens/StudentDetails";
 import { StudentRegistration } from "./screens/StudentRegistration";
 import { AdminDashboard } from "./screens/admin/AdminDashboard";
@@ -421,6 +434,86 @@ name={RootStackScreenNames.TeacherAttendance}
               }}
             />
 
+            <RootStack.Screen
+  name={RootStackScreenNames.AdminFeatureMenu}
+  component={AdminFeatureMenu}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminStudentDetails}
+  component={AdminStudentDetails}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminStudentEdit}
+  component={AdminStudentEdit}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminStudentManagement}
+  component={AdminStudentManagement}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminFinanceManagement}
+  component={AdminFinanceManagement}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminStaffManagement}
+  component={AdminStaffManagement}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminAttendanceCalendar}
+  component={AdminAttendanceCalendar}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminCommunication}
+  component={AdminCommunication}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminSchoolSettings}
+  component={AdminSchoolSettings}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminReports}
+  component={AdminReports}
+  options={{
+    headerShown: false,
+  }}
+/>
+
             {/* ⭐ ACADEMICS ⭐ */}
 
             <RootStack.Screen
@@ -436,13 +529,6 @@ name={RootStackScreenNames.TeacherAttendance}
             <RootStack.Screen
               name={RootStackScreenNames.StudentDetails}
               component={StudentDetails}
-            />
-
-            <RootStack.Screen
-              name={
-                RootStackScreenNames.StudentRegistration
-              }
-              component={StudentRegistration}
             />
 
             <RootStack.Screen
@@ -654,6 +740,15 @@ name={RootStackScreenNames.TeacherAttendance}
   }
   component={
     Invoice
+  }
+/>
+
+<RootStack.Screen
+  name={
+    RootStackScreenNames.StudentRegistration
+  }
+  component={
+    AdminStudentRegistration
   }
 />
 
