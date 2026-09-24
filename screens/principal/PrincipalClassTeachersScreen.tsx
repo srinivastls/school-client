@@ -247,7 +247,7 @@ const PrincipalClassTeachersScreen = () => {
     );
   }
 
-  if (user.role !== "PRINCIPAL") {
+  if (user.role !== "PRINCIPAL" && user.role !== "ADMIN") {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>

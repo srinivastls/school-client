@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   View,
@@ -6,6 +6,7 @@ import {
 
 import {
   NavigationContainer,
+  createNavigationContainerRef,
 } from "@react-navigation/native";
 
 import {
@@ -32,9 +33,7 @@ import {
   Colors,
 } from "./theme";
 
-import {
-  PlatformNavigationBar,
-} from "./components";
+import { ModuleNavigationBar } from "./components/ModuleNavigationBar";
 
 import {
   RootStackParamList,
@@ -94,7 +93,7 @@ import {
 import {
   PrincipalFinanceScreen,
 } from "./screens/principal/PrincipalFinanceScreen";
-
+import ProfileScreen from "./screens/ProfileScreen";
 import {
   PrincipalAcademicsScreen,
 } from "./screens/principal/PrincipalAcademicsScreen";
@@ -131,51 +130,17 @@ import TeacherLeaveScreen from "./screens/teacher/TeacherLeaveScreen";
 import TeacherProfileScreen from "./screens/teacher/TeacherProfileScreen";
 import TeacherTimetableScreen from "./screens/teacher/TeacherTimetableScreen";
 import TeacherAttendanceScreen from "./screens/teacher/TeacherAttendanceScreen";
+import { PrincipalDefaultersScreen } from "./screens/principal/PrincipalDefaultersScreen";
+import AdminLeaveApprovals from "./screens/admin/AdminLeaveApprovals";
+import AdminTeacherAttendance from "./screens/admin/AdminTeacherAttendance";
+import { PromotionDemotion } from "./screens";
+import SectionManagementScreen from "./screens/SectionManagementScreen";
 const RootStack =
   createNativeStackNavigator<RootStackParamList>();
 
 const queryClient = new QueryClient();
 
-const withPlatformNavigation = (
-  Screen: React.ComponentType<any>
-) => {
-  const PlatformScreen = (
-    props: any
-  ) => (
-    <View style={{ flex: 1 }}>
-      <PlatformNavigationBar />
-
-      <Screen {...props} />
-    </View>
-  );
-
-  return PlatformScreen;
-};
-
-const PlatformAdminDashboardScreen =
-  withPlatformNavigation(
-    PlatformAdminDashboard
-  );
-
-const PlatformSchoolsNavigationScreen =
-  withPlatformNavigation(
-    PlatformSchoolsScreen
-  );
-
-const PlatformSchoolDetailsNavigationScreen =
-  withPlatformNavigation(
-    PlatformAdminSchoolDetails
-  );
-
-const CreateSchoolNavigationScreen =
-  withPlatformNavigation(
-    CreateSchoolScreen
-  );
-
-const CreatePrincipalNavigationScreen =
-  withPlatformNavigation(
-    CreatePrincipalScreen
-  );
+const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 const theme: ThemeProp = {
   ...DefaultTheme,
@@ -191,9 +156,8 @@ const theme: ThemeProp = {
 };
 
 export default function App() {
-  console.log(
-    "🔥 APP: PrincipalFinance route registered"
-  );
+  const [activeRoute, setActiveRoute] = useState<string>(RootStackScreenNames.SplashScreen);
+
 
   return (
     <PaperProvider theme={theme}>
@@ -202,7 +166,14 @@ export default function App() {
 
       <QueryClientProvider client={queryClient}>
 
-        <NavigationContainer>
+        <NavigationContainer
+          ref={navigationRef}
+          onReady={() => setActiveRoute(navigationRef.getCurrentRoute()?.name ?? RootStackScreenNames.SplashScreen)}
+          onStateChange={() => setActiveRoute(navigationRef.getCurrentRoute()?.name ?? RootStackScreenNames.SplashScreen)}
+        >
+
+          <View style={{ flex: 1 }}>
+            <ModuleNavigationBar activeRoute={activeRoute} navigationRef={navigationRef} />
 
           <RootStack.Navigator
             initialRouteName={
@@ -210,6 +181,7 @@ export default function App() {
             }
             screenOptions={{
               animation: "fade",
+              headerShown: false,
 
               headerStyle: {
                 backgroundColor:
@@ -260,6 +232,16 @@ export default function App() {
               component={HomeScreen}
               options={{
                 headerShown: false,
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.PromotionDemotion}
+              component={
+                PromotionDemotion
+              }
+              options={{
+                headerTitle: "Promotion/Demotion",
               }}
             />
 
@@ -362,6 +344,16 @@ name={RootStackScreenNames.TeacherAttendance}
   component={TeacherAttendanceScreen}
 />
 
+<RootStack.Screen
+  name={RootStackScreenNames.AdminTeacherAttendance}
+  component={AdminTeacherAttendance}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.AdminLeaveApprovals}
+  component={AdminLeaveApprovals}
+/>
+
             <RootStack.Screen
               name={
                 RootStackScreenNames.PrincipalParents
@@ -403,6 +395,14 @@ name={RootStackScreenNames.TeacherAttendance}
             />
 
             <RootStack.Screen
+             name={ RootStackScreenNames.ProfileScreen}
+             component={ProfileScreen}
+             options={{
+               headerShown: false,
+             }}
+            />
+
+            <RootStack.Screen
               name={
                 RootStackScreenNames.PrincipalAcademicYearManagement
               }
@@ -431,6 +431,16 @@ name={RootStackScreenNames.TeacherAttendance}
               component={PrincipalFinanceScreen}
               options={{
                 headerTitle: "Finance Dashboard",
+              }}
+            />
+
+            <RootStack.Screen
+              name={
+                RootStackScreenNames.SectionManagement
+              }
+              component={SectionManagementScreen}
+              options={{
+                headerTitle: "Section Management",
               }}
             />
 
@@ -565,7 +575,7 @@ name={RootStackScreenNames.TeacherAttendance}
                 RootStackScreenNames.PlatformAdminDashboard
               }
               component={
-                PlatformAdminDashboardScreen
+                PlatformAdminDashboard
               }
               options={{
     headerShown: false,
@@ -577,7 +587,7 @@ name={RootStackScreenNames.TeacherAttendance}
                 RootStackScreenNames.PlatformSchools
               }
               component={
-                PlatformSchoolsNavigationScreen
+                PlatformSchoolsScreen
               }
               options={{
     headerShown: false,
@@ -590,7 +600,7 @@ name={RootStackScreenNames.TeacherAttendance}
                 RootStackScreenNames.PlatformAdminCreateSchool
               }
               component={
-                CreateSchoolNavigationScreen
+                CreateSchoolScreen
               }
               options={{
                 headerShown: false,
@@ -632,7 +642,7 @@ name={RootStackScreenNames.TeacherAttendance}
                 RootStackScreenNames.PlatformAdminSchoolDetails
               }
               component={
-                PlatformSchoolDetailsNavigationScreen
+                PlatformAdminSchoolDetails
               }
               options={{
     headerShown: false,
@@ -644,7 +654,7 @@ name={RootStackScreenNames.TeacherAttendance}
               RootStackScreenNames.PlatformAdminCreatePrincipal
             }
               component={
-                CreatePrincipalNavigationScreen
+                CreatePrincipalScreen
             }
             options={{
               headerTitle: "Create Principal",headerShown: false,
@@ -745,7 +755,7 @@ name={RootStackScreenNames.TeacherAttendance}
 
 <RootStack.Screen
   name={
-    RootStackScreenNames.StudentRegistration
+    RootStackScreenNames.AdminStudentRegistration
   }
   component={
     AdminStudentRegistration
@@ -766,7 +776,7 @@ name={RootStackScreenNames.TeacherAttendance}
     RootStackScreenNames.PrincipalDefaulterStudents
   }
   component={
-    PrincipalPendingDuesScreen
+    PrincipalDefaultersScreen
   }
 />
 
@@ -782,6 +792,8 @@ name={RootStackScreenNames.TeacherAttendance}
 
 
           </RootStack.Navigator>
+
+          </View>
 
         </NavigationContainer>
 

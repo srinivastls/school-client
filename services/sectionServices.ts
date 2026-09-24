@@ -196,6 +196,9 @@ const endpoints = {
   createSection:
     "/section/create",
 
+  deleteSection:
+    "/section/delete",
+
   getStudentsBySection:
     "/section/students",
 
@@ -223,22 +226,6 @@ const getSectionsByClass = async (
 
   return data;
 };
-
-// const getClassTeacherAssignments = async (
-//   academicYearId: string
-// ): Promise<GetSectionsByClassResponse> => {
-//   const { data } =
-//     await api.get<GetSectionsByClassResponse>(
-//       endpoints.getClassTeacherAssignments,
-//       {
-//         params: {
-//           academicYearId,
-//         },
-//       }
-//     );
-
-//   return data;
-// };
 
 
 const getClassTeacherAssignments = async (
@@ -306,6 +293,23 @@ const createSection = async (
   return data;
 };
 
+
+const deleteSection = async (
+  sectionId: string
+): Promise<{ message: string }> => {
+  const { data } =
+    await api.delete<{ message: string }>(
+      endpoints.deleteSection,
+      {
+        params: {
+          sectionId,
+        },
+      }
+    );
+
+  return data;
+};
+
 /* ============================================================
    REMOVE CLASS TEACHER
 ============================================================ */
@@ -313,11 +317,12 @@ const createSection = async (
 const removeClassTeacher = async (
   payload: RemoveClassTeacherRequest
 ): Promise<RemoveClassTeacherResponse> => {
-
   const { data } =
-    await api.post<RemoveClassTeacherResponse>(
+    await api.delete<RemoveClassTeacherResponse>(
       endpoints.removeTeacher,
-      payload
+      {
+        data: payload,
+      }
     );
 
   return data;
@@ -389,6 +394,8 @@ export const sectionServices = {
   getSectionsByClass,
   
   createSection,
+
+  deleteSection,
 
   copySectionsToAcademicYear,
 

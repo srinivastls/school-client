@@ -19,6 +19,8 @@ import { useNavigation } from "@react-navigation/native";
 
 import { adminServices } from "../../services/adminServices";
 import { RootStackScreenNames } from "../../types";
+import { DashboardModuleCard } from "./DashboardModuleCard";
+import { CommonScreens } from "../../navigation/modules";
 
 type DashboardData = Awaited<
   ReturnType<typeof adminServices.getDashboard>
@@ -160,6 +162,131 @@ const AttendanceRow = ({
   );
 };
 
+
+type DashboardModule = {
+  title: string;
+  icon: string;
+  accentColor: string;
+  route: RootStackScreenNames;
+};
+
+const DASHBOARD_MODULES: DashboardModule[] = [
+
+  {
+    title: "Fee Collection",
+    icon: "▤",
+    accentColor: "#15803D",
+    route: CommonScreens.feeCollection,
+  },
+
+  {
+    title: "Academics",
+    icon: "▤",
+    accentColor: "#0F766E",
+    route: CommonScreens.academics,
+  },
+  {
+    title: "Students",
+    icon: "♙",
+    accentColor: "#6622E3",
+    route: CommonScreens.students,
+  },
+  {
+    title: "Add Student",
+    icon: "+",
+    accentColor: "#1D4ED8",
+    route: RootStackScreenNames.StudentRegistrationForm,
+  },
+  {
+    title: "Teachers",
+    icon: "♟",
+    accentColor: "#2563EB",
+    route: CommonScreens.teachers,
+  },
+  {
+    title: "Add Teacher",
+    icon: "+",
+    accentColor: "#1D4ED8",
+    route: CommonScreens.createTeacher,
+  },
+  {
+    title: "Teacher Attendance",
+    icon: "▣",
+    accentColor: "#C26A09",
+    route: RootStackScreenNames.AdminTeacherAttendance,
+  },
+  {
+    title: "Leave Approvals",
+    icon: "📝",
+    accentColor: "#1D4ED8",
+    route: RootStackScreenNames.AdminLeaveApprovals,
+  },
+  {
+    title: "Class Teachers",
+    icon: "◉",
+    accentColor: "#B45309",
+    route: CommonScreens.classTeachers,
+  },
+  
+  {
+    title: "Section Management",
+    icon: "⚙",
+    accentColor: "#B45309",
+    route: RootStackScreenNames.SectionManagement,
+  },
+  {
+    title: "Finance",
+    icon: "₹",
+    accentColor: "#16803C",
+    route: CommonScreens.finance,
+  },
+  
+  {
+    title: "Attendance",
+    icon: "▣",
+    accentColor: "#C26A09",
+    route: CommonScreens.attendance,
+  },
+  {
+    title: "Parents",
+    icon: "✉",
+    accentColor: "#A21CAF",
+    route: CommonScreens.parents,
+  },
+  {
+    title: "Academic Years",
+    icon: "⚙",
+    accentColor: "#475569",
+    route: CommonScreens.academicYears,
+  },
+  {
+    title: "Classes",
+    icon: "▦",
+    accentColor: "#7C3AED",
+    route: CommonScreens.classes,
+  },
+  {
+    title: "Class Configuration",
+    icon: "⚙",
+    accentColor: "#4338CA",
+    route: CommonScreens.classConfiguration,
+  },
+  
+  {
+    title: "Pending Dues",
+    icon: "!",
+    accentColor: "#C2410C",
+    route: CommonScreens.pendingDues,
+  },
+  {
+    title: "Defaulters",
+    icon: "$",
+    accentColor: "#BE123C",
+    route: CommonScreens.defaulters,
+  },
+  
+];
+
 const AdminDashboard = () => {
   const navigation = useNavigation<any>();
   const [dashboard, setDashboard] =
@@ -275,18 +402,7 @@ const AdminDashboard = () => {
         }
       >
 
-        {/* Open Admin Workspace */}
-        <View style={styles.workspaceButtonContainer}>
-          <Button
-            title="Open Admin Workspace"
-            onPress={() =>
-              navigation.navigate(
-                RootStackScreenNames.AdminFeatureMenu
-              )
-            }
-            color="#2563EB"
-          />
-        </View>
+        
 
         {/* Header */}
         <View style={styles.header}>
@@ -312,7 +428,7 @@ const AdminDashboard = () => {
         </View>
 
         {/* Academic Year */}
-        <View style={styles.academicYearCard}>
+        {/* <View style={styles.academicYearCard}>
           <View>
             <Text style={styles.academicYearLabel}>
               CURRENT ACADEMIC YEAR
@@ -326,7 +442,10 @@ const AdminDashboard = () => {
           <Text style={styles.academicYearIcon}>
             🏫
           </Text>
-        </View>
+        </View> */}
+
+        
+
 
         {/* Finance Section */}
         <View style={styles.sectionHeader}>
@@ -454,6 +573,32 @@ const AdminDashboard = () => {
             color="#7C3AED"
           />
         </View>
+        {/* Management Modules */}
+<View style={styles.modulesSection}>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>
+      Management Modules
+    </Text>
+
+    <Text style={styles.sectionSubtitle}>
+      Quick access to school administration
+    </Text>
+  </View>
+
+  <View style={styles.modulesGrid}>
+    {DASHBOARD_MODULES.map((module) => (
+      <DashboardModuleCard
+        key={module.title}
+        title={module.title}
+        icon={module.icon}
+        accentColor={module.accentColor}
+        onPress={() =>
+          navigation.navigate(module.route as never)
+        }
+      />
+    ))}
+  </View>
+</View>
 
         {/* Operations */}
         <View style={styles.sectionHeader}>
@@ -508,6 +653,17 @@ const AdminDashboard = () => {
 };
 
 const styles = StyleSheet.create({
+
+  
+modulesSection: {
+  marginBottom: 26,
+},
+
+modulesGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+},
   safeArea: {
     flex: 1,
     backgroundColor: "#F8FAFC",

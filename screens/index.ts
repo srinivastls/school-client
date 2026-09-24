@@ -19,3 +19,5 @@ export * from "./Invoice";
 //export * from "./Payment";
 export * from "./SplashScreen";
 export * from "./principal/PrincipalDashboard";
+export * from "./ProfileScreen";
+export * from "./PromotionDemotion"

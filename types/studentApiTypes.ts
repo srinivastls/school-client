@@ -1,4 +1,3 @@
-import { StudentDetails } from "../screens";
 import { CommonResponse } from "./commonApiTypes";
 import { Coupon, Sibling, Student } from "./entityTypes";
 
@@ -92,4 +91,34 @@ export type StudentRegistrationOptionsResponse = {
   classes: StudentRegistrationClass[];
   sections: StudentRegistrationSection[];
 
+};
+
+
+export type PromotionStatus =
+  | "PROMOTED"
+  | "DEMOTED"
+  | "REPEATED"
+  | "NOT_PROMOTED";
+
+export type BulkPromotionItem = {
+  studentId: string;
+  toClassId: string;
+  toSectionId: string;
+  status: PromotionStatus;
+  remark?: string;
+};
+
+export type BulkPromotionRequest = {
+  fromAcademicYearId: string;
+  toAcademicYearId: string;
+  students: BulkPromotionItem[];
+};
+
+export type BulkPromotionResponse = {
+  message: string;
+  count: number;
+  processed: Array<{
+    promotion: unknown;
+    student: unknown;
+  }>;
 };

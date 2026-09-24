@@ -817,6 +817,7 @@ const useStyles = makeStyles(() => {
     ======================================================================== */
 
     platformHeader: {
+      display: "none",
       minHeight: 68,
 
       paddingHorizontal:

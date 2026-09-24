@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -20,7 +21,9 @@ import {
 
 import {
   useNavigation,
+  useRoute,
 } from "@react-navigation/native";
+import type { RouteProp } from "@react-navigation/native";
 
 import {
   NativeStackNavigationProp,
@@ -222,6 +225,11 @@ const PrincipalCollectFeeScreen =
         >
       >();
 
+    const route = useRoute<RouteProp<
+      RootStackParamList,
+      RootStackScreenNames.PrincipalFeeCollection
+    >>();
+
 
     /* ========================================================
        QUERY CLIENT
@@ -239,7 +247,6 @@ const PrincipalCollectFeeScreen =
       admissionNo,
       setAdmissionNo,
     ] = useState("");
-
 
     const [
       studentFound,
@@ -418,10 +425,7 @@ const PrincipalCollectFeeScreen =
             data: Student
           ) => {
 
-            console.log(
-              "STUDENT RESPONSE:",
-              data
-            );
+
 
 
             setStudent(
@@ -623,6 +627,14 @@ const PrincipalCollectFeeScreen =
 
         }
       );
+
+    useEffect(() => {
+      const initialAdmissionNo = route.params?.admissionNo?.trim();
+      if (initialAdmissionNo) {
+        setAdmissionNo(initialAdmissionNo);
+        searchStudentMutation.mutate(initialAdmissionNo);
+      }
+    }, [route.params?.admissionNo]);
 
 
     /* ========================================================
@@ -1222,10 +1234,6 @@ const PrincipalCollectFeeScreen =
             );
 
 
-          console.log(
-            "RECORD TRANSACTION RESPONSE:",
-            result
-          );
 
 
           /* --------------------------------------------------

@@ -1,4 +1,5 @@
 import {api} from "./client";
+import { TeacherProfileResponse } from "./teacherServices";
 
 const getTeachers = async () => {
   const response = await api.get(
@@ -103,6 +104,67 @@ export const getStudents=async () => {
   return response.data;
 };
 
+const getClasses = async (academicYearId: string) => {
+  const response = await api.get("/class/getAll", {
+    params: {
+      academicYearId,
+    },
+
+  });
+
+  return response.data;
+};
+
+export type PrincipalProfile = {
+  id: string;
+  schoolId: string;
+
+  name: string;
+  email: string;
+  phone?: string | null;
+
+  role: "PRINCIPAL";
+
+  designation?: string | null;
+  department?: string | null;
+  employeeId?: string | null;
+
+  profilePhotoUrl?: string | null;
+
+  isActive: boolean;
+  mustChangePassword: boolean;
+
+  lastLogin?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PrincipalProfileResponse = {
+  principal: PrincipalProfile;
+};
+
+const getMyProfile= async (): Promise<PrincipalProfileResponse> => {
+  const response = await api.get(
+    "/principal/profile"
+  );
+
+  return response.data;
+};
+
+const updateMyProfile= async (payload: {
+  name?: string;
+  phone?: string | null;
+  profilePhotoUrl?: string | null;
+}): Promise<PrincipalProfileResponse> => {
+  const response = await api.patch(
+    "/principal/profile",
+    payload
+  );
+
+  return response.data;
+};
+
+
 export const principalServices = {
   getTeachers,
   getParents,
@@ -112,4 +174,7 @@ export const principalServices = {
   updateParentStatus,
   updateAdminStatus,
   getStudents,
+  getClasses,
+  getMyProfile,
+  updateMyProfile,
 };

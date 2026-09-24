@@ -159,13 +159,6 @@ const LoginScreen = ({
             } as SigninRequest);
 
 
-      console.log(
-        "🔥 LOGIN REQUEST:",
-        {
-          ...request,
-          password: "***",
-        }
-      );
 
 
       const result =
@@ -174,10 +167,7 @@ const LoginScreen = ({
         );
 
 
-      console.log(
-        "🔥 SIGNIN SERVICE RESULT:",
-        result
-      );
+ 
 
 
       return result;
@@ -190,10 +180,6 @@ const LoginScreen = ({
 
       onSuccess: (data) => {
 
-        console.log(
-          "🔥 LOGIN SUCCESS:",
-          data
-        );
 
 
         /* --------------------------------------------------------------------
@@ -285,18 +271,7 @@ const LoginScreen = ({
         );
 
 
-        console.log(
-          "🔥 USER SAVED SUCCESSFULLY"
-        );
 
-
-        /* --------------------------------------------------------------------
-           NAVIGATE HOME
-        -------------------------------------------------------------------- */
-
-        console.log(
-          "🔥 NAVIGATING TO HOME"
-        );
 
 
         navigation.replace(
@@ -416,9 +391,6 @@ const LoginScreen = ({
 
   if (isLoading) {
 
-    console.log(
-      "🔥 LOGIN ALREADY IN PROGRESS"
-    );
 
     return;
   }

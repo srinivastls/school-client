@@ -5,7 +5,6 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -15,10 +14,11 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList, RootStackScreenNames } from "../../types";
 import { Colors } from "../../theme";
 import { studentServices } from "../../services/studentServices";
+import styles from "./admin.styles";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
-  RootStackScreenNames.StudentRegistration
+  RootStackScreenNames.AdminStudentRegistration
 >;
 
 type Option = { label: string; value: string };
@@ -209,8 +209,8 @@ export  const AdminStudentRegistration = ({ navigation }: Props) => {
     value: string,
     onChange: (value: string) => void
   ) => (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={styles.registrationField}>
+      <Text style={styles.registrationLabel}>{label}</Text>
       {options.length ? (
         <View style={styles.optionWrap}>
           {options.map((option) => (
@@ -232,23 +232,23 @@ export  const AdminStudentRegistration = ({ navigation }: Props) => {
   );
 
   const renderInput = (key: keyof FormState, label: string, placeholder?: string) => (
-    <View style={styles.field} key={key}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={styles.registrationField} key={key}>
+      <Text style={styles.registrationLabel}>{label}</Text>
       <TextInput
         value={form[key]}
         onChangeText={(value) => update(key, value)}
         placeholder={placeholder ?? label}
         placeholderTextColor={Colors.subtext}
-        style={styles.input}
+        style={styles.registrationInput}
       />
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Add Student</Text>
-        <Text style={styles.subtitle}>Create a student record from the admin portal.</Text>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.registrationContainer}>
+        <Text style={styles.registrationTitle}>Add Student</Text>
+        <Text style={styles.registrationSubtitle}>Create a student record from the admin portal.</Text>
 
         {!!error && <Text style={styles.error}>{error}</Text>}
 
@@ -295,40 +295,3 @@ export  const AdminStudentRegistration = ({ navigation }: Props) => {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background },
-  container: { padding: 20, paddingBottom: 40 },
-  title: { fontSize: 27, fontWeight: "800", color: Colors.text },
-  subtitle: { marginTop: 5, marginBottom: 20, color: Colors.subtext },
-  field: { marginBottom: 14 },
-  label: { fontSize: 13, fontWeight: "700", color: Colors.text, marginBottom: 7 },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 11,
-    paddingHorizontal: 13,
-    paddingVertical: 12,
-    color: Colors.text,
-  },
-  optionWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  option: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 9,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  optionSelected: { backgroundColor: Colors.brandPrimary, borderColor: Colors.brandPrimary },
-  optionText: { color: Colors.text, fontSize: 13, fontWeight: "600" },
-  optionTextSelected: { color: Colors.textOnPrimary },
-  helper: { color: Colors.subtext, fontSize: 12 },
-  error: { color: Colors.error, marginBottom: 12 },
-  submitButton: {
-    backgroundColor: Colors.brandPrimary,
-    borderRadius: 12,
-    alignItems: "center",
-    paddingVertical: 14,
-    marginTop: 10,
-  },
-  submitText: { color: Colors.textOnPrimary, fontWeight: "800", fontSize: 15 },
-});

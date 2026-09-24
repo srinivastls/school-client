@@ -1403,6 +1403,7 @@ const EditStudentScreen = ({
 
   const renderNavbar =
     () => {
+      return null;
 
       return (
         <View
@@ -1761,7 +1762,6 @@ const EditStudentScreen = ({
             NAVBAR
         ================================================================ */}
 
-        {renderNavbar()}
 
 
         {/* ================================================================

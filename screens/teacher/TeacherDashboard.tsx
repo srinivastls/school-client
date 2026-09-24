@@ -1,6 +1,7 @@
 import React, {
   useMemo,
   useState,
+  useEffect,
 } from "react";
 
 import {
@@ -43,7 +44,7 @@ import {
 import {
   useUserStore,
 } from "../../store";
-
+import {teacherServices} from "../../services/teacherServices";
 /* ============================================================
    TYPES
 ============================================================ */
@@ -132,6 +133,10 @@ const TeacherDashboard = () => {
     profileMenuVisible,
     setProfileMenuVisible,
   ] = useState(false);
+
+  const [activeCategory, setActiveCategory] = useState<
+  "All" | "Teaching" | "Academic Work" | "School"
+>("All");
 
   /* ==========================================================
      AUTHORIZATION
@@ -444,37 +449,94 @@ const TeacherDashboard = () => {
 
   ];
 
-  /* ==========================================================
-     GROUP TILES
-  ========================================================== */
+    /* ==========================================================
+   QUICK ACCESS FILTER
+========================================================== */
 
-  const groupedTiles =
-    useMemo(() => {
-
-      const sections = [
-
-        "Teaching",
-        "Academic Work",
-        "School",
-
-      ] as const;
-
-      return sections.map(
-        section => ({
-
-          section,
-
-          items:
-            tiles.filter(
-              tile =>
-                tile.section ===
-                section
-            ),
-
-        })
+const filteredTiles =
+  activeCategory === "All"
+    ? tiles
+    : tiles.filter(
+        tile => tile.section === activeCategory
       );
 
-    }, []);
+
+      /* ==========================================================
+   QUICK ACCESS
+========================================================== */
+
+const renderQuickAccess = () => {
+  const categories: Array<
+    "All" | "Teaching" | "Academic Work" | "School"
+  > = [
+    "All",
+    "Teaching",
+    "Academic Work",
+    "School",
+  ];
+
+  return (
+    <View style={styles.filterContainer}>
+      <Text style={styles.filterTitle}>
+        Quick Access
+      </Text>
+
+      <FlatList
+        horizontal
+        data={categories}
+        keyExtractor={item => item}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterList}
+        renderItem={({ item }) => {
+          const isActive =
+            activeCategory === item;
+
+          return (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setActiveCategory(item)}
+              style={[
+                styles.filterChip,
+                isActive && styles.filterChipActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  isActive &&
+                    styles.filterChipTextActive,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+    </View>
+  );
+};
+
+const [summary, setSummary] = useState({
+  totalSections: 0,
+  totalStudents: 0,
+  totalSubjects: 0,
+  classTeacherSections: 0,
+});
+
+useEffect(() => {
+  const loadDashboard = async () => {
+    try {
+      const response = await teacherServices.getMyClasses();
+
+      setSummary(response.summary);
+    } catch (error) {
+      console.error("Failed to load teacher summary:", error);
+    }
+  };
+
+  loadDashboard();
+}, []);
 
   /* ==========================================================
      HEADER
@@ -789,29 +851,29 @@ const TeacherDashboard = () => {
         >
 
           <StatCard
-            title="My Classes"
-            value="—"
+            title="Total Sections"
+            value={summary.totalSections}
             icon="google-classroom"
             styles={styles}
           />
 
           <StatCard
             title="Students"
-            value="—"
+            value={summary.totalStudents}
             icon="account-group"
             styles={styles}
           />
 
           <StatCard
             title="Subjects"
-            value="—"
+            value={summary.totalSubjects}
             icon="book-open-variant"
             styles={styles}
           />
 
           <StatCard
-            title="Attendance"
-            value="—"
+            title="Class Teacher Sections"
+            value={summary.classTeacherSections}
             icon="calendar-check"
             styles={styles}
           />
@@ -823,204 +885,53 @@ const TeacherDashboard = () => {
 
   };
 
-  /* ==========================================================
-     SECTION HEADER
-  ========================================================== */
-
-  const renderSectionHeading = (
-    title: string,
-    subtitle: string
-  ) => {
-
-    return (
-      <View
-        style={
-          styles.sectionHeading
-        }
-      >
-
-        <Text
-          style={
-            styles.sectionMainTitle
-          }
-        >
-          {title}
-        </Text>
-
-        <Text
-          style={
-            styles.sectionSubtitle
-          }
-        >
-          {subtitle}
-        </Text>
-
-      </View>
-    );
-
-  };
 
   /* ==========================================================
      TILE
   ========================================================== */
 
   const renderTile = ({
-    item,
-  }: {
-    item: TeacherTile;
-  }) => {
+  item,
+}: {
+  item: TeacherTile;
+}) => {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.88}
+      onPress={item.onPress}
+      style={styles.tileTouchable}
+    >
+      <Card style={styles.tile}>
+        <Card.Content style={styles.tileContent}>
+          <View
+            style={[
+              styles.tileIconWrapper,
+              {
+                backgroundColor: item.iconBackground,
+              },
+            ]}
+          >
+            <Avatar.Icon
+              size={48}
+              icon={item.icon}
+              color={item.iconColor}
+              style={styles.tileIcon}
+            />
+          </View>
 
-    return (
-      <TouchableOpacity
-        activeOpacity={0.88}
-        onPress={
-          item.onPress
-        }
-        style={[
-          styles.tileTouchable,
+          <Text
+            style={styles.tileTitle}
+            numberOfLines={2}
+          >
+            {item.title}
+          </Text>
+        </Card.Content>
+      </Card>
+    </TouchableOpacity>
+  );
+};
 
-          isDesktop &&
-            styles.tileTouchableDesktop,
-        ]}
-      >
 
-        <Card
-          style={
-            styles.tile
-          }
-        >
-
-          <Card.Content>
-
-            <View
-              style={
-                styles.tileTop
-              }
-            >
-
-              <Avatar.Icon
-                size={48}
-                icon={
-                  item.icon
-                }
-                color={
-                  item.iconColor
-                }
-                style={[
-                  styles.tileIcon,
-
-                  {
-                    backgroundColor:
-                      item.iconBackground,
-                  },
-                ]}
-              />
-
-              <Text
-                style={
-                  styles.tileArrow
-                }
-              >
-                →
-              </Text>
-
-            </View>
-
-            <Text
-              style={
-                styles.tileTitle
-              }
-              numberOfLines={1}
-            >
-              {item.title}
-            </Text>
-
-            <Text
-              style={
-                styles.tileSubtitle
-              }
-              numberOfLines={2}
-            >
-              {item.subtitle}
-            </Text>
-
-          </Card.Content>
-
-        </Card>
-
-      </TouchableOpacity>
-    );
-
-  };
-
-  /* ==========================================================
-     SECTION
-  ========================================================== */
-
-  const renderSection = ({
-    section,
-    items,
-  }: {
-    section:
-      TeacherTile["section"];
-
-    items:
-      TeacherTile[];
-  }) => {
-
-    return (
-      <View
-        style={
-          styles.sectionContainer
-        }
-      >
-
-        {renderSectionHeading(
-          section,
-          getSectionSubtitle(
-            section
-          )
-        )}
-
-        <View
-          style={[
-            styles.tilesGrid,
-
-            isSmallScreen &&
-              styles.tilesGridMobile,
-          ]}
-        >
-
-          {items.map(
-            item => (
-
-              <View
-                key={
-                  item.title
-                }
-                style={[
-                  styles.tileWrapper,
-
-                  !isSmallScreen &&
-                    styles.tileWrapperDesktop,
-                ]}
-              >
-
-                {renderTile({
-                  item,
-                })}
-
-              </View>
-
-            )
-          )}
-
-        </View>
-
-      </View>
-    );
-
-  };
 
   /* ==========================================================
      PROFILE DROPDOWN
@@ -1276,34 +1187,35 @@ const TeacherDashboard = () => {
     >
 
       <FlatList
-        data={
-          groupedTiles
-        }
-        keyExtractor={
-          item =>
-            item.section
-        }
-        renderItem={({
-          item,
-        }) =>
-          renderSection(
-            item
-          )
-        }
-        ListHeaderComponent={
-          renderHeader
-        }
-        showsVerticalScrollIndicator={
-          false
-        }
-        contentContainerStyle={[
-          styles.listContent,
-          {
-            paddingHorizontal:
-              horizontalPadding,
-          },
-        ]}
-      />
+  data={filteredTiles}
+  keyExtractor={item => item.title}
+  numColumns={isSmallScreen ? 3 : 3}
+  renderItem={({ item }) => (
+    <View
+      style={[
+        styles.tileWrapper,
+        isSmallScreen
+          ? styles.tileWrapperMobile
+          : styles.tileWrapperDesktop,
+      ]}
+    >
+      {renderTile({ item })}
+    </View>
+  )}
+  ListHeaderComponent={() => (
+    <>
+      {renderHeader()}
+      {renderQuickAccess()}
+    </>
+  )}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={[
+    styles.listContent,
+    {
+      paddingHorizontal: horizontalPadding,
+    },
+  ]}
+/>
 
       {renderProfileDropdown()}
 
@@ -1342,7 +1254,7 @@ const StatCard = ({
   styles,
 }: {
   title: string;
-  value: string;
+  value: string | number;
   icon: string;
   styles: any;
 }) => {
@@ -1410,30 +1322,6 @@ const StatCard = ({
    SECTION SUBTITLES
 ============================================================ */
 
-const getSectionSubtitle = (
-  section:
-    | "Teaching"
-    | "Academic Work"
-    | "School"
-) => {
-
-  switch (section) {
-
-    case "Teaching":
-      return "Access your assigned classes, students and attendance.";
-
-    case "Academic Work":
-      return "Manage assignments, examinations and your timetable.";
-
-    case "School":
-      return "Stay connected with parents and manage your profile.";
-
-    default:
-      return "";
-
-  }
-
-};
 
 /* ============================================================
    INITIALS
@@ -1538,11 +1426,17 @@ const useStyles = makeStyles(
           Metrics.x8,
       },
 
+      tilesRow: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+},
+
       /* ======================================================
          NAVBAR
       ====================================================== */
 
       platformHeader: {
+        display: "none",
 
         minHeight: 72,
 
@@ -1656,6 +1550,114 @@ const useStyles = makeStyles(
           Metrics.x1,
 
       },
+
+      filterContainer: {
+  marginBottom: Metrics.x5,
+},
+
+filterTitle: {
+  fontSize: 20,
+  fontWeight: "800",
+  color: "#171717",
+  marginBottom: Metrics.x3,
+},
+
+filterList: {
+  paddingBottom: Metrics.x1,
+},
+
+filterChip: {
+  paddingHorizontal: 20,
+  paddingVertical: 12,
+  borderRadius: 28,
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  marginRight: 10,
+},
+
+filterChipActive: {
+  backgroundColor: Colors.brandPrimary,
+  borderColor: Colors.brandPrimary,
+},
+
+filterChipText: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#64748B",
+},
+
+filterChipTextActive: {
+  color: "#FFFFFF",
+},
+
+tileWrapper: {
+  width: "33.33%",
+},
+
+tileWrapperMobile: {
+  width: "33.33%",
+},
+
+tileWrapperDesktop: {
+  width: "33.33%",
+},
+
+tileTouchable: {
+  marginHorizontal: 4,
+  marginBottom: 8,
+},
+
+tile: {
+  minHeight: 150,
+  borderRadius: 16,
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#E9EAF0",
+  elevation: 1,
+},
+
+tileContent: {
+  minHeight: 148,
+  paddingVertical: 14,
+  paddingHorizontal: 4,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+tileIconWrapper: {
+  width: 76,
+  height: 76,
+  borderRadius: 20,
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 12,
+},
+
+tileIcon: {
+  margin: 0,
+  backgroundColor: "transparent",
+},
+
+tileTitle: {
+  fontSize: 14,
+  lineHeight: 19,
+  fontWeight: "800",
+  color: "#171717",
+  textAlign: "center",
+},
+
+tileSubtitle: {
+  display: "none",
+},
+
+tileTop: {
+  display: "none",
+},
+
+tileArrow: {
+  display: "none",
+},
 
       /* ======================================================
          PROFILE BUTTON
@@ -2045,26 +2047,11 @@ const useStyles = makeStyles(
 
       },
 
-      tileWrapper: {
+      
 
-        width: "100%",
+      
 
-      },
-
-      tileWrapperDesktop: {
-
-        width: "50%",
-
-      },
-
-      tileTouchable: {
-
-        flex: 1,
-
-        margin:
-          Metrics.x2,
-
-      },
+      
 
       tileTouchableDesktop: {
 
@@ -2072,77 +2059,7 @@ const useStyles = makeStyles(
 
       },
 
-      tile: {
-
-        minHeight: 160,
-
-        backgroundColor:
-          "#FFFFFF",
-
-        borderRadius: 18,
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E9EAF0",
-
-        elevation: 1,
-
-      },
-
-      tileTop: {
-
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "space-between",
-
-        marginBottom:
-          Metrics.x3,
-
-      },
-
-      tileIcon: {
-
-        margin: 0,
-
-      },
-
-      tileArrow: {
-
-        fontSize: 22,
-
-        color: "#9CA3AF",
-
-      },
-
-      tileTitle: {
-
-        fontSize: 17,
-
-        fontWeight: "800",
-
-        color: "#171717",
-
-      },
-
-      tileSubtitle: {
-
-        fontSize: 13,
-
-        lineHeight: 19,
-
-        color:
-          Colors.subtext,
-
-        marginTop:
-          Metrics.x1,
-
-      },
+      
 
       /* ======================================================
          PROFILE MODAL

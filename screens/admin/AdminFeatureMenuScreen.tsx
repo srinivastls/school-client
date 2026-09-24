@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList, RootStackScreenNames } from "../../types";
+import { CommonScreens } from "../../navigation/modules";
 import { Colors, Metrics, Typography } from "../../theme";
 import { AdminFeatureCard } from "./AdminFeatureCard";
 
@@ -31,49 +32,98 @@ const FEATURES: FeatureDefinition[] = [
     description: "Manage students, admissions, classes and sections.",
     icon: "♙",
     accentColor: "#6622E3",
-    route: RootStackScreenNames.AdminStudentManagement,
+    route: CommonScreens.students,
   },
   {
     title: "Finance Management",
     description: "Review collections, dues, transactions and payments.",
     icon: "₹",
     accentColor: "#16803C",
-    route: RootStackScreenNames.AdminFinanceManagement,
+    route: CommonScreens.finance,
   },
   {
     title: "Staff Administration",
     description: "Manage teachers, staff profiles and leave operations.",
     icon: "♟",
     accentColor: "#2563EB",
-    route: RootStackScreenNames.AdminStaffManagement,
+    route: CommonScreens.teachers,
   },
   {
     title: "Attendance & Calendar",
     description: "Review attendance and manage academic dates.",
     icon: "▣",
     accentColor: "#C26A09",
-    route: RootStackScreenNames.AdminAttendanceCalendar,
+    route: CommonScreens.attendance,
   },
   {
-    title: "Communication",
-    description: "Create announcements and communicate with families.",
+    title: "Parents & Families",
+    description: "Review parent records and family contact information.",
     icon: "✉",
     accentColor: "#A21CAF",
-    route: RootStackScreenNames.AdminCommunication,
+    route: CommonScreens.parents,
   },
   {
-    title: "School Settings",
-    description: "Configure school information and preferences.",
+    title: "Academic Years",
+    description: "Manage academic years and school progression.",
     icon: "⚙",
     accentColor: "#475569",
-    route: RootStackScreenNames.AdminSchoolSettings,
+    route: CommonScreens.academicYears,
   },
   {
     title: "Reports & Exports",
     description: "Generate operational reports and export data.",
     icon: "▤",
     accentColor: "#0F766E",
-    route: RootStackScreenNames.AdminReports,
+    route: CommonScreens.academics,
+  },
+  {
+    title: "Classes & Sections",
+    description: "Manage classes, sections and class-level students.",
+    icon: "▦",
+    accentColor: "#7C3AED",
+    route: CommonScreens.classes,
+  },
+  {
+    title: "Class Configuration",
+    description: "Configure class structures and academic sections.",
+    icon: "⚙",
+    accentColor: "#4338CA",
+    route: CommonScreens.classConfiguration,
+  },
+  {
+    title: "Class Teachers",
+    description: "Review and assign teachers to school sections.",
+    icon: "◉",
+    accentColor: "#B45309",
+    route: CommonScreens.classTeachers,
+  },
+  {
+    title: "Fee Collection",
+    description: "Collect fees and issue payment receipts.",
+    icon: "▤",
+    accentColor: "#15803D",
+    route: CommonScreens.feeCollection,
+  },
+  {
+    title: "Pending Dues",
+    description: "Review outstanding balances and follow up on dues.",
+    icon: "!",
+    accentColor: "#C2410C",
+    route: CommonScreens.pendingDues,
+  },
+  {
+    title: "Defaulters",
+    description: "Review students with unpaid fee balances.",
+    icon: "$",
+    accentColor: "#BE123C",
+    route: CommonScreens.defaulters,
+  },
+  {
+    title: "Create Teacher",
+    description: "Add teacher accounts and staff credentials.",
+    icon: "+",
+    accentColor: "#1D4ED8",
+    route: CommonScreens.createTeacher,
   },
 ];
 
@@ -116,8 +166,7 @@ export const AdminFeatureMenu = ({ navigation }: Props) => (
           description={feature.description}
           icon={feature.icon}
           accentColor={feature.accentColor}
-          onPress={() => {}}
-          //onPress={() => navigation.navigate(feature.route)}
+          onPress={() => navigation.navigate(feature.route as never)}
         />
       ))}
     </ScrollView>

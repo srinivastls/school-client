@@ -6,6 +6,7 @@ import {
 } from "../types";
 
 import { api } from "./client";
+import { PrincipalProfileResponse } from "./principalServices";
 
 /* ============================================================================
    ENDPOINTS
@@ -31,9 +32,6 @@ const signin = async (
   payload: SigninRequest
 ): Promise<SigninResponse> => {
 
-  console.log(
-    "🔥🔥 SIGNIN SERVICE CALLED"
-  );
 
 
   /* ==========================================================================
@@ -56,18 +54,7 @@ const signin = async (
       : endpoints.platformSignin;
 
 
-  console.log(
-    "🔥🔥 LOGIN TYPE:",
-    schoolCode
-      ? "SCHOOL"
-      : "PLATFORM"
-  );
 
-
-  console.log(
-    "🔥🔥 LOGIN ENDPOINT:",
-    endpoint
-  );
 
 
   /* ==========================================================================
@@ -108,14 +95,6 @@ const signin = async (
         };
 
 
-  console.log(
-    "🔥🔥 LOGIN REQUEST:",
-    {
-      ...requestPayload,
-
-      password: "***",
-    }
-  );
 
 
   /* ==========================================================================
@@ -129,20 +108,10 @@ const signin = async (
     );
 
 
-  console.log(
-    "🔥🔥 RESPONSE DATA INSIDE SERVICE:",
-    response.data
-  );
 
 
   const result =
     response.data as SigninResponse;
-
-
-  console.log(
-    "🔥🔥 RESULT BEING RETURNED:",
-    result
-  );
 
 
   return result;
@@ -182,6 +151,68 @@ const updateTeacherStatus = async (
 
   return response.data;
 };
+export type Profile = {
+  id: string;
+  schoolId: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+
+  role: string;
+
+  designation?: string | null;
+  department?: string | null;
+  employeeId?: string | null;
+
+  profilePhotoUrl?: string | null;
+
+  isActive: boolean;
+  mustChangePassword: boolean;
+
+  lastLogin?: string | null;
+
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProfileResponse = {
+  profile: Profile;
+};
+
+export type UpdateProfilePayload = {
+  name?: string;
+  phone?: string | null;
+  profilePhotoUrl?: string | null;
+};
+
+// ============================================================
+// GET PROFILE
+// ============================================================
+
+const getProfile = async (): Promise<ProfileResponse> => {
+  const response = await api.get("/users/profile");
+
+  return response.data;
+};
+
+// ============================================================
+// UPDATE PROFILE
+// ============================================================
+
+const updateProfile = async (
+  payload: UpdateProfilePayload
+): Promise<ProfileResponse> => {
+  const response = await api.patch(
+    "/principal/profile",
+    payload
+  );
+
+  return response.data;
+};
+
+
+
+
 
 
 /* ============================================================================
@@ -211,4 +242,7 @@ export const userServices = {
 
   updateTeacherStatus,
 
+  getProfile,
+
+  updateProfile,
 };

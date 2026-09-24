@@ -8,4 +8,5 @@ export * from "./parentServices";
 export * from "./principalServices";
 export * from "./financeServices";
 export * from "./attendanceServices";
-export * from "./academicYearServices"
+export * from "./academicYearServices";
+export * from "./adminAttendanceLeaveServices";

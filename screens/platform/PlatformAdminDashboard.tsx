@@ -1303,6 +1303,8 @@ const PlatformAdminDashboard = ({
             style={[
               styles.platformHeader,
 
+              { display: "none" },
+
               {
                 marginHorizontal:
                   isDesktop

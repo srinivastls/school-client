@@ -57,37 +57,11 @@ const SplashScreen = ({
             "userStore"
           );
 
-        console.log(
-          "================================="
-        );
+        
 
-        console.log(
-          "🔥 SPLASH AUTH DEBUG"
-        );
+        
 
-        console.log(
-          "ZUSTAND HYDRATED:",
-          hasHydrated
-        );
-
-        console.log(
-          "ZUSTAND USER:",
-          user
-        );
-
-        console.log(
-          "ZUSTAND TOKEN:",
-          Boolean(accessToken)
-        );
-
-        console.log(
-          "ASYNC STORAGE userStore:",
-          raw
-        );
-
-        console.log(
-          "================================="
-        );
+        
 
       } catch (error) {
 
