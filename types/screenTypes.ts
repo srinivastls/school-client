@@ -84,8 +84,12 @@ export enum RootStackScreenNames {
   TeacherLeave = "TeacherLeave",
   TeacherAttendance = "TeacherAttendance",
   SectionManagement = "SectionManagement",
+
+  BulkImport = "BulkImport",
   // Admin Module
 AdminFeatureMenu = "AdminFeatureMenu",
+
+
 
 AdminStudentManagement = "AdminStudentManagement",
 AdminStudentRegistration = "AdminStudentRegistration",
@@ -140,6 +144,7 @@ export type RootStackParamList = {
   [RootStackScreenNames.ClassManagement]: undefined;
   [RootStackScreenNames.TeacherMyClasses]: undefined;
   [RootStackScreenNames.AdminStudentRegistration]: undefined;
+  [RootStackScreenNames.BulkImport]: undefined;
   [RootStackScreenNames.ProfileScreen]: undefined;
 
   [RootStackScreenNames.AdminStudentDetails]: {

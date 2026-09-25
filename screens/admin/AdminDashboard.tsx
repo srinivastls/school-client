@@ -235,6 +235,12 @@ const DASHBOARD_MODULES: DashboardModule[] = [
     route: RootStackScreenNames.SectionManagement,
   },
   {
+    title: "Bulk Import",
+    icon: "⬆",
+    accentColor: "#1D4ED8",
+    route: RootStackScreenNames.BulkImport,
+  },
+  {
     title: "Finance",
     icon: "₹",
     accentColor: "#16803C",

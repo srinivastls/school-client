@@ -50,6 +50,8 @@ import { AdminStudentRegistration } from "./screens/admin/AdminStudentRegistrati
 import { AdminStudentEdit } from "./screens/admin/AdminStudentEdit";
 import { AdminStudentDetails } from "./screens/admin/AdminStudentDetails";
 
+import  BulkImportScreen  from "./screens/admin/BulkImportScreen";
+
 import { AdminFinanceManagement } from "./screens/admin/AdminFinanceManagement";
 import { AdminStaffManagement } from "./screens/admin/AdminStaffManagement";
 import { AdminAttendanceCalendar } from "./screens/admin/AdminAttendanceCalendar";
@@ -242,6 +244,14 @@ export default function App() {
               }
               options={{
                 headerTitle: "Promotion/Demotion",
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.BulkImport}
+              component={BulkImportScreen}
+              options={{
+                headerTitle: "Bulk Import",
               }}
             />
 
