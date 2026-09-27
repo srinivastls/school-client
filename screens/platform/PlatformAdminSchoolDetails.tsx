@@ -7,6 +7,7 @@ import { platformSchoolStyles as styles} from "../../styles";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -130,8 +131,18 @@ type School = {
 };
 
 
+type AcademicYear = {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+};
+
 type SchoolResponse = {
-  school: School;
+  school: School & {
+    academicYears?: AcademicYear[];
+  };
 };
 
 
@@ -177,6 +188,11 @@ const PlatformAdminSchoolDetails = () => {
   const [
     updatingStatus,
     setUpdatingStatus,
+  ] = useState(false);
+
+  const [
+    lifecycleBusy,
+    setLifecycleBusy,
   ] = useState(false);
 
 
@@ -238,24 +254,39 @@ const PlatformAdminSchoolDetails = () => {
   ========================================================== */
 
   const showMessage = (
-    message: string,
-
+    message: unknown,
     type:
       | "success"
       | "error"
   ) => {
+    let safeMessage = "Something went wrong.";
 
-    setSnackbarMessage(
-      message
-    );
+    if (typeof message === "string") {
+      safeMessage = message;
+    } else if (message && typeof message === "object") {
+      const value = message as Record<string, unknown>;
 
-    setSnackbarType(
-      type
-    );
+      if (typeof value.message === "string") {
+        safeMessage = value.message;
+      } else if (typeof value.error === "string") {
+        safeMessage = value.error;
+      } else if (typeof value.detail === "string") {
+        safeMessage = value.detail;
+      } else {
+        try {
+          const serialized = JSON.stringify(message);
+          if (serialized && serialized !== "{}") {
+            safeMessage = serialized;
+          }
+        } catch {
+          // Keep the fallback message.
+        }
+      }
+    }
 
-    setSnackbarVisible(
-      true
-    );
+    setSnackbarMessage(safeMessage);
+    setSnackbarType(type);
+    setSnackbarVisible(true);
   };
 
 
@@ -323,15 +354,13 @@ const PlatformAdminSchoolDetails = () => {
 
         showMessage(
 
-          response?.message ??
-            (
-              newStatus ===
-              "ACTIVE"
-
-                ? "School reactivated successfully"
-
-                : "School suspended successfully"
-            ),
+          typeof response?.message === "string"
+            ? response.message
+            : (
+                newStatus === "ACTIVE"
+                  ? "School reactivated successfully"
+                  : "School suspended successfully"
+              ),
 
           "success"
         );
@@ -374,8 +403,10 @@ const PlatformAdminSchoolDetails = () => {
 
         showMessage(
 
-          error?.response?.data?.message ??
-            "Unable to update school status",
+          getErrorMessage(
+              error,
+              "Unable to update school status"
+            ),
 
           "error"
         );
@@ -473,6 +504,193 @@ const PlatformAdminSchoolDetails = () => {
       );
     };
 
+
+  const exportFullSchool = async () => {
+    if (!school || lifecycleBusy) return;
+    setLifecycleBusy(true);
+    try {
+      const result = await platformAdminServices.exportCompleteSchool(school.id);
+      showMessage("Complete school backup created successfully", "success");
+      if (result?.downloadUrl) {
+        await Linking.openURL(result.downloadUrl);
+      }
+    } catch (error: any) {
+      showMessage(getErrorMessage(
+        error,
+        "Unable to create school backup"
+      ), "error");
+    } finally {
+      setLifecycleBusy(false);
+    }
+  };
+
+  const exportYear = async (year: AcademicYear) => {
+    if (!school || lifecycleBusy) return;
+    setLifecycleBusy(true);
+    try {
+      const result = await platformAdminServices.exportAcademicYear(school.id, year.id);
+      showMessage(`${year.name} backup created successfully`, "success");
+      if (result?.downloadUrl) {
+        await Linking.openURL(result.downloadUrl);
+      }
+    } catch (error: any) {
+      showMessage(getErrorMessage(
+        error,
+        "Unable to export academic year"
+      ), "error");
+    } finally {
+      setLifecycleBusy(false);
+    }
+  };
+
+  const confirmDeleteYear = async (year: AcademicYear) => {
+    if (!school || lifecycleBusy) return;
+    setLifecycleBusy(true);
+    try {
+      const preview = await platformAdminServices.getAcademicYearDeletionPreview(school.id, year.id);
+      setLifecycleBusy(false);
+      if (preview?.blockers?.length) {
+        Alert.alert("Cannot Delete Academic Year", preview.blockers.join("\n\n"));
+        return;
+      }
+      Alert.alert(
+        `Delete ${year.name}?`,
+        `This will permanently delete the academic-year records listed in the preview.\n\nClasses: ${preview.counts.classes}\nSections: ${preview.counts.sections}\nEnrollments: ${preview.counts.enrollments}\nAttendance: ${preview.counts.attendance}\nExams: ${preview.counts.exams}\nID Cards: ${preview.counts.idCards}`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              Alert.prompt(
+                "Final Confirmation",
+                `Type DELETE ACADEMIC YEAR ${year.name}`,
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async (confirmation) => {
+                      setLifecycleBusy(true);
+                      try {
+                        await platformAdminServices.deleteAcademicYear(school.id, year.id, confirmation || "");
+                        showMessage(`${year.name} deleted successfully`, "success");
+                        await refetch();
+                      } catch (error: any) {
+                        showMessage(getErrorMessage(
+        error,
+        "Unable to delete academic year"
+      ), "error");
+                      } finally {
+                        setLifecycleBusy(false);
+                      }
+                    },
+                  },
+                ],
+                "plain-text"
+              );
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      setLifecycleBusy(false);
+      showMessage(getErrorMessage(
+        error,
+        "Unable to check academic year deletion"
+      ), "error");
+    }
+  };
+
+  const confirmArchive = () => {
+    if (!school || lifecycleBusy) return;
+    Alert.alert(
+      "Archive School",
+      `Archive ${school.name}? The data will remain intact and the school can be restored later.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Archive",
+          style: "destructive",
+          onPress: async () => {
+            setLifecycleBusy(true);
+            try {
+              await platformAdminServices.archiveSchool(school.id);
+              showMessage("School archived successfully", "success");
+              await refetch();
+              await queryClient.invalidateQueries(["platform-admin-schools"]);
+              await queryClient.invalidateQueries(["platform-admin-dashboard"]);
+            } catch (error: any) {
+              showMessage(getErrorMessage(
+        error,
+        "Unable to archive school"
+      ), "error");
+            } finally {
+              setLifecycleBusy(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const confirmRestore = async () => {
+    if (!school || lifecycleBusy) return;
+    setLifecycleBusy(true);
+    try {
+      await platformAdminServices.restoreSchool(school.id);
+      showMessage("School restored to suspended status", "success");
+      await refetch();
+    } catch (error: any) {
+      showMessage(getErrorMessage(
+        error,
+        "Unable to restore school"
+      ), "error");
+    } finally {
+      setLifecycleBusy(false);
+    }
+  };
+
+  const confirmPermanentDelete = () => {
+    if (!school || lifecycleBusy) return;
+    if (school.status !== "SUSPENDED" && school.status !== "ARCHIVED") {
+      showMessage("School must be suspended or archived before permanent deletion", "error");
+      return;
+    }
+    Alert.prompt(
+      "PERMANENT DELETE",
+      `A complete backup will be created first.\n\nThis action cannot be undone.\n\nType DELETE SCHOOL ${school.code} to continue.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Permanently",
+          style: "destructive",
+          onPress: async (confirmation) => {
+            setLifecycleBusy(true);
+            try {
+              const result = await platformAdminServices.deleteSchool(school.id, confirmation || "");
+              showMessage("School permanently deleted. Backup was created first.", "success");
+              if (result?.backup?.operationId) {
+                // The response contains the backup operation ID; the school is now gone.
+                console.log("School backup operation:", result.backup.operationId);
+              }
+              await queryClient.invalidateQueries(["platform-admin-schools"]);
+              await queryClient.invalidateQueries(["platform-admin-dashboard"]);
+              navigation.goBack();
+            } catch (error: any) {
+              showMessage(getErrorMessage(
+        error,
+        "Unable to delete school"
+      ), "error");
+            } finally {
+              setLifecycleBusy(false);
+            }
+          },
+        },
+      ],
+      "plain-text"
+    );
+  };
 
   /* ==========================================================
      LOADING
@@ -619,6 +837,8 @@ const PlatformAdminSchoolDetails = () => {
 
   const counts =
     school.counts;
+
+  const academicYears = school.academicYears ?? [];
 
 
   const isActive =
@@ -1549,6 +1769,65 @@ const PlatformAdminSchoolDetails = () => {
             </SectionCard>
 
 
+            <SectionCard
+              title="Data Management"
+              subtitle="Backups, academic years and school lifecycle"
+              icon="database-outline"
+            >
+              <Button
+                mode="contained"
+                icon="download"
+                disabled={lifecycleBusy}
+                loading={lifecycleBusy}
+                onPress={exportFullSchool}
+                style={styles.createPrincipalAction}
+              >
+                Download Complete Backup
+              </Button>
+
+              <Divider style={styles.actionDivider} />
+
+              <Text style={styles.actionLabel}>Academic Years</Text>
+              {academicYears.length === 0 ? (
+                <Text style={styles.actionInfoSubtitle}>No academic years found.</Text>
+              ) : (
+                academicYears.map((year) => (
+                  <View key={year.id} style={{ paddingVertical: 10 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.actionStatusValue}>{year.name}</Text>
+                        <Text style={styles.actionInfoSubtitle}>{year.isCurrent ? "Current year — deletion disabled" : "Historical year"}</Text>
+                      </View>
+                      <Button mode="outlined" compact disabled={lifecycleBusy} onPress={() => exportYear(year)}>Export</Button>
+                      {!year.isCurrent && (
+                        <Button mode="text" compact textColor={Colors.error} disabled={lifecycleBusy} onPress={() => confirmDeleteYear(year)}>Delete</Button>
+                      )}
+                    </View>
+                  </View>
+                ))
+              )}
+
+              <Divider style={styles.actionDivider} />
+
+              {school.status === "SUSPENDED" && (
+                <Button mode="outlined" icon="archive" disabled={lifecycleBusy} onPress={confirmArchive} textColor={Colors.error}>
+                  Archive School
+                </Button>
+              )}
+
+              {school.status === "ARCHIVED" && (
+                <Button mode="contained" icon="backup-restore" disabled={lifecycleBusy} onPress={confirmRestore}>
+                  Restore School
+                </Button>
+              )}
+
+              {(school.status === "SUSPENDED" || school.status === "ARCHIVED") && (
+                <Button mode="text" icon="delete-forever" disabled={lifecycleBusy} onPress={confirmPermanentDelete} textColor={Colors.error}>
+                  Permanently Delete School
+                </Button>
+              )}
+            </SectionCard>
+
             {/* =================================================
                 SUBSCRIPTION
             ================================================= */}
@@ -1713,9 +1992,7 @@ const PlatformAdminSchoolDetails = () => {
             : styles.errorSnackbar
         }
       >
-        {
-          snackbarMessage
-        }
+        {String(snackbarMessage)}
       </Snackbar>
 
     </View>
@@ -2103,6 +2380,49 @@ const EmptyPrincipal = ({
 /* ============================================================
    HELPERS
 ============================================================ */
+
+const getErrorMessage = (
+  error: any,
+  fallback: string
+): string => {
+  const message = error?.response?.data?.message;
+
+  if (typeof message === "string") {
+    return message;
+  }
+
+  if (message && typeof message === "object") {
+    const value = message as Record<string, unknown>;
+
+    if (typeof value.message === "string") {
+      return value.message;
+    }
+
+    if (typeof value.error === "string") {
+      return value.error;
+    }
+
+    if (typeof value.detail === "string") {
+      return value.detail;
+    }
+
+    try {
+      const serialized = JSON.stringify(message);
+      if (serialized && serialized !== "{}") {
+        return serialized;
+      }
+    } catch {
+      // Fall through to the fallback.
+    }
+  }
+
+  if (typeof error?.message === "string") {
+    return error.message;
+  }
+
+  return fallback;
+};
+
 
 const getInitials = (
   name?: string | null

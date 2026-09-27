@@ -23,6 +23,7 @@ import {
   Pressable,
   View,
   Alert,
+  useColorScheme,
 } from "react-native";
 import { useMutation, useQuery } from "react-query";
 import { useNavigation } from "@react-navigation/native";
@@ -108,6 +109,29 @@ const normalizeClasses = (response: any): SchoolClass[] => {
 const SectionManagementScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const palette = isDark
+    ? {
+        background: "#101114",
+        surface: "#1A1B20",
+        surfaceElevated: "#23242B",
+        text: "#F4F4F5",
+        muted: "#A1A1AA",
+        border: "#3F3F46",
+        primary: "#B69CFF",
+        primaryContainer: "#35265F",
+      }
+    : {
+        background: "#F7F7FB",
+        surface: "#FFFFFF",
+        surfaceElevated: "#FFFFFF",
+        text: "#1C1B1F",
+        muted: "#6B6875",
+        border: "#E4E1EA",
+        primary: "#6750A4",
+        primaryContainer: "#EADDFF",
+      };
 
   const [selectedYearId, setSelectedYearId] = useState("");
   const [search, setSearch] = useState("");
@@ -125,6 +149,8 @@ const SectionManagementScreen = () => {
   const [selectedSection, setSelectedSection] = useState<ManagedSection | null>(null);
   const [selectedTeacherId, setSelectedTeacherId] = useState("");
   const [teacherSearch, setTeacherSearch] = useState("");
+  const [sectionFilter, setSectionFilter] = useState<"all" | "assigned" | "unassigned">("all");
+  const [actionMenuSection, setActionMenuSection] = useState<ManagedSection | null>(null);
 
   const yearsQuery = useQuery(
     ["section-management-years"],
@@ -219,22 +245,29 @@ const [removeTarget, setRemoveTarget] =
 
   const filteredSections = useMemo(() => {
     const value = search.trim().toLowerCase();
-    if (!value) return sections;
 
     return sections.filter((section) => {
-      const classNumber = section.class?.classNumber?.toLowerCase() ?? "";
-      const displayName = section.class?.displayName?.toLowerCase() ?? "";
-      const sectionNameValue = section.sectionName?.toLowerCase() ?? "";
-      const teacher = section.classTeacher?.name?.toLowerCase() ?? "";
+      const classNumber = String(section.class?.classNumber ?? "").toLowerCase();
+      const displayName = String(section.class?.displayName ?? "").toLowerCase();
+      const sectionNameValue = String(section.sectionName ?? "").toLowerCase();
+      const teacher = String(section.classTeacher?.name ?? "").toLowerCase();
 
-      return (
+      const matchesSearch =
+        !value ||
         classNumber.includes(value) ||
         displayName.includes(value) ||
         sectionNameValue.includes(value) ||
-        teacher.includes(value)
-      );
+        teacher.includes(value);
+
+      const isAssigned = Boolean(section.classTeacher);
+      const matchesFilter =
+        sectionFilter === "all" ||
+        (sectionFilter === "assigned" && isAssigned) ||
+        (sectionFilter === "unassigned" && !isAssigned);
+
+      return matchesSearch && matchesFilter;
     });
-  }, [sections, search]);
+  }, [sections, search, sectionFilter]);
 
   const assignedCount = sections.filter((item) => !!item.classTeacher).length;
   const studentCount = sections.reduce(
@@ -542,7 +575,7 @@ const [removeTarget, setRemoveTarget] =
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: palette.background }]}>
       <FlatList
         data={filteredSections}
         keyExtractor={(item) => item.id}
@@ -561,8 +594,8 @@ const [removeTarget, setRemoveTarget] =
           <View>
             <View style={styles.headerRow}>
               <View style={styles.headerText}>
-                <Text style={styles.title}>Section Management</Text>
-                <Text style={styles.muted}>
+                <Text style={[styles.title, { color: palette.text }]}>Section Management</Text>
+                <Text style={[styles.muted, { color: palette.muted }]}>
                   Manage sections for each academic year.
                 </Text>
               </View>
@@ -577,10 +610,12 @@ const [removeTarget, setRemoveTarget] =
 
             <Text style={styles.label}>Academic year</Text>
             <TouchableOpacity
-              style={styles.selector}
+              accessibilityRole="button"
+              accessibilityLabel="Select academic year"
+              style={[styles.selector, { backgroundColor: palette.surface, borderColor: palette.border }]}
               onPress={() => setYearPickerVisible(true)}
             >
-              <Text style={styles.selectorText}>
+              <Text style={[styles.selectorText, { color: palette.text }]}>
                 {selectedYear?.name ?? "Select academic year"}
               </Text>
               <IconButton icon="chevron-down" size={20} />
@@ -609,22 +644,22 @@ const [removeTarget, setRemoveTarget] =
             </View>
 
             <View style={styles.statsRow}>
-              <Card style={styles.statCard}>
+              <Card style={[styles.statCard, { backgroundColor: palette.surface }]}>
                 <Card.Content>
-                  <Text style={styles.statValue}>{sections.length}</Text>
-                  <Text style={styles.statLabel}>Sections</Text>
+                  <Text style={[styles.statValue, { color: palette.text }]}>{sections.length}</Text>
+                  <Text style={[styles.statLabel, { color: palette.muted }]}>Sections</Text>
                 </Card.Content>
               </Card>
-              <Card style={styles.statCard}>
+              <Card style={[styles.statCard, { backgroundColor: palette.surface }]}>
                 <Card.Content>
-                  <Text style={styles.statValue}>{assignedCount}</Text>
-                  <Text style={styles.statLabel}>Assigned</Text>
+                  <Text style={[styles.statValue, { color: palette.text }]}>{assignedCount}</Text>
+                  <Text style={[styles.statLabel, { color: palette.muted }]}>Assigned</Text>
                 </Card.Content>
               </Card>
-              <Card style={styles.statCard}>
+              <Card style={[styles.statCard, { backgroundColor: palette.surface }]}>
                 <Card.Content>
-                  <Text style={styles.statValue}>{studentCount}</Text>
-                  <Text style={styles.statLabel}>Students</Text>
+                  <Text style={[styles.statValue, { color: palette.text }]}>{studentCount}</Text>
+                  <Text style={[styles.statLabel, { color: palette.muted }]}>Students</Text>
                 </Card.Content>
               </Card>
             </View>
@@ -633,8 +668,49 @@ const [removeTarget, setRemoveTarget] =
               placeholder="Search class, section, or teacher"
               value={search}
               onChangeText={setSearch}
-              style={styles.search}
+              style={[styles.search, { backgroundColor: palette.surface }]}
             />
+
+            <View
+              style={styles.filterRow}
+              accessible
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Filter sections"
+            >
+              {(["all", "assigned", "unassigned"] as const).map((filter) => (
+                <Chip
+                  key={filter}
+                  selected={sectionFilter === filter}
+                  mode={sectionFilter === filter ? "flat" : "outlined"}
+                  onPress={() => setSectionFilter(filter)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: sectionFilter === filter }}
+                  style={[styles.filterChip, sectionFilter === filter && { backgroundColor: palette.primaryContainer }]}
+                  textStyle={{ color: sectionFilter === filter ? palette.primary : palette.muted }}
+                >
+                  {filter === "all" ? "All" : filter === "assigned" ? "Assigned" : "Unassigned"}
+                </Chip>
+              ))}
+            </View>
+
+            <View style={styles.resultSummaryRow}>
+              <Text style={[styles.resultSummary, { color: palette.muted }]}>
+                {filteredSections.length} {filteredSections.length === 1 ? "section" : "sections"} shown
+              </Text>
+              {(search.length > 0 || sectionFilter !== "all") && (
+                <Button
+                  compact
+                  mode="text"
+                  onPress={() => {
+                    setSearch("");
+                    setSectionFilter("all");
+                  }}
+                  accessibilityLabel="Clear section search and filters"
+                >
+                  Clear filters
+                </Button>
+              )}
+            </View>
 
             {sectionsQuery.isError && (
               <Card style={styles.errorCard}>
@@ -654,7 +730,7 @@ const [removeTarget, setRemoveTarget] =
           </View>
         }
         renderItem={({ item }) => (
-          <Card style={styles.sectionCard}>
+          <Card style={[styles.sectionCard, { backgroundColor: palette.surface }]}>
             <Card.Content>
               <View style={styles.sectionRow}>
                 <Avatar.Text
@@ -663,7 +739,7 @@ const [removeTarget, setRemoveTarget] =
                 />
 
                 <View style={styles.sectionDetails}>
-                  <Text style={styles.sectionTitle}>
+                  <Text style={[styles.sectionTitle, { color: palette.text }]}>
                     {item.class?.displayName ??
                       `Class ${item.class?.classNumber ?? ""}`}{" "}
                     - {item.sectionName}
@@ -683,8 +759,8 @@ const [removeTarget, setRemoveTarget] =
                       }}
                     />
                     <View style={styles.teacherSummaryText}>
-                      <Text style={styles.teacherLabel}>Class teacher</Text>
-                      <Text style={styles.teacherName}>
+                      <Text style={[styles.teacherLabel, { color: palette.muted }]}>Class teacher</Text>
+                      <Text style={[styles.teacherName, { color: palette.text }]}>
                         {item.classTeacher?.name ?? "Not assigned"}
                       </Text>
                     </View>
@@ -694,6 +770,7 @@ const [removeTarget, setRemoveTarget] =
                 <Chip
                   compact
                   mode="outlined"
+                  style={styles.statusChip}
                   textStyle={{
                     color: item.classTeacher ? "#15803D" : "#B45309",
                   }}
@@ -702,61 +779,18 @@ const [removeTarget, setRemoveTarget] =
                 </Chip>
               </View>
 
-              <Divider style={styles.cardDivider} />
+              <Divider style={[styles.cardDivider, { backgroundColor: palette.border }]} />
 
               <View style={styles.cardActions}>
                 <Button
                   mode={item.classTeacher ? "outlined" : "contained"}
                   icon={item.classTeacher ? "account-edit" : "account-plus"}
                   onPress={() => openTeacherModal(item)}
+                  accessibilityLabel={`${item.classTeacher ? "Change" : "Assign"} teacher for ${item.sectionName}`}
                   compact
                 >
                   {item.classTeacher ? "Change teacher" : "Assign teacher"}
                 </Button>
-
-                {/* {item.classTeacher && (
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove class teacher from ${item.sectionName}`}
-                    activeOpacity={0.7}
-                    disabled={
-                      removeTeacherMutation.isLoading ||
-                      assignTeacherMutation.isLoading
-                    }
-                    onPress={() => confirmRemoveTeacherFor(item)}
-                    style={[
-                      styles.removeButton,
-                      (removeTeacherMutation.isLoading ||
-                        assignTeacherMutation.isLoading) &&
-                        styles.disabledAction,
-                    ]}
-                  >
-                    <Text style={styles.removeButtonIcon}>✕</Text>
-                    <Text style={styles.removeButtonText}>Remove</Text>
-                  </TouchableOpacity>
-                )} */}
-
-                {item.classTeacher && (
-  <Pressable
-    accessibilityRole="button"
-    accessibilityLabel={`Remove class teacher from ${item.sectionName}`}
-    disabled={
-      removeTeacherMutation.isLoading ||
-      assignTeacherMutation.isLoading
-    }
-    onPress={() => confirmRemoveTeacherFor(item)}
-    style={({ pressed }) => [
-      styles.removeButton,
-      pressed && styles.pressedButton,
-      (removeTeacherMutation.isLoading ||
-        assignTeacherMutation.isLoading) &&
-        styles.disabledAction,
-    ]}
-  >
-    <Text style={styles.removeButtonIcon}>✕</Text>
-    <Text style={styles.removeButtonText}>Remove</Text>
-  </Pressable>
-)}
 
                 <Button
                   mode="text"
@@ -767,29 +801,19 @@ const [removeTarget, setRemoveTarget] =
                       { sectionId: String(item.id) }
                     )
                   }
+                  accessibilityLabel={`View students in ${item.sectionName}`}
                   compact
                 >
                   Students
                 </Button>
-
-                <TouchableOpacity
+                <IconButton
+                  icon="dots-vertical"
+                  size={24}
                   accessibilityRole="button"
-                  accessibilityLabel={`Delete section ${item.sectionName}`}
-                  activeOpacity={0.7}
-                  disabled={
-                    deleteSectionMutation.isLoading ||
-                    removeTeacherMutation.isLoading ||
-                    assignTeacherMutation.isLoading
-                  }
-                  onPress={() => confirmDeleteSection(item)}
-                  style={[
-                    styles.deleteButton,
-                    deleteSectionMutation.isLoading && styles.disabledAction,
-                  ]}
-                >
-                  <Text style={styles.deleteButtonIcon}>✕</Text>
-                  <Text style={styles.deleteButtonText}>Delete section</Text>
-                </TouchableOpacity>
+                  accessibilityLabel={`More actions for ${item.sectionName}`}
+                  onPress={() => setActionMenuSection(item)}
+                  style={styles.menuButton}
+                />
               </View>
             </Card.Content>
           </Card>
@@ -811,9 +835,9 @@ const [removeTarget, setRemoveTarget] =
         <Modal
           visible={yearPickerVisible}
           onDismiss={() => setYearPickerVisible(false)}
-          contentContainerStyle={styles.modal}
+          contentContainerStyle={[styles.modal, styles.bottomSheet, isDark && styles.modalDark]}
         >
-          <Text style={styles.modalTitle}>Select academic year</Text>
+          <Text style={[styles.modalTitle, { color: palette.text }]}>Select academic year</Text>
           <ScrollView>
             {years.map((year) => (
               <TouchableOpacity
@@ -825,7 +849,7 @@ const [removeTarget, setRemoveTarget] =
                   setSearch("");
                 }}
               >
-                <Text style={styles.optionText}>{year.name}</Text>
+                <Text style={[styles.optionText, { color: palette.text }]}>{year.name}</Text>
                 {year.isCurrent && <Chip compact>Current</Chip>}
               </TouchableOpacity>
             ))}
@@ -836,19 +860,19 @@ const [removeTarget, setRemoveTarget] =
         <Modal
           visible={createVisible}
           onDismiss={() => !createMutation.isLoading && setCreateVisible(false)}
-          contentContainerStyle={styles.modal}
+          contentContainerStyle={[styles.modal, styles.bottomSheet, isDark && styles.modalDark]}
         >
-          <Text style={styles.modalTitle}>Create section</Text>
+          <Text style={[styles.modalTitle, { color: palette.text }]}>Create section</Text>
           <Text style={styles.muted}>
             Academic year: {selectedYear?.name ?? "Not selected"}
           </Text>
 
           <Text style={styles.label}>Class</Text>
           <TouchableOpacity
-            style={styles.selector}
+            style={[styles.selector, { backgroundColor: palette.surface, borderColor: palette.border }]}
             onPress={() => setClassPickerVisible((value) => !value)}
           >
-            <Text style={styles.selectorText}>
+            <Text style={[styles.selectorText, { color: palette.text }]}>
               {selectedClass?.displayName ??
                 (selectedClass
                   ? `Class ${selectedClass.classNumber}`
@@ -869,7 +893,7 @@ const [removeTarget, setRemoveTarget] =
                       setClassPickerVisible(false);
                     }}
                   >
-                    <Text style={styles.optionText}>
+                    <Text style={[styles.optionText, { color: palette.text }]}>
                       {schoolClass.displayName ??
                         `Class ${schoolClass.classNumber}`}
                     </Text>
@@ -912,19 +936,19 @@ const [removeTarget, setRemoveTarget] =
         <Modal
           visible={copyVisible}
           onDismiss={() => !copyMutation.isLoading && setCopyVisible(false)}
-          contentContainerStyle={styles.modal}
+          contentContainerStyle={[styles.modal, styles.bottomSheet, isDark && styles.modalDark]}
         >
-          <Text style={styles.modalTitle}>Copy sections</Text>
+          <Text style={[styles.modalTitle, { color: palette.text }]}>Copy sections</Text>
           <Text style={styles.muted}>
             Target academic year: {selectedYear?.name ?? "Not selected"}
           </Text>
 
           <Text style={styles.label}>Source academic year</Text>
           <TouchableOpacity
-            style={styles.selector}
+            style={[styles.selector, { backgroundColor: palette.surface, borderColor: palette.border }]}
             onPress={() => setSourcePickerVisible((value) => !value)}
           >
-            <Text style={styles.selectorText}>
+            <Text style={[styles.selectorText, { color: palette.text }]}>
               {years.find((year) => year.id === sourceYearId)?.name ??
                 "Select source year"}
             </Text>
@@ -945,7 +969,7 @@ const [removeTarget, setRemoveTarget] =
                         setSourcePickerVisible(false);
                       }}
                     >
-                      <Text style={styles.optionText}>{year.name}</Text>
+                      <Text style={[styles.optionText, { color: palette.text }]}>{year.name}</Text>
                     </TouchableOpacity>
                   ))}
               </ScrollView>
@@ -975,9 +999,9 @@ const [removeTarget, setRemoveTarget] =
         <Modal
           visible={teacherModalVisible}
           onDismiss={closeTeacherModal}
-          contentContainerStyle={styles.modal}
+          contentContainerStyle={[styles.modal, styles.bottomSheet, isDark && styles.modalDark]}
         >
-          <Text style={styles.modalTitle}>
+          <Text style={[styles.modalTitle, { color: palette.text }]}>
             {selectedSection?.classTeacher ? "Change class teacher" : "Assign class teacher"}
           </Text>
 
@@ -1068,6 +1092,78 @@ const [removeTarget, setRemoveTarget] =
         </Modal>
       </Portal>
 
+      <Portal>
+        <Modal
+          visible={Boolean(actionMenuSection)}
+          onDismiss={() => setActionMenuSection(null)}
+          contentContainerStyle={styles.actionModalContainer}
+        >
+          <View style={[styles.actionSheet, { backgroundColor: palette.surface }]}>
+            <View style={styles.sheetHandle} />
+            <Text style={[styles.modalTitle, { color: palette.text }]}>
+              {actionMenuSection?.class?.displayName ?? `Class ${actionMenuSection?.class?.classNumber ?? ""}`} - {actionMenuSection?.sectionName}
+            </Text>
+            <Button
+              mode="text"
+              icon="account-edit"
+              contentStyle={styles.sheetButtonContent}
+              onPress={() => {
+                if (actionMenuSection) openTeacherModal(actionMenuSection);
+                setActionMenuSection(null);
+              }}
+            >
+              {actionMenuSection?.classTeacher ? "Change teacher" : "Assign teacher"}
+            </Button>
+            {actionMenuSection?.classTeacher && (
+              <Button
+                mode="text"
+                icon="account-remove"
+                textColor="#B42318"
+                contentStyle={styles.sheetButtonContent}
+                onPress={() => {
+                  if (actionMenuSection) confirmRemoveTeacherFor(actionMenuSection);
+                  setActionMenuSection(null);
+                }}
+              >
+                Remove teacher
+              </Button>
+            )}
+            <Button
+              mode="text"
+              icon="account-group"
+              contentStyle={styles.sheetButtonContent}
+              onPress={() => {
+                if (actionMenuSection) {
+                  navigation.navigate(RootStackScreenNames.PrincipalClassStudents, { sectionId: String(actionMenuSection.id) });
+                }
+                setActionMenuSection(null);
+              }}
+            >
+              View students
+            </Button>
+            <Button
+              mode="text"
+              icon="delete-outline"
+              textColor="#B42318"
+              contentStyle={styles.sheetButtonContent}
+              onPress={() => {
+                if (actionMenuSection) confirmDeleteSection(actionMenuSection);
+                setActionMenuSection(null);
+              }}
+            >
+              Delete section
+            </Button>
+            <Button
+              mode="outlined"
+              onPress={() => setActionMenuSection(null)}
+              style={styles.sheetCancelButton}
+            >
+              Cancel
+            </Button>
+          </View>
+        </Modal>
+      </Portal>
+
       <Modal
         visible={!!removeTarget || !!deleteTarget}
         onDismiss={() => {
@@ -1153,8 +1249,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F8FA",
   },
   listContent: {
-    padding: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 48,
   },
   center: {
     flex: 1,
@@ -1171,13 +1268,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#172033",
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: "800",
+    letterSpacing: -0.6,
+    color: "#1D1B20",
   },
   muted: {
-    color: "#687386",
-    marginTop: 4,
+    color: "#79747E",
+    marginTop: 5,
+    fontSize: 13,
+    lineHeight: 19,
   },
   label: {
     fontSize: 14,
@@ -1187,11 +1288,11 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   selector: {
-    minHeight: 52,
+    minHeight: 58,
     borderWidth: 1,
-    borderColor: "#D0D5DD",
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
+    borderColor: "#CAC4D0",
+    borderRadius: 16,
+    backgroundColor: "#FFFBFE",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -1204,25 +1305,31 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: "row",
-    gap: 10,
-    marginTop: 16,
+    gap: 12,
+    marginTop: 18,
   },
   actionButton: {
     flex: 1,
   },
   statsRow: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 16,
+    gap: 10,
+    marginTop: 20,
   },
   statCard: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    backgroundColor: "#FFFBFE",
+    elevation: 2,
+    shadowColor: "#312E3A",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
   statValue: {
-    fontSize: 21,
-    fontWeight: "700",
-    color: "#172033",
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#1D1B20",
   },
   statLabel: {
     fontSize: 12,
@@ -1230,12 +1337,23 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   search: {
-    marginTop: 16,
-    marginBottom: 12,
+    marginTop: 20,
+    marginBottom: 14,
+    borderRadius: 18,
+    elevation: 0,
+  },
+  statusChip: {
+    borderRadius: 12,
   },
   sectionCard: {
-    marginBottom: 10,
-    backgroundColor: "#FFFFFF",
+    marginBottom: 14,
+    borderRadius: 24,
+    backgroundColor: "#FFFBFE",
+    elevation: 2,
+    shadowColor: "#312E3A",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   sectionRow: {
     flexDirection: "row",
@@ -1246,9 +1364,10 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#172033",
+    fontSize: 17,
+    fontWeight: "800",
+    letterSpacing: -0.2,
+    color: "#1D1B20",
   },
   teacherSummary: {
     flexDirection: "row",
@@ -1272,15 +1391,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   cardDivider: {
-    marginTop: 14,
-    marginBottom: 10,
+    marginTop: 18,
+    marginBottom: 12,
   },
   cardActions: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     flexWrap: "wrap",
-    gap: 4,
+    gap: 8,
   },
   removeButton: {
     flexDirection: "row",
@@ -1369,10 +1488,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modal: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FFFBFE",
     margin: 20,
-    borderRadius: 14,
-    padding: 20,
+    borderRadius: 28,
+    padding: 24,
     maxHeight: "85%",
   },
   confirmOverlay: {
@@ -1446,10 +1565,10 @@ confirmDeleteButtonText: {
   fontWeight: "600",
 },
   modalTitle: {
-    fontSize: 21,
-    fontWeight: "700",
-    color: "#172033",
-    marginBottom: 8,
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#1D1B20",
+    marginBottom: 10,
   },
   input: {
     marginTop: 16,
@@ -1488,6 +1607,74 @@ confirmDeleteButtonText: {
   pressedButton: {
   opacity: 0.65,
 },
+  filterRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  filterChip: {
+    borderRadius: 22,
+    minHeight: 40,
+    paddingHorizontal: 4,
+  },
+  resultSummaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 2,
+    marginBottom: 10,
+  },
+  resultSummary: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  menuButton: {
+    margin: 0,
+  },
+  bottomSheet: {
+    alignSelf: "stretch",
+    width: "100%",
+    margin: 0,
+    marginTop: "auto",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: 32,
+  },
+  modalDark: {
+    backgroundColor: "#1A1B20",
+  },
+  actionModalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    margin: 0,
+    padding: 0,
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+  actionSheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: 32,
+    elevation: 8,
+  },
+  sheetHandle: {
+    alignSelf: "center",
+    width: 42,
+    height: 4,
+    borderRadius: 4,
+    backgroundColor: "#A1A1AA",
+    marginBottom: 18,
+  },
+  sheetButtonContent: {
+    justifyContent: "flex-start",
+    minHeight: 48,
+  },
+  sheetCancelButton: {
+    marginTop: 12,
+  },
 });
 
 export default SectionManagementScreen;
