@@ -57,6 +57,8 @@ export const platformAdminServices = {
   restoreSchool: async (schoolId: string) =>
     (await api.post(`/platform/schools/${schoolId}/restore`)).data,
 
+  //getprofile: async () => (await api.get("/users/profile")).data,
+
   deleteAcademicYear: async (
     schoolId: string,
     academicYearId: string,

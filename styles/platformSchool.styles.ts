@@ -43,6 +43,11 @@ const platformSchoolStyles =
       paddingTop: 40,
       paddingBottom: 24,
     },
+    modulesGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+},
 
 
     /* ========================================================

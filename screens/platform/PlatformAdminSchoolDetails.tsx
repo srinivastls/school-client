@@ -1,4 +1,5 @@
 import React, {
+  useRef,
   useState,
 } from "react";
 
@@ -8,9 +9,11 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -194,6 +197,37 @@ const PlatformAdminSchoolDetails = () => {
     lifecycleBusy,
     setLifecycleBusy,
   ] = useState(false);
+
+  const [
+    deleteModalVisible,
+    setDeleteModalVisible,
+  ] = useState(false);
+
+  const [
+    deleteConfirmation,
+    setDeleteConfirmation,
+  ] = useState("");
+
+  const [
+    deleteExpectedText,
+    setDeleteExpectedText,
+  ] = useState("");
+
+  const [
+    deleteModalTitle,
+    setDeleteModalTitle,
+  ] = useState("Final Confirmation");
+
+  const [
+    deleteModalMessage,
+    setDeleteModalMessage,
+  ] = useState("");
+
+  const deleteConfirmationRef =
+    useRef("");
+
+  const pendingDeleteRef =
+    useRef<(() => Promise<void>) | null>(null);
 
 
   const [
@@ -543,64 +577,169 @@ const PlatformAdminSchoolDetails = () => {
     }
   };
 
+  const openDeleteConfirmation = (
+    expectedText: string,
+    title: string,
+    message: string,
+    action: () => Promise<void>
+  ) => {
+    deleteConfirmationRef.current = "";
+    pendingDeleteRef.current = action;
+
+    setDeleteConfirmation("");
+    setDeleteExpectedText(expectedText);
+    setDeleteModalTitle(title);
+    setDeleteModalMessage(message);
+    setDeleteModalVisible(true);
+  };
+
+
+  const closeDeleteConfirmation = () => {
+    if (lifecycleBusy) {
+      return;
+    }
+
+    deleteConfirmationRef.current = "";
+    pendingDeleteRef.current = null;
+    setDeleteConfirmation("");
+    setDeleteModalVisible(false);
+  };
+
+
+  const submitDeleteConfirmation = async () => {
+    if (lifecycleBusy) {
+      return;
+    }
+
+    const confirmation =
+      deleteConfirmationRef.current.trim();
+
+    if (confirmation !== deleteExpectedText) {
+      showMessage(
+        `Please type exactly: ${deleteExpectedText}`,
+        "error"
+      );
+      return;
+    }
+
+    const action = pendingDeleteRef.current;
+
+    if (!action) {
+      showMessage(
+        "Delete action is no longer available. Please try again.",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      await action();
+    } catch (error: any) {
+      showMessage(
+        getErrorMessage(
+          error,
+          "Unable to complete delete operation"
+        ),
+        "error"
+      );
+    }
+  };
+
+
   const confirmDeleteYear = async (year: AcademicYear) => {
     if (!school || lifecycleBusy) return;
+
     setLifecycleBusy(true);
+
     try {
-      const preview = await platformAdminServices.getAcademicYearDeletionPreview(school.id, year.id);
-      setLifecycleBusy(false);
+      const preview =
+        await platformAdminServices.getAcademicYearDeletionPreview(
+          school.id,
+          year.id
+        );
+
       if (preview?.blockers?.length) {
-        Alert.alert("Cannot Delete Academic Year", preview.blockers.join("\n\n"));
+        Alert.alert(
+          "Cannot Delete Academic Year",
+          preview.blockers.join("\n\n")
+        );
         return;
       }
+
       Alert.alert(
         `Delete ${year.name}?`,
         `This will permanently delete the academic-year records listed in the preview.\n\nClasses: ${preview.counts.classes}\nSections: ${preview.counts.sections}\nEnrollments: ${preview.counts.enrollments}\nAttendance: ${preview.counts.attendance}\nExams: ${preview.counts.exams}\nID Cards: ${preview.counts.idCards}`,
         [
-          { text: "Cancel", style: "cancel" },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
           {
             text: "Delete",
             style: "destructive",
             onPress: () => {
-              Alert.prompt(
+              const expectedText =
+                `DELETE ACADEMIC YEAR ${year.name}`;
+
+              openDeleteConfirmation(
+                expectedText,
                 "Final Confirmation",
-                `Type DELETE ACADEMIC YEAR ${year.name}`,
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: async (confirmation) => {
-                      setLifecycleBusy(true);
-                      try {
-                        await platformAdminServices.deleteAcademicYear(school.id, year.id, confirmation || "");
-                        showMessage(`${year.name} deleted successfully`, "success");
-                        await refetch();
-                      } catch (error: any) {
-                        showMessage(getErrorMessage(
-        error,
-        "Unable to delete academic year"
-      ), "error");
-                      } finally {
-                        setLifecycleBusy(false);
-                      }
-                    },
-                  },
-                ],
-                "plain-text"
+                `Type the following exactly to permanently delete ${year.name}:\n\n${expectedText}`,
+                async () => {
+                  if (!school) {
+                    return;
+                  }
+
+                  setLifecycleBusy(true);
+
+                  try {
+                    await platformAdminServices.deleteAcademicYear(
+                      school.id,
+                      year.id,
+                      deleteConfirmationRef.current.trim()
+                    );
+
+                    showMessage(
+                      `${year.name} deleted successfully`,
+                      "success"
+                    );
+
+                    deleteConfirmationRef.current = "";
+                    pendingDeleteRef.current = null;
+                    setDeleteConfirmation("");
+                    setDeleteModalVisible(false);
+
+                    await refetch();
+                  } catch (error: any) {
+                    showMessage(
+                      getErrorMessage(
+                        error,
+                        "Unable to delete academic year"
+                      ),
+                      "error"
+                    );
+                  } finally {
+                    setLifecycleBusy(false);
+                  }
+                }
               );
             },
           },
         ]
       );
     } catch (error: any) {
+      showMessage(
+        getErrorMessage(
+          error,
+          "Unable to check academic year deletion"
+        ),
+        "error"
+      );
+    } finally {
       setLifecycleBusy(false);
-      showMessage(getErrorMessage(
-        error,
-        "Unable to check academic year deletion"
-      ), "error");
     }
   };
+
 
   const confirmArchive = () => {
     if (!school || lifecycleBusy) return;
@@ -653,44 +792,96 @@ const PlatformAdminSchoolDetails = () => {
 
   const confirmPermanentDelete = () => {
     if (!school || lifecycleBusy) return;
-    if (school.status !== "SUSPENDED" && school.status !== "ARCHIVED") {
-      showMessage("School must be suspended or archived before permanent deletion", "error");
+
+    if (
+      school.status !== "SUSPENDED" &&
+      school.status !== "ARCHIVED"
+    ) {
+      showMessage(
+        "School must be suspended or archived before permanent deletion",
+        "error"
+      );
       return;
     }
-    Alert.prompt(
+
+    const expectedText =
+      `DELETE SCHOOL ${school.code}`;
+
+    Alert.alert(
       "PERMANENT DELETE",
-      `A complete backup will be created first.\n\nThis action cannot be undone.\n\nType DELETE SCHOOL ${school.code} to continue.`,
+      `A complete backup will be created first.\n\nThis action cannot be undone.\n\nYou will need to type exactly:\n\n${expectedText}`,
       [
-        { text: "Cancel", style: "cancel" },
         {
-          text: "Delete Permanently",
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Continue",
           style: "destructive",
-          onPress: async (confirmation) => {
-            setLifecycleBusy(true);
-            try {
-              const result = await platformAdminServices.deleteSchool(school.id, confirmation || "");
-              showMessage("School permanently deleted. Backup was created first.", "success");
-              if (result?.backup?.operationId) {
-                // The response contains the backup operation ID; the school is now gone.
-                console.log("School backup operation:", result.backup.operationId);
+          onPress: () => {
+            openDeleteConfirmation(
+              expectedText,
+              "Final Confirmation",
+              `Type the following exactly to permanently delete ${school.name}:\n\n${expectedText}`,
+              async () => {
+                if (!school) {
+                  return;
+                }
+
+                setLifecycleBusy(true);
+
+                try {
+                  const result =
+                    await platformAdminServices.deleteSchool(
+                      school.id,
+                      deleteConfirmationRef.current.trim()
+                    );
+
+                  showMessage(
+                    "School permanently deleted. Backup was created first.",
+                    "success"
+                  );
+
+                  if (result?.backup?.operationId) {
+                    console.log(
+                      "School backup operation:",
+                      result.backup.operationId
+                    );
+                  }
+
+                  deleteConfirmationRef.current = "";
+                  pendingDeleteRef.current = null;
+                  setDeleteConfirmation("");
+                  setDeleteModalVisible(false);
+
+                  await queryClient.invalidateQueries([
+                    "platform-admin-schools",
+                  ]);
+
+                  await queryClient.invalidateQueries([
+                    "platform-admin-dashboard",
+                  ]);
+
+                  navigation.goBack();
+                } catch (error: any) {
+                  showMessage(
+                    getErrorMessage(
+                      error,
+                      "Unable to delete school"
+                    ),
+                    "error"
+                  );
+                } finally {
+                  setLifecycleBusy(false);
+                }
               }
-              await queryClient.invalidateQueries(["platform-admin-schools"]);
-              await queryClient.invalidateQueries(["platform-admin-dashboard"]);
-              navigation.goBack();
-            } catch (error: any) {
-              showMessage(getErrorMessage(
-        error,
-        "Unable to delete school"
-      ), "error");
-            } finally {
-              setLifecycleBusy(false);
-            }
+            );
           },
         },
-      ],
-      "plain-text"
+      ]
     );
   };
+
 
   /* ==========================================================
      LOADING
@@ -1966,6 +2157,65 @@ const PlatformAdminSchoolDetails = () => {
       </ScrollView>
 
 
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeDeleteConfirmation}
+      >
+        <View style={deleteModalStyles.overlay}>
+          <View style={deleteModalStyles.container}>
+            <Text style={deleteModalStyles.title}>
+              {deleteModalTitle}
+            </Text>
+
+            <Text style={deleteModalStyles.message}>
+              {deleteModalMessage}
+            </Text>
+
+            <TextInput
+              value={deleteConfirmation}
+              onChangeText={(text) => {
+                setDeleteConfirmation(text);
+                deleteConfirmationRef.current = text;
+              }}
+              placeholder={deleteExpectedText}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              editable={!lifecycleBusy}
+              returnKeyType="done"
+              onSubmitEditing={submitDeleteConfirmation}
+              style={deleteModalStyles.input}
+            />
+
+            <View style={deleteModalStyles.actions}>
+              <Button
+                mode="text"
+                disabled={lifecycleBusy}
+                onPress={closeDeleteConfirmation}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                mode="contained"
+                buttonColor={Colors.error}
+                disabled={
+                  lifecycleBusy ||
+                  deleteConfirmation.trim() !==
+                    deleteExpectedText
+                }
+                loading={lifecycleBusy}
+                onPress={submitDeleteConfirmation}
+              >
+                Delete Permanently
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
       {/* ======================================================
           SNACKBAR
       ====================================================== */}
@@ -2554,6 +2804,71 @@ const getStatusStyle = (
       return styles.defaultBadge;
   }
 };
+
+
+/* ============================================================
+   DELETE MODAL STYLES
+============================================================ */
+
+const deleteModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+
+  container: {
+    width: "100%",
+    maxWidth: 520,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 24,
+    elevation: 8,
+    shadowColor: "#000000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#171717",
+    marginBottom: 12,
+  },
+
+  message: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#555555",
+    marginBottom: 18,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#CCCCCC",
+    borderRadius: 8,
+    minHeight: 48,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: "#171717",
+    backgroundColor: "#FFFFFF",
+  },
+
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: 20,
+    gap: 8,
+  },
+});
 
 
 /* ============================================================

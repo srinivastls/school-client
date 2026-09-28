@@ -175,8 +175,27 @@ export type Profile = {
   updatedAt: string;
 };
 
+export type AdminProfile = {
+  id: string;
+  name: string;
+  phone?: string | null;
+  profilePhotoUrl?: string | null;
+  email: string;
+  role: string;
+  isActive: boolean;
+
+  lastLogin?: string | null;
+
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ProfileResponse = {
   profile: Profile;
+};
+
+export type AdminProfileResponse = {
+  profile: AdminProfile;
 };
 
 export type UpdateProfilePayload = {
@@ -194,6 +213,14 @@ const getProfile = async (): Promise<ProfileResponse> => {
 
   return response.data;
 };
+
+
+
+const getPlatformAdminProfile = async (): Promise<AdminProfileResponse> => {
+  const response = await api.get("/users/platformAdminProfile");
+
+  return response.data;
+}
 
 // ============================================================
 // UPDATE PROFILE
@@ -243,6 +270,8 @@ export const userServices = {
   updateTeacherStatus,
 
   getProfile,
+
+  getPlatformAdminProfile,
 
   updateProfile,
 };

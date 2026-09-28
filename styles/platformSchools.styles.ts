@@ -186,6 +186,11 @@ const platformSchoolsStyles = StyleSheet.create({
     fontWeight: "800",
     color: "#171717",
   },
+  modulesGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+},
   emptyText: {
     marginTop: Metrics.x1,
     fontSize: 13,

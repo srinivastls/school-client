@@ -59,6 +59,8 @@ import { AdminCommunication } from "./screens/admin/AdminCommunication";
 import { AdminSchoolSettings } from "./screens/admin/AdminSchoolSettings";
 import { AdminReports } from "./screens/admin/AdminReports";
 
+import AdminProfileScreen from "./screens/platform/AdminProfileScreen";
+
 import { StudentDetails } from "./screens/StudentDetails";
 import { StudentRegistration } from "./screens/StudentRegistration";
 import { AdminDashboard } from "./screens/admin/AdminDashboard";
@@ -274,6 +276,16 @@ export default function App() {
               component={PrincipalTeachersScreen}
               options={{
                 headerTitle: "Teachers",
+              }}
+            />
+
+            <RootStack.Screen
+              name={
+                RootStackScreenNames.AdminProfileScreen
+              }
+              component={AdminProfileScreen}
+              options={{
+                headerTitle: "Admin Profile",
               }}
             />
 

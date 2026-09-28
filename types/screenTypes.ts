@@ -104,6 +104,7 @@ AdminCommunication = "AdminCommunication",
 AdminSchoolSettings = "AdminSchoolSettings",
 AdminReports = "AdminReports",
 ProfileScreen = "ProfileScreen",
+AdminProfileScreen = "AdminProfileScreen",
 }
 
 export type ParentChild = {
@@ -146,6 +147,7 @@ export type RootStackParamList = {
   [RootStackScreenNames.AdminStudentRegistration]: undefined;
   [RootStackScreenNames.BulkImport]: undefined;
   [RootStackScreenNames.ProfileScreen]: undefined;
+  [RootStackScreenNames.AdminProfileScreen]: undefined;
 
   [RootStackScreenNames.AdminStudentDetails]: {
     admissionNo: string;

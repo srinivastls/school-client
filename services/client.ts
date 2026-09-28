@@ -7,7 +7,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export const api = axios.create({
   baseURL:
       //"http://localhost:3000/api",
-      "http://10.81.56.17:3000/api",
+      "http://10.81.55.243:3000/api",
+      //"http://10.61.4.100:3000/api",
     //"https://school-server-production-41f8.up.railway.app/api",
     //"https://school-management-d0ccfbbd10d1.herokuapp.com/api",
 
