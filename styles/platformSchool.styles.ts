@@ -49,6 +49,25 @@ const platformSchoolStyles =
   justifyContent: "space-between",
 },
 
+principalActions: {
+  flexDirection: "row",
+  gap: 10,
+  marginTop: 16,
+},
+
+changePrincipalButton: {
+  flex: 1,
+  borderColor: "#1976D2",
+},
+
+deletePrincipalButton: {
+  flex: 1,
+  borderColor: "#D32F2F",
+},
+
+principalButtonContent: {
+  height: 44,
+},
 
     /* ========================================================
        LOADING

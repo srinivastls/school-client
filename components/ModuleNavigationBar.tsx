@@ -23,8 +23,8 @@ type NavItem = {
 const roleItems: Record<string, NavItem[]> = {
   PLATFORM_ADMIN: [
     { label: "Dashboard", icon: "view-dashboard-outline", screen: RootStackScreenNames.PlatformAdminDashboard },
-    { label: "Schools", icon: "school-outline", screen: RootStackScreenNames.PlatformSchools },
-    { label: "Add school", icon: "plus-circle-outline", screen: RootStackScreenNames.PlatformAdminCreateSchool },
+    //{ label: "Schools", icon: "school-outline", screen: RootStackScreenNames.PlatformSchools },
+    //{ label: "Add school", icon: "plus-circle-outline", screen: RootStackScreenNames.PlatformAdminCreateSchool },
   ],
   ADMIN: [
     { label: "Dashboard", icon: "view-dashboard-outline", screen: RootStackScreenNames.AdminDashboard },
@@ -177,7 +177,14 @@ export const ModuleNavigationBar = ({ activeRoute, navigationRef }: ModuleNaviga
   onPress={() => {
     setProfileVisible(false);
 
-    if (navigationRef.isReady()) {
+    if (user?.role === "PLATFORM_ADMIN" && navigationRef.isReady()) {
+      navigationRef.navigate(
+        RootStackScreenNames.AdminProfileScreen
+      );
+    }
+
+
+    if (user?.role != "PLATFORM_ADMIN" && navigationRef.isReady()) {
       navigationRef.navigate(
         RootStackScreenNames.ProfileScreen
       );

@@ -31,6 +31,22 @@ export const platformAdminServices = {
     }
   ) => (await api.post(`/platform/schools/${schoolId}/principal`, data)).data,
 
+
+  updatePrincipal: async (
+    schoolId: string,
+    data: {
+      name?: string;
+      email?: string;
+      phone?: string;
+      designation?: string;
+      department?: string;
+      employeeId?: string;
+    }
+  ) => (await api.patch(`/platform/schools/${schoolId}/principal`, data)).data,
+
+  deletePrincipal: async (schoolId: string) =>
+    (await api.delete(`/platform/schools/${schoolId}/principal`)).data,
+
   updateSchoolStatus: async (
     schoolId: string,
     status: "ACTIVE" | "SUSPENDED"

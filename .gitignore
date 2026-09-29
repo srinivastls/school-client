@@ -40,6 +40,9 @@ DerivedData
 *.xcuserstate
 project.xcworkspace
 
+*.jks
+*.keystore
+
 # Android/IntelliJ
 #
 build/

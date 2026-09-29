@@ -384,9 +384,7 @@ const LoginScreen = ({
 
   const onPress = () => {
 
-  console.log(
-    "🔥 LOGIN BUTTON PRESSED"
-  );
+
 
 
   if (isLoading) {
@@ -422,13 +420,6 @@ const LoginScreen = ({
   const isSchoolLogin =
     !!schoolCode.trim();
 
-
-  console.log(
-    "🔥 LOGIN TYPE:",
-    isSchoolLogin
-      ? "SCHOOL"
-      : "PLATFORM"
-  );
 
 
   /* ------------------------------------------------------------------------

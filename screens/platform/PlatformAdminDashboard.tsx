@@ -1402,55 +1402,7 @@ const PlatformAdminDashboard = ({
               }
             >
 
-              <View
-                style={styles.primaryNavigation}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    navigation.navigate(
-                      RootStackScreenNames.PlatformSchools
-                    )
-                  }
-                  style={styles.navigationItem}
-                >
-                  <IconButton
-                    icon="school-outline"
-                    size={18}
-                    iconColor={Colors.subtext}
-                    style={styles.navigationIcon}
-                  />
-
-                  {!isSmallScreen && (
-                    <Text style={styles.navigationLabel}>
-                      Schools
-                    </Text>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    navigation.navigate(
-                      RootStackScreenNames.PlatformAdminCreateSchool
-                    )
-                  }
-                  style={styles.navigationItem}
-                >
-                  <IconButton
-                    icon="plus-circle-outline"
-                    size={18}
-                    iconColor={Colors.subtext}
-                    style={styles.navigationIcon}
-                  />
-
-                  {!isSmallScreen && (
-                    <Text style={styles.navigationLabel}>
-                      Add School
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
+              
 
               <IconButton
                 icon={
@@ -1487,7 +1439,7 @@ const PlatformAdminDashboard = ({
               <TouchableOpacity
   activeOpacity={0.8}
   onPress={() => {
-    setProfileMenuVisible(true);
+    setProfileMenuVisible(false);
   }}
   style={[
     styles.profileButton,

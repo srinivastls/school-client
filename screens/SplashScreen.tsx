@@ -95,9 +95,6 @@ const SplashScreen = ({
       accessToken
     ) {
 
-      console.log(
-        "🔥 SPLASH → HOME"
-      );
 
       navigation.reset({
 
@@ -115,10 +112,6 @@ const SplashScreen = ({
       return;
     }
 
-
-    console.log(
-      "🔥 SPLASH → LOGIN"
-    );
 
     navigation.reset({
 

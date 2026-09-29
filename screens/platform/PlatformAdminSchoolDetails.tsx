@@ -55,6 +55,7 @@ import {
   Colors,
   Metrics,
 } from "../../theme";
+import { RefreshControl } from "react-native-gesture-handler";
 
 
 /* ============================================================
@@ -279,8 +280,12 @@ const PlatformAdminSchoolDetails = () => {
     {
       enabled:
         !!schoolId,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+
     }
   );
+
 
 
   /* ==========================================================
@@ -352,6 +357,69 @@ const PlatformAdminSchoolDetails = () => {
       );
     };
 
+  const onChangePrincipal = () => {
+  // Open principal selection/edit screen or modal
+
+    if (!school) {
+      return;
+    }
+
+    navigation.navigate(
+      RootStackScreenNames.PlatformAdminCreatePrincipal,
+      {
+        schoolId: school.id,
+        schoolName: school.name,
+        schoolCode: school.code,
+
+
+        principalId: school.principal?.id, // Pass the principal ID if it exists
+      } as any
+    );
+
+
+
+};
+
+const onDeletePrincipal = () => {
+  // Show confirmation before deleting
+  if (!school) {
+    return;
+  }
+
+  Alert.alert(
+    "Delete Principal",
+
+    `Are you sure you want to delete the principal for ${school.name}?`,
+
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          if (!school) {
+            return;
+          }
+          // Perform the deletion logic here
+          const deletePrincipal = async () => {
+            try {
+              await platformAdminServices.deletePrincipal(school.id);
+            } catch (error) {
+              console.error("Error deleting principal:", error);
+            }
+          };
+          deletePrincipal();
+
+
+          refetch();
+        },
+      },
+    ]
+  );
+};
 
   /* ==========================================================
      UPDATE STATUS
@@ -1081,65 +1149,6 @@ const PlatformAdminSchoolDetails = () => {
           }
         >
 
-          <View
-            style={
-              styles.headerLeft
-            }
-          >
-
-            <IconButton
-              icon="arrow-left"
-
-              size={22}
-
-              iconColor="#171717"
-
-              onPress={() =>
-                navigation.goBack()
-              }
-
-              style={
-                styles.backButton
-              }
-            />
-
-
-            <View
-              style={
-                styles.breadcrumbContainer
-              }
-            >
-
-              <Text
-                style={
-                  styles.breadcrumb
-                }
-              >
-                Schools
-              </Text>
-
-
-              <Text
-                style={
-                  styles.breadcrumbSeparator
-                }
-              >
-                /
-              </Text>
-
-
-              <Text
-                style={
-                  styles.breadcrumbCurrent
-                }
-                numberOfLines={1}
-              >
-                {school.name}
-              </Text>
-
-            </View>
-
-          </View>
 
 
           <IconButton
@@ -1655,7 +1664,7 @@ const PlatformAdminSchoolDetails = () => {
                 PRINCIPAL
             ================================================= */}
 
-            <SectionCard
+            {/* <SectionCard
               title="Principal"
               subtitle="School administrator account"
               icon="account-tie-outline"
@@ -1804,7 +1813,105 @@ const PlatformAdminSchoolDetails = () => {
 
               )}
 
-            </SectionCard>
+            </SectionCard> */}
+
+            <SectionCard
+  title="Principal"
+  subtitle="School administrator account"
+  icon="account-tie-outline"
+>
+  {principal ? (
+    <>
+      <View style={styles.principalProfile}>
+        <Avatar.Text
+          size={56}
+          label={getInitials(principal.name)}
+          color="#FFFFFF"
+          style={styles.principalAvatar}
+        />
+
+        <View style={styles.principalProfileInfo}>
+          <Text style={styles.principalName}>
+            {principal.name}
+          </Text>
+
+          <Text style={styles.principalDesignation}>
+            {principal.designation ?? "Principal"}
+          </Text>
+
+          <View style={styles.activeIndicatorRow}>
+            <View
+              style={[
+                styles.activeDot,
+                {
+                  backgroundColor: principal.isActive
+                    ? "#2E7D32"
+                    : "#9E9E9E",
+                },
+              ]}
+            />
+
+            <Text style={styles.activeIndicatorText}>
+              {principal.isActive
+                ? "Active account"
+                : "Inactive account"}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <Divider style={styles.innerDivider} />
+
+      <InfoRow
+        icon="email-outline"
+        label="Email"
+        value={principal.email}
+      />
+
+      <InfoRow
+        icon="phone-outline"
+        label="Phone"
+        value={principal.phone ?? "Not provided"}
+      />
+
+      <InfoRow
+        icon="login"
+        label="Last Login"
+        value={formatDate(principal.lastLogin)}
+      />
+
+      {/* Principal Actions */}
+      <View style={styles.principalActions}>
+        <Button
+          mode="outlined"
+          icon="account-switch-outline"
+          onPress={() => onChangePrincipal()}
+          style={styles.changePrincipalButton}
+          contentStyle={styles.principalButtonContent}
+        >
+          Change Principal
+        </Button>
+
+        <Button
+          mode="outlined"
+          icon="delete-outline"
+          onPress={() => onDeletePrincipal()}
+          style={styles.deletePrincipalButton}
+          textColor="#D32F2F"
+          contentStyle={styles.principalButtonContent}
+        >
+          Delete Principal
+        </Button>
+      </View>
+    </>
+  ) : (
+    <EmptyPrincipal
+      onCreate={onCreatePrincipal}
+    />
+  )}
+</SectionCard>
+
+            
 
           </View>
 
