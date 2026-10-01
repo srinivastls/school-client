@@ -1,4 +1,4 @@
-package com.school.app
+package com.soir.shikshavega.app
 
 import android.os.Build
 import android.os.Bundle

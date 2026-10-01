@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "school",
+    "name": "SOIR SV",
     "slug": "srinu",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,7 +24,7 @@
         "NSLocalNetworkUsageDescription": "This app requires local network access to print fee receipts."
       },
       "supportsTablet": true,
-      "bundleIdentifier": "com.school.app"
+      "bundleIdentifier": "com.soir.shikshavega.app"
     },
 
     "android": {
@@ -42,7 +42,7 @@
         "ACCESS_NETWORK_STATE",
         "CHANGE_WIFI_MULTICAST_STATE"
       ],
-      "package": "com.school.app"
+      "package": "com.soir.shikshavega.app"
     },
     "web": {
   "favicon": "./assets/favicon.png",
