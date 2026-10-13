@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Button, Checkbox, TextInput } from "react-native-paper";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { academicYearServices } from "../services/academicYearServices";
 import { studentServices } from "../services/studentServices";
@@ -240,12 +240,13 @@ export const PromotionDemotion = ({
     isError: isCurrentAcademicYearError,
     refetch: refetchCurrentAcademicYear,
   } = useQuery<AcademicYearResponse>(
-    ["current-academic-year"],
-    () => academicYearServices.getCurrentAcademicYear(),
     {
+      queryKey: ["current-academic-year"],
+      queryFn: () => academicYearServices.getCurrentAcademicYear(),
+  
       staleTime: 5 * 60 * 1000,
-    }
-  );
+    
+});
 
   const currentAcademicYear = useMemo(
     () => getAcademicYearFromResponse(currentAcademicYearResponse),
@@ -269,12 +270,14 @@ export const PromotionDemotion = ({
     isError: isAcademicYearsError,
     refetch: refetchAcademicYears,
   } = useQuery(
-    ["academic-years"],
-    () => academicYearServices.getAcademicYears(),
     {
+      
+    queryKey: ["academic-years"],
+    queryFn: () => academicYearServices.getAcademicYears(),
+
       staleTime: 5 * 60 * 1000,
-    }
-  );
+
+});
 
   const academicYears = useMemo(
     () => getAcademicYearsFromResponse(academicYearsResponse),
@@ -316,17 +319,17 @@ export const PromotionDemotion = ({
   isFetching: isFetchingPromotionStudents,
   isError: isPromotionStudentsError,
   refetch: refetchPromotionStudents,
-} = useQuery<PromotionStudentsResponse>(
-  [
-    "promotion-students",
-    sourceAcademicYearId,
-    targetAcademicYearId,
-    sourceClassId,
-  ],
-  () => {
-    if (
-      !sourceAcademicYearId ||
-      !targetAcademicYearId
+} = useQuery<PromotionStudentsResponse>({
+    queryKey: [
+      "promotion-students",
+      sourceAcademicYearId,
+      targetAcademicYearId,
+      sourceClassId,
+    ],
+    queryFn: () => {
+      if (
+        !sourceAcademicYearId ||
+        !targetAcademicYearId
     ) {
       return Promise.reject(
         new Error(
@@ -345,14 +348,14 @@ export const PromotionDemotion = ({
         : {}),
     });
   },
-  {
+  
     // Remove Boolean(sourceClassId)
-    enabled:
+    enabled: 
       hasValidSourceAcademicYear &&
       hasValidTargetAcademicYear,
     staleTime: 0,
-  }
-);
+  
+});
 
   const students = promotionResponse?.students ?? [];
 

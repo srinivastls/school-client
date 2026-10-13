@@ -20,7 +20,7 @@ import {
 import {
   useMutation,
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   useNavigation,
@@ -197,12 +197,13 @@ const PrincipalCreateAdminScreen = () => {
 
   const createAdminMutation =
     useMutation(
-      (
-        payload: {
-          name: string;
-          email: string;
-          password: string;
-          phone?: string;
+      {
+        mutationFn: (
+          payload: {
+            name: string;
+            email: string;
+            password: string;
+            phone?: string;
           designation?: string;
           department?: string;
           employeeId?: string;
@@ -212,7 +213,7 @@ const PrincipalCreateAdminScreen = () => {
           payload
         ),
 
-      {
+    
         onSuccess: (
           data
         ) => {
@@ -224,9 +225,11 @@ const PrincipalCreateAdminScreen = () => {
 
 
           queryClient.invalidateQueries(
-            [
-              "principal-admins",
-            ]
+            {
+              queryKey: [
+                "principal-admins",
+              ]
+            }
           );
 
 
@@ -416,7 +419,7 @@ const PrincipalCreateAdminScreen = () => {
     () => {
 
       if (
-        createAdminMutation.isLoading
+        createAdminMutation.isPending
       ) {
         return;
       }
@@ -565,7 +568,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -611,7 +614,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -656,7 +659,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -712,7 +715,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -732,7 +735,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -752,7 +755,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -836,7 +839,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -898,7 +901,7 @@ const PrincipalCreateAdminScreen = () => {
                 styles.input
               }
               disabled={
-                createAdminMutation.isLoading
+                createAdminMutation.isPending
               }
             />
 
@@ -937,7 +940,7 @@ const PrincipalCreateAdminScreen = () => {
               styles.cancelButton
             }
             disabled={
-              createAdminMutation.isLoading
+              createAdminMutation.isPending
             }
           >
             Cancel
@@ -953,10 +956,10 @@ const PrincipalCreateAdminScreen = () => {
               styles.createButton
             }
             loading={
-              createAdminMutation.isLoading
+              createAdminMutation.isPending
             }
             disabled={
-              createAdminMutation.isLoading
+              createAdminMutation.isPending
             }
           >
             Create Admin

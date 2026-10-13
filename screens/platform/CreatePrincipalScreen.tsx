@@ -51,7 +51,7 @@ import {
 
 import {
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 
 /* ============================================================
@@ -741,25 +741,30 @@ const CreatePrincipalScreen = () => {
         ------------------------------------------------------ */
 
         await queryClient.invalidateQueries(
-          [
-            "platform-admin-dashboard",
-          ]
+          {
+            queryKey: [
+              "platform-admin-dashboard",
+            ]
+          }
         );
 
 
         await queryClient.invalidateQueries(
-          [
-            "platform-admin-schools",
-          ]
+          {
+            queryKey: [
+              "platform-admin-schools",
+            ]
+          }
         );
 
 
         await queryClient.invalidateQueries(
-          [
-            "platform-school",
-            schoolId,
-          ]
-        );
+          {
+            queryKey: [
+              "platform-school",
+              schoolId,
+            ]
+      });
 
 
         showMessage(

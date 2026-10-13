@@ -41,7 +41,7 @@ import {
 
 import {
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 
 /* ============================================================
@@ -229,9 +229,11 @@ const PrincipalParentDetailsScreen =
 
 
           queryClient.invalidateQueries(
-            [
-              "principal-parents",
-            ]
+            {
+              queryKey: [
+                "principal-parents",
+              ]
+            }
           );
 
           /*

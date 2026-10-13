@@ -20,7 +20,7 @@ import {
 
 import {
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   RootStackParamList,
@@ -169,18 +169,22 @@ const PrincipalTeacherDetailsScreen = () => {
       /*
        * Refresh teacher list.
        */
-      queryClient.invalidateQueries([
-        "principal-teachers",
-      ]);
+      queryClient.invalidateQueries({
+        queryKey: [
+          "principal-teachers",
+        ]
+      });
 
       /*
        * Refresh teacher details if the
        * details screen uses a query later.
        */
-      queryClient.invalidateQueries([
-        "principal-teacher",
-        teacher.id,
-      ]);
+      queryClient.invalidateQueries({
+        queryKey: [
+          "principal-teacher",
+          teacher.id,
+        ]
+      });
     } catch (error: any) {
       console.log(
         "UPDATE TEACHER STATUS ERROR:",

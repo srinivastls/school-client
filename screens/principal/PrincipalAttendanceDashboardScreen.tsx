@@ -28,7 +28,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import dayjs from "dayjs";
 
@@ -137,19 +137,19 @@ const PrincipalAttendanceDashboardScreen =
       error,
       refetch,
     } =
-      useQuery(
-        [
+      useQuery({
+        queryKey: [
           "attendance-dashboard",
           selectedDate,
         ],
 
-        () =>
+        queryFn: () =>
           attendanceServices
             .getAttendanceDashboard(
               selectedDate
             ),
 
-        {
+        
           staleTime:
             30 * 1000,
         }

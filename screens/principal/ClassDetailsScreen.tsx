@@ -36,7 +36,7 @@ import {
 import {
   useQuery,
   useMutation,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   classServices,
@@ -222,14 +222,13 @@ const [
 ========================================================== */
 
 const createSectionMutation =
-  useMutation(
-    (payload: {
+  useMutation({
+    mutationFn: (payload: {
       classId: string;
       sectionName: string;
     }) =>
       sectionServices.createSection(payload),
 
-    {
       onSuccess: (response) => {
         setCreateSectionVisible(false);
         setSectionNameInput("");
@@ -314,14 +313,14 @@ const handleCreateSection = () => {
     isError,
     error,
     refetch,
-  } = useQuery<ClassDetails>(
-    [
+  } = useQuery<ClassDetails>({
+    queryKey:[
       "principal-class-details",
       classNumber,
       academicYearId,
     ],
 
-    async () => {
+    queryFn: async () => {
       const response =
         await classServices.getClassDetails(
           classNumber,
@@ -331,11 +330,9 @@ const handleCreateSection = () => {
       return response as ClassDetails;
     },
 
-    {
       enabled: Boolean(classNumber),
       retry: 1,
-    }
-  );
+});
 
   /* ==========================================================
      SECTIONS API
@@ -355,20 +352,21 @@ const handleCreateSection = () => {
     isFetching: sectionsFetching,
     refetch: refetchSections,
   } = useQuery<GetSectionsByClassResponse>(
-    [
-      "principal-class-sections",
-      classDetails?.id,
-    ],
+    {
+      queryKey: [
+        "principal-class-sections",
+        classDetails?.id,
+      ],
 
-    async () => {
-      if (!classDetails?.id) {
-        return {
-          class: {
-            id: "",
-            classNumber: "",
-            displayName: "",
-            academicYearId: "",
-          },
+      queryFn: async () => {
+        if (!classDetails?.id) {
+          return {
+            class: {
+              id: "",
+              classNumber: "",
+              displayName: "",
+              academicYearId: "",
+            },
 
           sections: [],
         };
@@ -379,11 +377,11 @@ const handleCreateSection = () => {
       );
     },
 
-    {
+    
       enabled: Boolean(classDetails?.id),
       retry: 1,
-    }
-  );
+    
+});
 
 
   /* ==========================================================
@@ -397,7 +395,7 @@ const renderCreateSectionModal = () => {
       transparent
       animationType="fade"
       onRequestClose={() => {
-        if (!createSectionMutation.isLoading) {
+        if (!createSectionMutation.isPending) {
           setCreateSectionVisible(false);
           setCreateSectionError("");
         }
@@ -430,14 +428,14 @@ const renderCreateSectionModal = () => {
               size={22}
               onPress={() => {
                 if (
-                  !createSectionMutation.isLoading
+                  !createSectionMutation.isPending
                 ) {
                   setCreateSectionVisible(false);
                   setCreateSectionError("");
                 }
               }}
               disabled={
-                createSectionMutation.isLoading
+                createSectionMutation.isPending
               }
             />
           </View>
@@ -460,7 +458,7 @@ const renderCreateSectionModal = () => {
             autoCorrect={false}
             maxLength={50}
             disabled={
-              createSectionMutation.isLoading
+              createSectionMutation.isPending
             }
             style={styles.createSectionInput}
             outlineStyle={
@@ -487,7 +485,7 @@ const renderCreateSectionModal = () => {
                 setCreateSectionError("");
               }}
               disabled={
-                createSectionMutation.isLoading
+                createSectionMutation.isPending
               }
               style={styles.createCancelButton}
             >
@@ -498,10 +496,10 @@ const renderCreateSectionModal = () => {
               mode="contained"
               onPress={handleCreateSection}
               loading={
-                createSectionMutation.isLoading
+                createSectionMutation.isPending
               }
               disabled={
-                createSectionMutation.isLoading
+                createSectionMutation.isPending
               }
               style={styles.createSubmitButton}
             >

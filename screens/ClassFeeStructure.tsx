@@ -17,7 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Class, RootStackParamList, RootStackScreenNames } from "../types";
 import { classServices } from "../services";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { isAdmin } from "../utils";
 
@@ -90,7 +90,10 @@ const ClassFeeStructure = () => {
         classNumber: selectedClass ?? "",
       });
 
-      queryClient.refetchQueries(["classList"]);
+      //queryClient.refetchQueries(["classList"]);
+      queryClient.refetchQueries({
+  queryKey: ['classList'],
+});
 
       setSelectedClass(null);
       setClassDetails(null);

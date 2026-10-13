@@ -16,7 +16,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   useNavigation,
@@ -118,13 +118,13 @@ const ParentDashboardScreen = () => {
     isLoading,
     isFetching,
     error,
-  } = useQuery<ParentDashboardResponse>(
-    [
+  } = useQuery<ParentDashboardResponse>({
+    queryKey: [
       "parent-dashboard",
     ],
-    () =>
+    queryFn: () =>
       parentServices.getDashboard(),
-    {
+    
       staleTime: 30 * 1000,
     }
   );

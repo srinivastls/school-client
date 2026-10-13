@@ -22,7 +22,7 @@ import {
   Metrics,
 } from "../theme";
 
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import {isAdmin} from "../utils";
 
 import { couponServices } from "../services";
@@ -191,8 +191,10 @@ const CouponListScreen = () => {
     isError,
     refetch,
   } = useQuery(
-    "coupons",
-    couponServices.getAllCoupons
+    {
+      queryKey: ["coupons"],
+      queryFn: couponServices.getAllCoupons,
+    }
   );
 
   const renderCouponCard = ({

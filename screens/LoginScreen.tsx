@@ -30,7 +30,7 @@ import {
 
 import { usePasswordInput } from "../hooks";
 
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import { userServices } from "../services";
 
@@ -125,9 +125,9 @@ const LoginScreen = ({
 
   const {
     mutate: login,
-    isLoading,
-  } = useMutation(
-    async () => {
+    isPending,
+  } = useMutation({
+    mutationFn: async () => {
 
 
       /*
@@ -172,7 +172,7 @@ const LoginScreen = ({
 
       return result;
     },
-    {
+
 
       /* ======================================================================
          SUCCESS
@@ -387,7 +387,7 @@ const LoginScreen = ({
 
 
 
-  if (isLoading) {
+  if (isPending) {
 
 
     return;
@@ -727,8 +727,8 @@ const LoginScreen = ({
       <Button
         mode="contained"
         onPress={onPress}
-        loading={isLoading}
-        disabled={isLoading}
+        loading={isPending}
+        disabled={isPending}
       >
         Login
       </Button>

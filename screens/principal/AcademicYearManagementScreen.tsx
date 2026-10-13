@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -29,7 +30,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import { useNavigation } from "@react-navigation/native";
 
@@ -201,45 +202,29 @@ const AcademicYearManagementScreen = () => {
      GET ACADEMIC YEARS
   ========================================================== */
 
-  const academicYearsQuery =
-    useQuery<AcademicYearsResponse>(
-      ["academic-years"],
-      () =>
-        academicYearServices
-          .getAcademicYears() as
-          Promise<AcademicYearsResponse>,
-      {
-        onSuccess: response => {
-          const years =
-            response?.academicYears ?? [];
+ const academicYearsQuery = useQuery<AcademicYearsResponse>({
+  queryKey: ["academic-years"],
+  queryFn: () =>
+    academicYearServices.getAcademicYears() as Promise<AcademicYearsResponse>,
+});
 
-          /*
-           * Select current academic year
-           * automatically on first load.
-           */
-          if (!selectedYearId) {
-            const currentYear =
-              years.find(
-                year => year.isCurrent
-              );
+const academicYears =
+  academicYearsQuery.data?.academicYears ?? [];
 
-            if (currentYear) {
-              setSelectedYearId(
-                currentYear.id
-              );
-            } else if (years.length > 0) {
-              setSelectedYearId(
-                years[0].id
-              );
-            }
-          }
-        },
-      }
-    );
+useEffect(() => {
+  const years = academicYearsQuery.data?.academicYears ?? [];
 
-  const academicYears =
-    academicYearsQuery.data
-      ?.academicYears ?? [];
+  // Select current academic year automatically on first load.
+  if (!selectedYearId && years.length > 0) {
+    const currentYear = years.find((year) => year.isCurrent);
+
+    if (currentYear) {
+      setSelectedYearId(currentYear.id);
+    } else {
+      setSelectedYearId(years[0].id);
+    }
+  }
+}, [academicYearsQuery.data, selectedYearId]);
 
   /* ==========================================================
      CURRENT YEAR
@@ -278,14 +263,15 @@ const AcademicYearManagementScreen = () => {
 
   const createMutation =
     useMutation(
-      (
+      {
+        mutationFn: (
         payload: CreateAcademicYearPayload
       ) =>
         academicYearServices
           .createAcademicYear(
             payload
           ),
-      {
+      
         onSuccess: response => {
           setCreateModalVisible(
             false
@@ -293,13 +279,13 @@ const AcademicYearManagementScreen = () => {
 
           resetCreateForm();
 
-          queryClient.invalidateQueries(
-            ["academic-years"]
-          );
+          queryClient.invalidateQueries({
+            queryKey: ["academic-years"]
+          });
 
-          queryClient.invalidateQueries(
-            ["current-academic-year"]
-          );
+          queryClient.invalidateQueries({
+            queryKey: ["current-academic-year"]
+          });
 
           showSnackbar(
             response?.message ??
@@ -326,22 +312,22 @@ const AcademicYearManagementScreen = () => {
 
   const setCurrentMutation =
     useMutation(
-      (
+      {mutationFn: (
         academicYearId: string
       ) =>
         academicYearServices
           .setCurrentAcademicYear(
             academicYearId
           ),
-      {
+      
         onSuccess: response => {
-          queryClient.invalidateQueries(
-            ["academic-years"]
-          );
+          queryClient.invalidateQueries({
+            queryKey: ["academic-years"]
+          });
 
-          queryClient.invalidateQueries(
-            ["current-academic-year"]
-          );
+          queryClient.invalidateQueries({
+            queryKey: ["current-academic-year"]
+          });
 
           showSnackbar(
             response?.message ??
@@ -367,7 +353,9 @@ const AcademicYearManagementScreen = () => {
   ========================================================== */
 
   const populateMutation =
-    useMutation(
+    useMutation({
+
+      mutationFn:
       (
         payload: PopulateAcademicYearPayload
       ) =>
@@ -375,7 +363,7 @@ const AcademicYearManagementScreen = () => {
           .populateAcademicYear(
             payload
           ) as Promise<PopulateAcademicYearResponse>,
-      {
+      
         onSuccess: response => {
           setPopulateModalVisible(
             false
@@ -396,7 +384,7 @@ const AcademicYearManagementScreen = () => {
            * selected academic year screen.
            */
           queryClient.invalidateQueries(
-            ["academic-years"]
+            { queryKey: ["academic-years"] }
           );
 
           const summary =
@@ -455,7 +443,7 @@ const AcademicYearManagementScreen = () => {
   const closeCreateModal =
     () => {
       if (
-        createMutation.isLoading
+        createMutation.isPending
       ) {
         return;
       }
@@ -644,7 +632,7 @@ const AcademicYearManagementScreen = () => {
   const closePopulateModal =
     () => {
       if (
-        populateMutation.isLoading
+        populateMutation.isPending
       ) {
         return;
       }
@@ -1076,12 +1064,12 @@ const AcademicYearManagementScreen = () => {
                       )
                     }
                     loading={
-                      setCurrentMutation.isLoading &&
+                      setCurrentMutation.isPending &&
                       setCurrentMutation.variables ===
                         item.id
                     }
                     disabled={
-                      setCurrentMutation.isLoading
+                      setCurrentMutation.isPending
                     }
                     textColor={
                       Colors.brandPrimary
@@ -1623,7 +1611,7 @@ const AcademicYearManagementScreen = () => {
               styles.input
             }
             disabled={
-              createMutation.isLoading
+              createMutation.isPending
             }
           />
 
@@ -1652,7 +1640,7 @@ const AcademicYearManagementScreen = () => {
               styles.input
             }
             disabled={
-              createMutation.isLoading
+              createMutation.isPending
             }
           />
 
@@ -1681,7 +1669,7 @@ const AcademicYearManagementScreen = () => {
               styles.input
             }
             disabled={
-              createMutation.isLoading
+              createMutation.isPending
             }
           />
 
@@ -1759,7 +1747,7 @@ const AcademicYearManagementScreen = () => {
                 closeCreateModal
               }
               disabled={
-                createMutation.isLoading
+                createMutation.isPending
               }
               style={
                 styles.modalActionButton
@@ -1774,10 +1762,10 @@ const AcademicYearManagementScreen = () => {
                 handleCreateYear
               }
               loading={
-                createMutation.isLoading
+                createMutation.isPending
               }
               disabled={
-                createMutation.isLoading
+                createMutation.isPending
               }
               buttonColor={
                 Colors.brandPrimary
@@ -1985,7 +1973,7 @@ const AcademicYearManagementScreen = () => {
                 closePopulateModal
               }
               disabled={
-                populateMutation.isLoading
+                populateMutation.isPending
               }
               style={
                 styles.modalActionButton
@@ -2001,10 +1989,10 @@ const AcademicYearManagementScreen = () => {
                 handlePopulate
               }
               loading={
-                populateMutation.isLoading
+                populateMutation.isPending
               }
               disabled={
-                populateMutation.isLoading ||
+                populateMutation.isPending ||
                 !populateSourceYearId ||
                 !populateTargetYearId
               }

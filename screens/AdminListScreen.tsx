@@ -13,7 +13,7 @@ import {
   Snackbar,
 } from "react-native-paper";
 
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { Icon, Page } from "../components";
 
@@ -37,10 +37,10 @@ const AdminListScreen = () => {
     isError,
     isFetching,
     refetch,
-  } = useQuery<GetAllUsersResponse>(
-    ["allUsers"],
+  } = useQuery<GetAllUsersResponse>({
+    queryKey: ["allUsers"],
     //getAllUsers
-  );
+});
 
   // Snackbar state
   const [showSnackBar, setShowSnackBar] =

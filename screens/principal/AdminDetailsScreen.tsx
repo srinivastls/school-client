@@ -20,7 +20,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   useNavigation,
@@ -134,10 +134,10 @@ const PrincipalAdminDetailsScreen =
       isLoading,
       error,
     } = useQuery(
-      [
-        "principal-admins",
-      ],
-      principalServices.getAdmins
+      {
+        queryKey: ["principal-admins"],
+        queryFn: principalServices.getAdmins,
+      }
     );
 
 
@@ -158,7 +158,8 @@ const PrincipalAdminDetailsScreen =
 
     const statusMutation =
       useMutation(
-        ({
+        {
+          mutationFn: ({
           userId,
           isActive,
         }: {
@@ -170,7 +171,7 @@ const PrincipalAdminDetailsScreen =
             isActive
           ),
 
-        {
+        
           onSuccess: (
             response
           ) => {
@@ -181,9 +182,9 @@ const PrincipalAdminDetailsScreen =
             );
 
             queryClient.invalidateQueries(
-              [
-                "principal-admins",
-              ]
+              {
+                queryKey: ["principal-admins"],
+              }
             );
           },
 
@@ -706,10 +707,10 @@ const PrincipalAdminDetailsScreen =
                   toggleStatus
                 }
                 loading={
-                  statusMutation.isLoading
+                  statusMutation.isPending
                 }
                 disabled={
-                  statusMutation.isLoading
+                  statusMutation.isPending
                 }
                 style={
                   styles.statusButton

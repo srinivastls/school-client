@@ -24,7 +24,7 @@ import {
   TouchableRipple,
 } from "react-native-paper";
 
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import {
   Colors,
@@ -82,8 +82,10 @@ const PrincipalTeachersScreen = () => {
     error,
     refetch,
   } = useQuery<GetTeachersResponse>(
-    ["principal-teachers"],
-    principalServices.getTeachers
+    {
+      queryKey: ["principal-teachers"],
+      queryFn: principalServices.getTeachers
+    }
   );
 
   /* ============================================================

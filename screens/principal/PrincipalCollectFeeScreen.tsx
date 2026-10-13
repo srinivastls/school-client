@@ -34,7 +34,7 @@ import dayjs from "dayjs";
 import {
   useMutation,
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   Colors,
@@ -412,14 +412,14 @@ const PrincipalCollectFeeScreen =
         string
       >(
 
-        (value: string) =>
+        {
+        mutationFn:(value: string) =>
 
           financeServices
             .getStudentForFeeCollection(
               value
             ) as Promise<Student>,
 
-        {
 
           onSuccess: (
             data: Student
@@ -1241,38 +1241,48 @@ const PrincipalCollectFeeScreen =
           -------------------------------------------------- */
 
           await queryClient.refetchQueries(
-            [
-              "transactions",
-            ]
+            {
+              queryKey: [
+                "transactions",
+              ]
+            }
           );
 
 
           await queryClient.refetchQueries(
-            [
-              "student" +
-                student.admissionNo,
-            ]
+            {
+              queryKey: [
+                "student" +
+                  student.admissionNo,
+              ]
+            }
           );
 
 
           await queryClient.refetchQueries(
-            [
-              "dailyTotal",
-            ]
+            {
+              queryKey: [
+                "dailyTotal",
+              ]
+            }
           );
 
 
           await queryClient.refetchQueries(
-            [
-              "weeklyTotal",
-            ]
+            {
+              queryKey: [
+                "weeklyTotal",
+              ]
+            }
           );
 
 
           await queryClient.refetchQueries(
-            [
-              "monthlyTotal",
-            ]
+            {
+              queryKey: [
+                "monthlyTotal",
+              ]
+            }
           );
 
 
@@ -1285,30 +1295,38 @@ const PrincipalCollectFeeScreen =
            */
 
           await queryClient.invalidateQueries(
-            [
-              "principal-student",
-            ]
+            {
+              queryKey: [
+                "principal-student",
+              ]
+            }
           );
 
 
           await queryClient.invalidateQueries(
-            [
-              "principal-finance-daily",
-            ]
+            {
+              queryKey: [
+                "principal-finance-daily",
+              ]
+            }
           );
 
 
           await queryClient.invalidateQueries(
-            [
-              "principal-finance-weekly",
-            ]
+            {
+              queryKey: [
+                "principal-finance-weekly",
+              ]
+            }
           );
 
 
           await queryClient.invalidateQueries(
-            [
-              "principal-finance-monthly",
-            ]
+            {
+              queryKey: [
+                "principal-finance-monthly",
+              ]
+            }
           );
 
 
@@ -1460,10 +1478,10 @@ const PrincipalCollectFeeScreen =
               <Button
                 mode="contained"
                 loading={
-                  searchStudentMutation.isLoading
+                  searchStudentMutation.isPending
                 }
                 disabled={
-                  searchStudentMutation.isLoading
+                  searchStudentMutation.isPending
                 }
                 onPress={
                   searchStudent

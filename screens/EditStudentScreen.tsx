@@ -34,7 +34,7 @@ import type {
 import {
   useQuery,
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   Controller,
@@ -245,20 +245,16 @@ const EditStudentScreen = ({
       registrationOptionsError,
     refetch:
       refetchRegistrationOptions,
-  } = useQuery(
-    [
+  } = useQuery({
+    queryKey: [
       "student-registration-options",
     ],
-    studentServices
+    queryFn: studentServices
       .getRegistrationOptions,
-    {
       staleTime:
         5 * 60 * 1000,
 
-      cacheTime:
-        10 * 60 * 1000,
-    }
-  );
+});
 
 
   /* ==========================================================================
@@ -1047,23 +1043,21 @@ const EditStudentScreen = ({
       ======================================================== */
 
       await queryClient.refetchQueries(
-        [
-          "student",
-          preFetchedData
-            .admissionNo,
-        ]
+        {
+          queryKey: ["student", preFetchedData.admissionNo],
+        }
       );
 
       await queryClient.refetchQueries(
-        [
-          "principal-class-student-counts",
-        ]
+        {
+          queryKey: ["principal-class-student-counts"],
+        }
       );
 
       await queryClient.refetchQueries(
-        [
-          "student-registration-options",
-        ]
+        {
+          queryKey: ["student-registration-options"],
+        }
       );
 
 

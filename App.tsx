@@ -12,7 +12,7 @@ import {
 import {
   QueryClient,
   QueryClientProvider,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import { StatusBar } from "expo-status-bar";
 

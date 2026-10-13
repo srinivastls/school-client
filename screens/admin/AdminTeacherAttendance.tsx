@@ -25,7 +25,7 @@ import {
   TouchableRipple,
 } from "react-native-paper";
 
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import { adminAttendanceLeaveServices } from "../../services";
 
@@ -252,14 +252,14 @@ const AdminTeacherAttendance = () => {
      MARK ATTENDANCE MUTATION
   ========================================================== */
 
-  const markAttendanceMutation = useMutation(
-    (
+  const markAttendanceMutation = useMutation({
+    mutationFn: (
       payload: Parameters<
         typeof adminAttendanceLeaveServices.bulkMarkTeacherAttendance
       >[0]
     ) =>
       adminAttendanceLeaveServices.bulkMarkTeacherAttendance(payload)
-  );
+});
 
   /* ==========================================================
      UPDATE STATUS
@@ -420,7 +420,7 @@ const AdminTeacherAttendance = () => {
   const submitAttendance = async () => {
     Keyboard.dismiss();
 
-    if (markAttendanceMutation.isLoading) {
+    if (markAttendanceMutation.isPending) {
       return;
     }
 
@@ -962,8 +962,8 @@ const AdminTeacherAttendance = () => {
         <Button
           mode="contained"
           onPress={submitAttendance}
-          loading={markAttendanceMutation.isLoading}
-          disabled={markAttendanceMutation.isLoading}
+          loading={markAttendanceMutation.isPending}
+          disabled={markAttendanceMutation.isPending}
           buttonColor={COLORS.primary}
           contentStyle={styles.saveButtonContent}
           style={styles.saveButton}

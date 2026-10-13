@@ -30,7 +30,7 @@ import {
 import {
   useQuery,
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   RouteProp,
@@ -266,18 +266,19 @@ const PlatformAdminSchoolDetails = () => {
 
     refetch,
 
-  } = useQuery<SchoolResponse>(
-    [
+  } = useQuery<SchoolResponse>({
+
+    queryKey: [
       "platform-school",
       schoolId,
     ],
 
-    () =>
+    queryFn: () =>
       platformAdminServices.getSchoolById(
         schoolId
       ),
 
-    {
+
       enabled:
         !!schoolId,
         refetchOnWindowFocus: false,
@@ -472,23 +473,29 @@ const onDeletePrincipal = () => {
 
 
         await queryClient.invalidateQueries(
-          [
-            "platform-admin-dashboard",
-          ]
+          {
+            queryKey: [
+              "platform-admin-dashboard",
+            ]
+          }
         );
 
 
         await queryClient.invalidateQueries(
-          [
-            "platform-admin-schools",
-          ]
+          {
+            queryKey: [
+              "platform-admin-schools",
+            ]
+          }
         );
 
 
         await queryClient.invalidateQueries(
-          [
-            "platform-schools",
-          ]
+          {
+            queryKey: [
+              "platform-schools",
+            ]
+          }
         );
 
       } catch (
@@ -825,8 +832,12 @@ const onDeletePrincipal = () => {
               await platformAdminServices.archiveSchool(school.id);
               showMessage("School archived successfully", "success");
               await refetch();
-              await queryClient.invalidateQueries(["platform-admin-schools"]);
-              await queryClient.invalidateQueries(["platform-admin-dashboard"]);
+              await queryClient.invalidateQueries({
+                queryKey: ["platform-admin-schools"]
+              });
+              await queryClient.invalidateQueries({
+                queryKey: ["platform-admin-dashboard"]
+              });
             } catch (error: any) {
               showMessage(getErrorMessage(
         error,
@@ -922,13 +933,14 @@ const onDeletePrincipal = () => {
                   setDeleteConfirmation("");
                   setDeleteModalVisible(false);
 
-                  await queryClient.invalidateQueries([
-                    "platform-admin-schools",
-                  ]);
 
-                  await queryClient.invalidateQueries([
-                    "platform-admin-dashboard",
-                  ]);
+                  await queryClient.invalidateQueries({
+                    queryKey: ["platform-admin-schools"]
+                  });
+
+                  await queryClient.invalidateQueries({
+                    queryKey: ["platform-admin-dashboard"]
+                  });
 
                   navigation.goBack();
                 } catch (error: any) {
