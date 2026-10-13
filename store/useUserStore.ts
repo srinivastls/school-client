@@ -1,5 +1,6 @@
-import create from "zustand";
+import {create} from "zustand";
 import {
+  createJSONStorage,
   persist,
 } from "zustand/middleware";
 
@@ -158,8 +159,7 @@ export const useUserStore =
       {
         name: "userStore",
 
-        getStorage: () =>
-          zustandStorage,
+        storage: createJSONStorage(() => zustandStorage),
 
         /*
          * IMPORTANT
