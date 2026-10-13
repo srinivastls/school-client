@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -11,6 +10,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList, RootStackScreenNames } from "../../types";
 import { Colors } from "../../theme";
 import { studentServices } from "../../services/studentServices";
+import styles from "./admin.styles";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
@@ -81,14 +81,14 @@ export const AdminStudentDetails = ({ route }: Props) => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Student Details</Text>
-        <Text style={styles.subtitle}>{route.params.admissionNo}</Text>
+      <ScrollView contentContainerStyle={styles.studentContent}>
+        <Text style={styles.studentTitle}>Student Details</Text>
+        <Text style={styles.studentSubtitle}>{route.params.admissionNo}</Text>
 
         {entries.map(([key, item]) => (
-          <View style={styles.row} key={key}>
-            <Text style={styles.key}>{key}</Text>
-            <Text style={styles.value}>{String(item)}</Text>
+          <View style={styles.studentRow} key={key}>
+            <Text style={styles.studentKey}>{key}</Text>
+            <Text style={styles.studentValue}>{String(item)}</Text>
           </View>
         ))}
       </ScrollView>
@@ -96,15 +96,3 @@ export const AdminStudentDetails = ({ route }: Props) => {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16, paddingBottom: 40 },
-  title: { fontSize: 25, fontWeight: "800", color: Colors.text },
-  subtitle: { marginTop: 5, marginBottom: 18, color: Colors.textSecondary },
-  row: { borderBottomWidth: 1, borderBottomColor: Colors.border, paddingVertical: 12 },
-  key: { fontSize: 12, color: Colors.textSecondary, fontWeight: "800" },
-  value: { marginTop: 4, color: Colors.text, fontSize: 14 },
-  loader: { flex: 1 },
-  error: { color: Colors.error, padding: 16 },
-  empty: { padding: 16, color: Colors.textSecondary },
-});

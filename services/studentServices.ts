@@ -51,6 +51,9 @@ const endpoints = {
 };
 
 
+
+
+
 /* ============================================================
    GET STUDENT
 ============================================================ */
@@ -65,10 +68,6 @@ const getStudentById = async (
       payload
     );
 
-  console.log(
-    "GET STUDENT RESPONSE:",
-    data
-  );
 
   return data;
 };
@@ -86,10 +85,6 @@ const getRegistrationOptions =
         endpoints.registrationOptions
       );
 
-    console.log(
-      "REGISTRATION OPTIONS:",
-      data
-    );
 
     return data;
   };
@@ -205,15 +200,6 @@ const createStudent = async (
   };
 
 
-  console.log(
-    "CREATE STUDENT REQUEST:",
-    JSON.stringify(
-      reqPayload,
-      null,
-      2
-    )
-  );
-
 
   const { data } =
     await api.post<CreateStudentResponse>(
@@ -252,10 +238,7 @@ const editStudent = async (
   payload: EditStudentRequest
 ) => {
 
-  console.log(
-    "EDIT STUDENT RAW PAYLOAD:",
-    JSON.stringify(payload, null, 2)
-  );
+
 
   const reqPayload = {
     admissionNo:
@@ -339,14 +322,6 @@ const editStudent = async (
         : [],
   };
 
-  console.log(
-    "EDIT STUDENT REQUEST:",
-    JSON.stringify(
-      reqPayload,
-      null,
-      2
-    )
-  );
 
   const { data } =
     await api.post<EditStudentResponse>(
@@ -380,6 +355,171 @@ const getClassStudentCounts =
     return data;
   };
 
+
+  export type PromotionStatus =
+  | "PROMOTED"
+  | "DEMOTED"
+  | "REPEATED"
+  | "NOT_PROMOTED";
+
+export type PromotionSection = {
+  id: string;
+  sectionName: string;
+};
+
+export type PromotionTargetClass = {
+  id: string;
+  classNumber: string;
+  displayName: string;
+  sections: PromotionSection[];
+};
+
+export type PromotionStudentResponse = {
+  id: string;
+  admissionNo?: string;
+  name: string;
+  fatherName?: string;
+  phone?: string;
+  rollNumber?: number | string;
+
+  currentClass: {
+    id: string;
+    classNumber: string;
+    displayName: string;
+  };
+
+  currentSection: {
+    id: string;
+    sectionName: string;
+  };
+
+  pendingAmount: number;
+  eligible: boolean;
+  eligibilityReason: string;
+
+  suggestedClass?: {
+    id: string;
+    classNumber: string;
+    displayName: string;
+  } | null;
+
+  promotion?: {
+    id: string;
+    status: PromotionStatus;
+    remark?: string;
+    toClassId: string;
+    toSectionId: string;
+    createdAt: string;
+  } | null;
+};
+
+export type PromotionStudentsResponse = {
+  sourceAcademicYear: {
+    id: string;
+    name: string;
+    startDate?: string;
+    endDate?: string;
+    isCurrent?: boolean;
+  };
+
+  targetAcademicYear: {
+    id: string;
+    name: string;
+    startDate?: string;
+    endDate?: string;
+    isCurrent?: boolean;
+  };
+
+  summary: {
+    total: number;
+    eligible: number;
+    notEligible: number;
+    alreadyProcessed: number;
+  };
+
+  sourceClasses: Array<{
+    id: string;
+    classNumber: string;
+    displayName: string;
+  }>;
+
+  targetClasses: PromotionTargetClass[];
+
+  students: PromotionStudentResponse[];
+};
+
+
+
+export type BulkPromotionItem = {
+  studentId: string;
+  toClassId: string;
+  toSectionId: string;
+  status: PromotionStatus;
+  remark?: string;
+};
+
+export type BulkPromotionRequest = {
+  fromAcademicYearId: string;
+  toAcademicYearId: string;
+  students: BulkPromotionItem[];
+};
+
+export type BulkPromotionResponse = {
+  message: string;
+  count: number;
+  processed: Array<{
+    promotion: unknown;
+    student: unknown;
+  }>;
+};
+
+type GetPromotionStudentsParams = {
+  sourceAcademicYearId: string;
+  targetAcademicYearId: string;
+  classId?: string;
+};
+
+const getPromotionStudents = async ({
+  sourceAcademicYearId,
+  targetAcademicYearId,
+  classId,
+}: GetPromotionStudentsParams) => {
+  const { data } = await api.get(
+    "/academic-year/promotion/students",
+    {
+      params: {
+        sourceAcademicYearId,
+        targetAcademicYearId,
+        ...(classId ? { classId } : {}),
+      },
+    }
+  );
+
+  return data;
+};
+
+const processBulkStudentPromotion = async (
+  payload: BulkPromotionRequest
+): Promise<BulkPromotionResponse> => {
+  const { data } =
+    await api.post<BulkPromotionResponse>(
+      "/academic-year/promotion/students/bulk",
+      payload
+    );
+
+  return data;
+};
+
+const promoteDemoteBulk = async (
+  payload: BulkPromotionRequest
+) => {
+  const { data } = await api.post(
+    "/academic-year/promotion/students/bulk",
+    payload
+  );
+
+  return data;
+};
 
 /* ============================================================
    PROMOTE / DEMOTE
@@ -448,6 +588,9 @@ export const studentServices = {
   getClassStudentCounts,
 
   promoteDemote,
+  promoteDemoteBulk,
 
   getStudentsByClass,
+  processBulkStudentPromotion,
+  getPromotionStudents,
 };

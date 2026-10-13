@@ -1,2606 +1,14 @@
-// import React, {
-//   useEffect,
-//   useMemo,
-//   useState,
-// } from "react";
-
-// import {
-//   FlatList,
-//   Modal,
-//   Pressable,
-//   Text,
-//   TouchableOpacity,
-//   useWindowDimensions,
-//   View,
-// } from "react-native";
-
-// import {
-//   ActivityIndicator,
-//   Avatar,
-//   Button,
-//   Card,
-//   Divider,
-//   IconButton,
-//   Snackbar,
-//   TextInput,
-// } from "react-native-paper";
-
-// import {
-//   NativeStackNavigationProp,
-// } from "@react-navigation/native-stack";
-
-// import {
-//   useQuery,
-// } from "react-query";
-
-// import {
-//   useNavigation,
-// } from "@react-navigation/native";
-
-// import {
-//   studentServices,
-// } from "../../services/studentServices";
-
-// import {
-//   Colors,
-//   makeStyles,
-//   Metrics,
-// } from "../../theme";
-
-// import {
-//   RootStackParamList,
-//   RootStackScreenNames,
-// } from "../../types";
-
-// import {
-//   useUserStore,
-// } from "../../store";
-
-
-// /* ============================================================
-//    TYPES
-// ============================================================ */
-
-// type PrincipalClassStudentsScreenProps = {
-//   route: {
-//     params: {
-//       classNumber: string;
-//     };
-//   };
-// };
-
-// type StudentListItem = {
-//   admissionNo: string;
-//   name: string;
-// };
-
-
-// /* ============================================================
-//    SCREEN
-// ============================================================ */
-
-// const PrincipalClassStudentsScreen = ({
-//   route,
-// }: PrincipalClassStudentsScreenProps) => {
-//   const styles = useStyles();
-
-//   const navigation =
-//     useNavigation<
-//       NativeStackNavigationProp<
-//         RootStackParamList
-//       >
-//     >();
-
-//   const { width } =
-//     useWindowDimensions();
-
-//   /* ==========================================================
-//      RESPONSIVE
-//   ========================================================== */
-
-//   const isSmallScreen =
-//     width < 600;
-
-//   const isTablet =
-//     width >= 600 &&
-//     width < 1024;
-
-//   const horizontalPadding =
-//     isSmallScreen
-//       ? Metrics.x3
-//       : isTablet
-//         ? Metrics.x4
-//         : Metrics.x6;
-
-
-//   /* ==========================================================
-//      ROUTE
-//   ========================================================== */
-
-//   const {
-//     classNumber,
-//   } = route.params;
-
-
-//   /* ==========================================================
-//      USER
-//   ========================================================== */
-
-//   const user =
-//     useUserStore(
-//       (state) => state.user
-//     );
-
-//   const logout =
-//     useUserStore(
-//       (state) => state.logout
-//     );
-
-
-//   /* ==========================================================
-//      STATE
-//   ========================================================== */
-
-//   const [
-//     search,
-//     setSearch,
-//   ] = useState("");
-
-//   const [
-//     showSnackbar,
-//     setShowSnackbar,
-//   ] = useState(false);
-
-//   const [
-//     snackbarText,
-//     setSnackbarText,
-//   ] = useState("");
-
-//   const [
-//     profileMenuVisible,
-//     setProfileMenuVisible,
-//   ] = useState(false);
-
-//   const [
-//     openingStudent,
-//     setOpeningStudent,
-//   ] = useState<string | null>(
-//     null
-//   );
-
-
-//   /* ==========================================================
-//      AUTHORIZATION
-//   ========================================================== */
-
-//   if (!user) {
-//     return (
-//       <View style={styles.center}>
-//         <Text
-//           style={styles.errorText}
-//         >
-//           Session not found.
-//         </Text>
-//       </View>
-//     );
-//   }
-
-//   if (user.role !== "PRINCIPAL") {
-//     return (
-//       <View style={styles.center}>
-//         <Text
-//           style={styles.errorText}
-//         >
-//           You are not authorized to
-//           access this screen.
-//         </Text>
-//       </View>
-//     );
-//   }
-
-
-//   /* ==========================================================
-//      API
-//   ========================================================== */
-
-//   const {
-//     data,
-//     isLoading,
-//     isFetching,
-//     isError,
-//     error,
-//     refetch,
-//   } = useQuery(
-//     [
-//       "principal-class-students",
-//       classNumber,
-//     ],
-//     () =>
-//       studentServices
-//         .getStudentsByClass({
-//           classNumber,
-//         }),
-//     {
-//       enabled:
-//         !!classNumber,
-//       retry: 1,
-//     }
-//   );
-
-
-//   /* ==========================================================
-//      ERROR
-//   ========================================================== */
-
-//   useEffect(() => {
-//     if (!isError) {
-//       return;
-//     }
-
-//     const message =
-//       // @ts-ignore
-//       error?.response?.data?.message ??
-//       "Unable to load students.";
-
-//     setSnackbarText(message);
-//     setShowSnackbar(true);
-//   }, [
-//     isError,
-//     error,
-//   ]);
-
-
-//   /* ==========================================================
-//      STUDENTS
-//   ========================================================== */
-
-//   const students: StudentListItem[] =
-//     data?.students ?? [];
-
-
-//   /* ==========================================================
-//      SEARCH
-//   ========================================================== */
-
-//   const searchValue =
-//     search
-//       .trim()
-//       .toLowerCase();
-
-//   const filteredStudents =
-//     useMemo(() => {
-//       if (!searchValue) {
-//         return students;
-//       }
-
-//       return students.filter(
-//         (student) =>
-//           student.name
-//             ?.toLowerCase()
-//             .includes(
-//               searchValue
-//             ) ||
-//           student.admissionNo
-//             ?.toLowerCase()
-//             .includes(
-//               searchValue
-//             )
-//       );
-//     }, [
-//       students,
-//       searchValue,
-//     ]);
-
-
-//   /* ==========================================================
-//      LOGOUT
-//   ========================================================== */
-
-//   const handleLogout = () => {
-//     setProfileMenuVisible(
-//       false
-//     );
-
-//     logout();
-
-//     navigation.reset({
-//       index: 0,
-//       routes: [
-//         {
-//           name:
-//             RootStackScreenNames.Login,
-//         },
-//       ],
-//     });
-//   };
-
-
-//   /* ==========================================================
-//      BACK
-//   ========================================================== */
-
-//   const goBackToClasses = () => {
-//     navigation.goBack();
-//   };
-
-
-//   /* ==========================================================
-//      DASHBOARD
-//   ========================================================== */
-
-//   const goToDashboard = () => {
-//     navigation.navigate(
-//       RootStackScreenNames.PrincipalDashboard
-//     );
-//   };
-
-
-//   /* ==========================================================
-//      OPEN STUDENT
-//   ========================================================== */
-
-//   const openStudent = async (
-//     student: StudentListItem
-//   ) => {
-//     try {
-//       setOpeningStudent(
-//         student.admissionNo
-//       );
-
-//       const fullStudent =
-//         await studentServices
-//           .getStudentById({
-//             admissionNo:
-//               student.admissionNo,
-//           });
-
-//       navigation.navigate(
-//         RootStackScreenNames.StudentDetails,
-//         {
-//           student:
-//             fullStudent,
-//         }
-//       );
-//     } catch (err: any) {
-//       console.error(
-//         "STUDENT DETAILS ERROR:",
-//         err
-//       );
-
-//       setSnackbarText(
-//         err?.response?.data
-//           ?.message ??
-//           "Unable to load student details."
-//       );
-
-//       setShowSnackbar(true);
-//     } finally {
-//       setOpeningStudent(null);
-//     }
-//   };
-
-
-//   /* ==========================================================
-//      NAVBAR
-//   ========================================================== */
-
-//   const renderNavbar = () => {
-//     return (
-//       <View
-//         style={styles.navbar}
-//       >
-
-//         {/* LEFT */}
-
-//         <View
-//           style={styles.navbarLeft}
-//         >
-
-//           <TouchableOpacity
-//             activeOpacity={0.8}
-//             onPress={
-//               goBackToClasses
-//             }
-//             style={
-//               styles.backButton
-//             }
-//           >
-
-//             <Text
-//               style={
-//                 styles.backIcon
-//               }
-//             >
-//               ‹
-//             </Text>
-
-//           </TouchableOpacity>
-
-//           <Avatar.Icon
-//             size={
-//               isSmallScreen
-//                 ? 42
-//                 : 46
-//             }
-//             icon="school"
-//             color="#FFFFFF"
-//             style={
-//               styles.navbarLogo
-//             }
-//           />
-
-//           <View
-//             style={
-//               styles.navbarBrand
-//             }
-//           >
-
-//             <Text
-//               style={
-//                 styles.navbarSchoolName
-//               }
-//               numberOfLines={1}
-//             >
-//               {user.schoolName ||
-//                 "School Platform"}
-//             </Text>
-
-//             <Text
-//               style={
-//                 styles.navbarSubtitle
-//               }
-//             >
-//               Principal Administration
-//             </Text>
-
-//           </View>
-
-//         </View>
-
-
-//         {/* RIGHT */}
-
-//         <View
-//           style={
-//             styles.navbarRight
-//           }
-//         >
-
-//           <IconButton
-//             icon="refresh"
-//             size={
-//               isSmallScreen
-//                 ? 20
-//                 : 22
-//             }
-//             iconColor={
-//               Colors.brandPrimary
-//             }
-//             onPress={() => {
-//               refetch();
-//             }}
-//             style={
-//               styles.refreshButton
-//             }
-//           />
-
-//           <TouchableOpacity
-//             activeOpacity={0.8}
-//             onPress={() => {
-//               setProfileMenuVisible(
-//                 true
-//               );
-//             }}
-//             style={[
-//               styles.profileButton,
-//               profileMenuVisible &&
-//                 styles.profileButtonActive,
-//             ]}
-//           >
-
-//             <Avatar.Text
-//               size={
-//                 isSmallScreen
-//                   ? 38
-//                   : 42
-//               }
-//               label={getInitials(
-//                 user.name
-//               )}
-//               color="#FFFFFF"
-//               style={
-//                 styles.profileAvatar
-//               }
-//             />
-
-//             {!isSmallScreen && (
-//               <View
-//                 style={
-//                   styles.profileDetails
-//                 }
-//               >
-
-//                 <Text
-//                   style={
-//                     styles.profileName
-//                   }
-//                   numberOfLines={1}
-//                 >
-//                   {user.name ||
-//                     "Principal"}
-//                 </Text>
-
-//                 <Text
-//                   style={
-//                     styles.profileRole
-//                   }
-//                 >
-//                   Principal
-//                 </Text>
-
-//               </View>
-//             )}
-
-//             <Text
-//               style={
-//                 styles.profileArrow
-//               }
-//             >
-//               {profileMenuVisible
-//                 ? "⌃"
-//                 : "⌄"}
-//             </Text>
-
-//           </TouchableOpacity>
-
-//         </View>
-
-//       </View>
-//     );
-//   };
-
-
-//   /* ==========================================================
-//      PROFILE DROPDOWN
-//   ========================================================== */
-
-//   const renderProfileDropdown =
-//     () => {
-//       if (!profileMenuVisible) {
-//         return null;
-//       }
-
-//       return (
-//         <Modal
-//           visible={
-//             profileMenuVisible
-//           }
-//           transparent
-//           animationType="fade"
-//           statusBarTranslucent
-//           onRequestClose={() => {
-//             setProfileMenuVisible(
-//               false
-//             );
-//           }}
-//         >
-
-//           <Pressable
-//             style={
-//               styles.modalOverlay
-//             }
-//             onPress={() => {
-//               setProfileMenuVisible(
-//                 false
-//               );
-//             }}
-//           >
-
-//             <View
-//               style={[
-//                 styles.profileDropdown,
-//                 isSmallScreen &&
-//                   styles.profileDropdownMobile,
-//               ]}
-//             >
-
-//               {/* PROFILE HEADER */}
-
-//               <View
-//                 style={
-//                   styles.dropdownProfileHeader
-//                 }
-//               >
-
-//                 <Avatar.Text
-//                   size={46}
-//                   label={getInitials(
-//                     user.name
-//                   )}
-//                   color="#FFFFFF"
-//                   style={
-//                     styles.dropdownAvatar
-//                   }
-//                 />
-
-//                 <View
-//                   style={
-//                     styles.dropdownUserInfo
-//                   }
-//                 >
-
-//                   <Text
-//                     style={
-//                       styles.dropdownUserName
-//                     }
-//                     numberOfLines={1}
-//                   >
-//                     {user.name ||
-//                       "Principal"}
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.dropdownUserEmail
-//                     }
-//                     numberOfLines={1}
-//                   >
-//                     {user.email || ""}
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.dropdownUserRole
-//                     }
-//                   >
-//                     Principal
-//                   </Text>
-
-//                 </View>
-
-//               </View>
-
-//               <Divider
-//                 style={
-//                   styles.dropdownDivider
-//                 }
-//               />
-
-//               {/* PROFILE */}
-
-//               <TouchableOpacity
-//                 activeOpacity={0.7}
-//                 style={
-//                   styles.dropdownItem
-//                 }
-//                 onPress={() => {
-//                   setProfileMenuVisible(
-//                     false
-//                   );
-
-//                   setSnackbarText(
-//                     "Principal profile coming next."
-//                   );
-
-//                   setShowSnackbar(
-//                     true
-//                   );
-//                 }}
-//               >
-
-//                 <View
-//                   style={
-//                     styles.dropdownIconContainer
-//                   }
-//                 >
-//                   <Text
-//                     style={
-//                       styles.dropdownIcon
-//                     }
-//                   >
-//                     👤
-//                   </Text>
-//                 </View>
-
-//                 <View
-//                   style={
-//                     styles.dropdownItemTextContainer
-//                   }
-//                 >
-
-//                   <Text
-//                     style={
-//                       styles.dropdownItemTitle
-//                     }
-//                   >
-//                     Profile
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.dropdownItemSubtitle
-//                     }
-//                   >
-//                     View your principal profile
-//                   </Text>
-
-//                 </View>
-
-//               </TouchableOpacity>
-
-
-//               {/* LOGOUT */}
-
-//               <TouchableOpacity
-//                 activeOpacity={0.7}
-//                 style={[
-//                   styles.dropdownItem,
-//                   styles.logoutItem,
-//                 ]}
-//                 onPress={
-//                   handleLogout
-//                 }
-//               >
-
-//                 <View
-//                   style={[
-//                     styles.dropdownIconContainer,
-//                     styles.logoutIconContainer,
-//                   ]}
-//                 >
-
-//                   <Text
-//                     style={[
-//                       styles.dropdownIcon,
-//                       styles.logoutIcon,
-//                     ]}
-//                   >
-//                     ↪
-//                   </Text>
-
-//                 </View>
-
-//                 <View
-//                   style={
-//                     styles.dropdownItemTextContainer
-//                   }
-//                 >
-
-//                   <Text
-//                     style={[
-//                       styles.dropdownItemTitle,
-//                       styles.logoutTitle,
-//                     ]}
-//                   >
-//                     Logout
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.dropdownItemSubtitle
-//                     }
-//                   >
-//                     Sign out of this account
-//                   </Text>
-
-//                 </View>
-
-//               </TouchableOpacity>
-
-//             </View>
-
-//           </Pressable>
-
-//         </Modal>
-//       );
-//     };
-
-
-//   /* ==========================================================
-//      PAGE HEADER
-//   ========================================================== */
-
-//   const renderPageHeader =
-//     () => {
-//       return (
-//         <View
-//           style={
-//             styles.pageHeader
-//           }
-//         >
-
-//           <View
-//             style={
-//               styles.pageHeaderTop
-//             }
-//           >
-
-//             <View
-//               style={
-//                 styles.pageHeaderText
-//               }
-//             >
-
-//               <Text
-//                 style={
-//                   styles.eyebrow
-//                 }
-//               >
-//                 STUDENTS
-//               </Text>
-
-//               <Text
-//                 style={
-//                   styles.pageTitle
-//                 }
-//               >
-//                 Class{" "}
-//                 {classNumber}
-//               </Text>
-
-//               <Text
-//                 style={
-//                   styles.pageSubtitle
-//                 }
-//               >
-//                 View and manage all students
-//                 enrolled in this class.
-//               </Text>
-
-//             </View>
-
-//             <Button
-//               mode="outlined"
-//               icon="arrow-left"
-//               onPress={
-//                 goBackToClasses
-//               }
-//               style={
-//                 styles.backToClassesButton
-//               }
-//               contentStyle={
-//                 styles.backToClassesContent
-//               }
-//             >
-//               {!isSmallScreen
-//                 ? "All Classes"
-//                 : "Back"}
-//             </Button>
-
-//           </View>
-
-//         </View>
-//       );
-//     };
-
-
-//   /* ==========================================================
-//      CLASS HERO
-//   ========================================================== */
-
-//   const renderClassHero =
-//     () => {
-//       return (
-//         <Card
-//           style={
-//             styles.classHero
-//           }
-//         >
-
-//           <Card.Content>
-
-//             <View
-//               style={
-//                 styles.classHeroRow
-//               }
-//             >
-
-//               <View
-//                 style={
-//                   styles.classHeroLeft
-//                 }
-//               >
-
-//                 <Avatar.Icon
-//                   size={60}
-//                   icon="google-classroom"
-//                   color="#FFFFFF"
-//                   style={
-//                     styles.classHeroIcon
-//                   }
-//                 />
-
-//                 <View
-//                   style={
-//                     styles.classHeroInfo
-//                   }
-//                 >
-
-//                   <Text
-//                     style={
-//                       styles.classHeroEyebrow
-//                     }
-//                   >
-//                     CLASS OVERVIEW
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.classHeroTitle
-//                     }
-//                   >
-//                     Class{" "}
-//                     {classNumber}
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.classHeroSubtitle
-//                     }
-//                   >
-//                     {formatNumber(
-//                       students.length
-//                     )}{" "}
-//                     enrolled student
-//                     {students.length ===
-//                     1
-//                       ? ""
-//                       : "s"}
-//                   </Text>
-
-//                 </View>
-
-//               </View>
-
-//               <View
-//                 style={
-//                   styles.classHeroBadge
-//                 }
-//               >
-
-//                 <Text
-//                   style={
-//                     styles.classHeroBadgeValue
-//                   }
-//                 >
-//                   {students.length}
-//                 </Text>
-
-//                 <Text
-//                   style={
-//                     styles.classHeroBadgeLabel
-//                   }
-//                 >
-//                   Students
-//                 </Text>
-
-//               </View>
-
-//             </View>
-
-//           </Card.Content>
-
-//         </Card>
-//       );
-//     };
-
-
-//   /* ==========================================================
-//      SEARCH
-//   ========================================================== */
-
-//   const renderSearch =
-//     () => {
-//       return (
-//         <Card
-//           style={
-//             styles.searchCard
-//           }
-//         >
-
-//           <Card.Content>
-
-//             <View
-//               style={
-//                 styles.searchHeader
-//               }
-//             >
-
-//               <View
-//                 style={
-//                   styles.searchHeaderText
-//                 }
-//               >
-
-//                 <Text
-//                   style={
-//                     styles.searchTitle
-//                   }
-//                 >
-//                   Find a Student
-//                 </Text>
-
-//                 <Text
-//                   style={
-//                     styles.searchSubtitle
-//                   }
-//                 >
-//                   Search by name or admission
-//                   number.
-//                 </Text>
-
-//               </View>
-
-//               {search.length >
-//                 0 && (
-//                 <TouchableOpacity
-//                   activeOpacity={0.7}
-//                   onPress={() =>
-//                     setSearch("")
-//                   }
-//                 >
-//                   <Text
-//                     style={
-//                       styles.clearSearch
-//                     }
-//                   >
-//                     Clear
-//                   </Text>
-//                 </TouchableOpacity>
-//               )}
-
-//             </View>
-
-//             <TextInput
-//               mode="outlined"
-//               label="Search student"
-//               placeholder="Name or admission number"
-//               value={search}
-//               onChangeText={
-//                 setSearch
-//               }
-//               autoCapitalize="none"
-//               autoCorrect={false}
-//               left={
-//                 <TextInput.Icon
-//                   icon="magnify"
-//                 />
-//               }
-//               style={
-//                 styles.searchInput
-//               }
-//               outlineStyle={
-//                 styles.searchOutline
-//               }
-//             />
-
-//           </Card.Content>
-
-//         </Card>
-//       );
-//     };
-
-
-//   /* ==========================================================
-//      STUDENT ITEM
-//   ========================================================== */
-
-//   const renderStudent = ({
-//     item,
-//   }: {
-//     item: StudentListItem;
-//   }) => {
-//     const initials =
-//       getInitials(
-//         item.name
-//       );
-
-//     const isOpening =
-//       openingStudent ===
-//       item.admissionNo;
-
-//     return (
-//       <TouchableOpacity
-//         activeOpacity={0.88}
-//         onPress={() => {
-//           if (!isOpening) {
-//             openStudent(item);
-//           }
-//         }}
-//         style={
-//           styles.studentTouchable
-//         }
-//       >
-
-//         <Card
-//           style={
-//             styles.studentCard
-//           }
-//         >
-
-//           <Card.Content>
-
-//             <View
-//               style={
-//                 styles.studentRow
-//               }
-//             >
-
-//               {/* AVATAR */}
-
-//               <Avatar.Text
-//                 size={52}
-//                 label={initials}
-//                 color="#4F46E5"
-//                 style={
-//                   styles.studentAvatar
-//                 }
-//               />
-
-
-//               {/* INFO */}
-
-//               <View
-//                 style={
-//                   styles.studentInfo
-//                 }
-//               >
-
-//                 <Text
-//                   style={
-//                     styles.studentName
-//                   }
-//                   numberOfLines={1}
-//                 >
-//                   {item.name}
-//                 </Text>
-
-//                 <View
-//                   style={
-//                     styles.admissionRow
-//                   }
-//                 >
-
-//                   <Text
-//                     style={
-//                       styles.admissionLabel
-//                     }
-//                   >
-//                     Admission No.
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.admissionValue
-//                     }
-//                   >
-//                     {item.admissionNo}
-//                   </Text>
-
-//                 </View>
-
-//               </View>
-
-
-//               {/* ACTION */}
-
-//               <View
-//                 style={
-//                   styles.studentAction
-//                 }
-//               >
-
-//                 {isOpening ? (
-//                   <ActivityIndicator
-//                     size="small"
-//                     color={
-//                       Colors.brandPrimary
-//                     }
-//                   />
-//                 ) : (
-//                   <View
-//                     style={
-//                       styles.studentArrowContainer
-//                     }
-//                   >
-
-//                     <Text
-//                       style={
-//                         styles.studentArrow
-//                       }
-//                     >
-//                       →
-//                     </Text>
-
-//                   </View>
-//                 )}
-
-//               </View>
-
-//             </View>
-
-//           </Card.Content>
-
-//         </Card>
-
-//       </TouchableOpacity>
-//     );
-//   };
-
-
-//   /* ==========================================================
-//      EMPTY
-//   ========================================================== */
-
-//   const renderEmpty =
-//     () => {
-//       return (
-//         <View
-//           style={
-//             styles.empty
-//           }
-//         >
-
-//           <Avatar.Icon
-//             size={70}
-//             icon={
-//               searchValue
-//                 ? "magnify"
-//                 : "account-school-outline"
-//             }
-//             color="#4F46E5"
-//             style={
-//               styles.emptyIcon
-//             }
-//           />
-
-//           <Text
-//             style={
-//               styles.emptyTitle
-//             }
-//           >
-//             {isError
-//               ? "Unable to load students"
-//               : searchValue
-//                 ? "No matching students"
-//                 : "No students found"}
-//           </Text>
-
-//           <Text
-//             style={
-//               styles.emptyText
-//             }
-//           >
-//             {isError
-//               ? "Please try refreshing the page."
-//               : searchValue
-//                 ? "Try searching with a different name or admission number."
-//                 : `No students are currently enrolled in Class ${classNumber}.`}
-//           </Text>
-
-//           {isError ? (
-//             <Button
-//               mode="outlined"
-//               icon="refresh"
-//               onPress={
-//                 refetch
-//               }
-//               style={
-//                 styles.emptyButton
-//               }
-//             >
-//               Try Again
-//             </Button>
-//           ) : searchValue ? (
-//             <Button
-//               mode="outlined"
-//               onPress={() =>
-//                 setSearch("")
-//               }
-//               style={
-//                 styles.emptyButton
-//               }
-//             >
-//               Clear Search
-//             </Button>
-//           ) : null}
-
-//         </View>
-//       );
-//     };
-
-
-//   /* ==========================================================
-//      LOADING
-//   ========================================================== */
-
-//   if (isLoading) {
-//     return (
-//       <View
-//         style={
-//           styles.page
-//         }
-//       >
-
-//         <View
-//           style={[
-//             styles.loadingScreen,
-//             {
-//               paddingHorizontal:
-//                 horizontalPadding,
-//             },
-//           ]}
-//         >
-
-//           {renderNavbar()}
-
-//           <View
-//             style={
-//               styles.loaderContent
-//             }
-//           >
-
-//             <Avatar.Icon
-//               size={68}
-//               icon="account-school-outline"
-//               color={
-//                 Colors.brandPrimary
-//               }
-//               style={
-//                 styles.loadingIcon
-//               }
-//             />
-
-//             <ActivityIndicator
-//               size="large"
-//               color={
-//                 Colors.brandPrimary
-//               }
-//               style={
-//                 styles.loader
-//               }
-//             />
-
-//             <Text
-//               style={
-//                 styles.loadingTitle
-//               }
-//             >
-//               Loading students...
-//             </Text>
-
-//             <Text
-//               style={
-//                 styles.loadingText
-//               }
-//             >
-//               Fetching students for
-//               Class{" "}
-//               {classNumber}.
-//             </Text>
-
-//           </View>
-
-//         </View>
-
-//         {renderProfileDropdown()}
-
-//       </View>
-//     );
-//   }
-
-
-//   /* ==========================================================
-//      MAIN UI
-//   ========================================================== */
-
-//   return (
-//     <View
-//       style={
-//         styles.page
-//       }
-//     >
-
-//       <FlatList
-//         data={
-//           filteredStudents
-//         }
-//         renderItem={
-//           renderStudent
-//         }
-//         keyExtractor={(item) =>
-//           item.admissionNo
-//         }
-//         showsVerticalScrollIndicator={
-//           false
-//         }
-//         contentContainerStyle={[
-//           styles.listContent,
-//           {
-//             paddingHorizontal:
-//               horizontalPadding,
-//           },
-//         ]}
-//         ListHeaderComponent={
-//           <>
-//             {renderNavbar()}
-//             {renderPageHeader()}
-//             {renderClassHero()}
-//             {renderSearch()}
-
-//             {filteredStudents.length >
-//               0 && (
-//               <View
-//                 style={
-//                   styles.studentsHeader
-//                 }
-//               >
-
-//                 <View>
-//                   <Text
-//                     style={
-//                       styles.studentsTitle
-//                     }
-//                   >
-//                     Students
-//                   </Text>
-
-//                   <Text
-//                     style={
-//                       styles.studentsSubtitle
-//                     }
-//                   >
-//                     Select a student to view
-//                     their complete profile.
-//                   </Text>
-//                 </View>
-
-//                 <View
-//                   style={
-//                     styles.studentsCountBadge
-//                   }
-//                 >
-
-//                   <Text
-//                     style={
-//                       styles.studentsCountText
-//                     }
-//                   >
-//                     {
-//                       filteredStudents.length
-//                     }
-//                   </Text>
-
-//                 </View>
-
-//               </View>
-//             )}
-//           </>
-//         }
-//         ListEmptyComponent={
-//           renderEmpty()
-//         }
-//         refreshing={
-//           isFetching
-//         }
-//         onRefresh={
-//           refetch
-//         }
-//       />
-
-//       {renderProfileDropdown()}
-
-//       <Snackbar
-//         visible={
-//           showSnackbar
-//         }
-//         onDismiss={() => {
-//           setShowSnackbar(
-//             false
-//           );
-//         }}
-//         duration={3000}
-//         style={
-//           styles.snackbar
-//         }
-//       >
-//         {snackbarText}
-//       </Snackbar>
-
-//     </View>
-//   );
-// };
-
-
-// /* ============================================================
-//    INITIALS
-// ============================================================ */
-
-// const getInitials = (
-//   name?: string | null
-// ) => {
-//   if (!name) {
-//     return "S";
-//   }
-
-//   const parts =
-//     name
-//       .trim()
-//       .split(/\s+/)
-//       .filter(Boolean);
-
-//   if (parts.length === 1) {
-//     return parts[0]
-//       .slice(0, 2)
-//       .toUpperCase();
-//   }
-
-//   return (
-//     parts[0][0] +
-//     parts[
-//       parts.length - 1
-//     ][0]
-//   ).toUpperCase();
-// };
-
-
-// /* ============================================================
-//    NUMBER FORMAT
-// ============================================================ */
-
-// const formatNumber = (
-//   value: number
-// ) => {
-//   return new Intl.NumberFormat(
-//     "en-IN"
-//   ).format(value);
-// };
-
-
-// /* ============================================================
-//    STYLES
-// ============================================================ */
-
-// const useStyles = makeStyles(
-//   () => {
-//     return {
-
-//       /* ======================================================
-//          PAGE
-//       ====================================================== */
-
-//       page: {
-//         flex: 1,
-
-//         backgroundColor:
-//           "#F7F8FC",
-//       },
-
-//       listContent: {
-//         paddingTop:
-//           Metrics.x3,
-
-//         paddingBottom:
-//           Metrics.x8,
-//       },
-
-
-//       /* ======================================================
-//          NAVBAR
-//       ====================================================== */
-
-//       navbar: {
-//         minHeight: 72,
-
-//         paddingHorizontal:
-//           Metrics.x3,
-
-//         paddingVertical:
-//           Metrics.x2,
-
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "space-between",
-
-//         backgroundColor:
-//           "#FFFFFF",
-
-//         borderWidth: 1,
-
-//         borderColor:
-//           "#E9EAF0",
-
-//         borderRadius: 16,
-
-//         marginBottom:
-//           Metrics.x5,
-
-//         elevation: 1,
-//       },
-
-//       navbarLeft: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         flex: 1,
-
-//         minWidth: 0,
-//       },
-
-//       backButton: {
-//         width: 38,
-
-//         height: 38,
-
-//         borderRadius: 12,
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "center",
-
-//         backgroundColor:
-//           "#F3F4F6",
-
-//         marginRight:
-//           Metrics.x2,
-//       },
-
-//       backIcon: {
-//         fontSize: 28,
-
-//         lineHeight: 30,
-
-//         color:
-//           Colors.subtext,
-//       },
-
-//       navbarLogo: {
-//         backgroundColor:
-//           Colors.brandPrimary,
-
-//         marginRight:
-//           Metrics.x2,
-//       },
-
-//       navbarBrand: {
-//         flex: 1,
-
-//         minWidth: 0,
-//       },
-
-//       navbarSchoolName: {
-//         fontSize: 15,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-//       },
-
-//       navbarSubtitle: {
-//         fontSize: 11,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop: 2,
-//       },
-
-//       navbarRight: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         marginLeft:
-//           Metrics.x2,
-//       },
-
-//       refreshButton: {
-//         margin: 0,
-
-//         marginRight:
-//           Metrics.x1,
-//       },
-
-
-//       /* ======================================================
-//          PROFILE
-//       ====================================================== */
-
-//       profileButton: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         paddingVertical:
-//           Metrics.x1,
-
-//         paddingHorizontal:
-//           Metrics.x1,
-
-//         borderRadius: 24,
-//       },
-
-//       profileButtonActive: {
-//         backgroundColor:
-//           "#F4F5F9",
-//       },
-
-//       profileAvatar: {
-//         backgroundColor:
-//           Colors.brandPrimary,
-//       },
-
-//       profileDetails: {
-//         marginLeft:
-//           Metrics.x2,
-
-//         maxWidth: 145,
-//       },
-
-//       profileName: {
-//         fontSize: 13,
-
-//         fontWeight: "700",
-
-//         color: "#171717",
-//       },
-
-//       profileRole: {
-//         fontSize: 11,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop: 1,
-//       },
-
-//       profileArrow: {
-//         fontSize: 17,
-
-//         color:
-//           Colors.subtext,
-
-//         marginLeft:
-//           Metrics.x1,
-//       },
-
-
-//       /* ======================================================
-//          PAGE HEADER
-//       ====================================================== */
-
-//       pageHeader: {
-//         marginBottom:
-//           Metrics.x5,
-//       },
-
-//       pageHeaderTop: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "flex-start",
-
-//         justifyContent:
-//           "space-between",
-//       },
-
-//       pageHeaderText: {
-//         flex: 1,
-
-//         paddingRight:
-//           Metrics.x3,
-//       },
-
-//       eyebrow: {
-//         fontSize: 10,
-
-//         fontWeight: "800",
-
-//         letterSpacing: 1,
-
-//         color:
-//           Colors.brandPrimary,
-
-//         marginBottom:
-//           Metrics.x1,
-//       },
-
-//       pageTitle: {
-//         fontSize: 30,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-//       },
-
-//       pageSubtitle: {
-//         fontSize: 14,
-
-//         lineHeight: 21,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop:
-//           Metrics.x1,
-
-//         maxWidth: 650,
-//       },
-
-//       backToClassesButton: {
-//         borderRadius: 12,
-//       },
-
-//       backToClassesContent: {
-//         minHeight: 44,
-//       },
-
-
-//       /* ======================================================
-//          CLASS HERO
-//       ====================================================== */
-
-//       classHero: {
-//         backgroundColor:
-//           Colors.brandPrimary,
-
-//         borderRadius: 18,
-
-//         marginBottom:
-//           Metrics.x5,
-
-//         elevation: 2,
-//       },
-
-//       classHeroRow: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "space-between",
-//       },
-
-//       classHeroLeft: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         flex: 1,
-//       },
-
-//       classHeroIcon: {
-//         backgroundColor:
-//           "rgba(255,255,255,0.14)",
-
-//         marginRight:
-//           Metrics.x3,
-//       },
-
-//       classHeroInfo: {
-//         flex: 1,
-//       },
-
-//       classHeroEyebrow: {
-//         fontSize: 10,
-
-//         fontWeight: "800",
-
-//         letterSpacing: 1,
-
-//         color:
-//           "rgba(255,255,255,0.72)",
-
-//         marginBottom: 2,
-//       },
-
-//       classHeroTitle: {
-//         fontSize: 23,
-
-//         fontWeight: "800",
-
-//         color: "#FFFFFF",
-//       },
-
-//       classHeroSubtitle: {
-//         fontSize: 13,
-
-//         color:
-//           "rgba(255,255,255,0.78)",
-
-//         marginTop: 2,
-//       },
-
-//       classHeroBadge: {
-//         minWidth: 70,
-
-//         paddingVertical:
-//           Metrics.x2,
-
-//         paddingHorizontal:
-//           Metrics.x2,
-
-//         borderRadius: 14,
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "center",
-
-//         backgroundColor:
-//           "rgba(255,255,255,0.14)",
-//       },
-
-//       classHeroBadgeValue: {
-//         fontSize: 22,
-
-//         fontWeight: "800",
-
-//         color: "#FFFFFF",
-//       },
-
-//       classHeroBadgeLabel: {
-//         fontSize: 10,
-
-//         color:
-//           "rgba(255,255,255,0.75)",
-
-//         marginTop: 1,
-//       },
-
-
-//       /* ======================================================
-//          SEARCH
-//       ====================================================== */
-
-//       searchCard: {
-//         backgroundColor:
-//           "#FFFFFF",
-
-//         borderRadius: 18,
-
-//         borderWidth: 1,
-
-//         borderColor:
-//           "#E9EAF0",
-
-//         elevation: 1,
-
-//         marginBottom:
-//           Metrics.x5,
-//       },
-
-//       searchHeader: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "space-between",
-
-//         marginBottom:
-//           Metrics.x3,
-//       },
-
-//       searchHeaderText: {
-//         flex: 1,
-//       },
-
-//       searchTitle: {
-//         fontSize: 17,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-//       },
-
-//       searchSubtitle: {
-//         fontSize: 12,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop: 2,
-//       },
-
-//       clearSearch: {
-//         fontSize: 13,
-
-//         fontWeight: "700",
-
-//         color:
-//           Colors.brandPrimary,
-//       },
-
-//       searchInput: {
-//         backgroundColor:
-//           "#FFFFFF",
-//       },
-
-//       searchOutline: {
-//         borderRadius: 12,
-//       },
-
-
-//       /* ======================================================
-//          STUDENTS HEADER
-//       ====================================================== */
-
-//       studentsHeader: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "space-between",
-
-//         marginBottom:
-//           Metrics.x3,
-//       },
-
-//       studentsTitle: {
-//         fontSize: 20,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-//       },
-
-//       studentsSubtitle: {
-//         fontSize: 12,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop: 2,
-//       },
-
-//       studentsCountBadge: {
-//         minWidth: 38,
-
-//         height: 36,
-
-//         paddingHorizontal:
-//           Metrics.x2,
-
-//         borderRadius: 12,
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "center",
-
-//         backgroundColor:
-//           "#EEF2FF",
-//       },
-
-//       studentsCountText: {
-//         fontSize: 13,
-
-//         fontWeight: "800",
-
-//         color: "#4F46E5",
-//       },
-
-
-//       /* ======================================================
-//          STUDENT CARD
-//       ====================================================== */
-
-//       studentTouchable: {
-//         marginBottom:
-//           Metrics.x3,
-//       },
-
-//       studentCard: {
-//         backgroundColor:
-//           "#FFFFFF",
-
-//         borderRadius: 18,
-
-//         borderWidth: 1,
-
-//         borderColor:
-//           "#E9EAF0",
-
-//         elevation: 1,
-//       },
-
-//       studentRow: {
-//         minHeight: 72,
-
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-//       },
-
-//       studentAvatar: {
-//         backgroundColor:
-//           "#EEF2FF",
-
-//         marginRight:
-//           Metrics.x3,
-//       },
-
-//       studentInfo: {
-//         flex: 1,
-
-//         minWidth: 0,
-//       },
-
-//       studentName: {
-//         fontSize: 17,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-//       },
-
-//       admissionRow: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         flexWrap:
-//           "wrap",
-
-//         marginTop:
-//           Metrics.x1,
-//       },
-
-//       admissionLabel: {
-//         fontSize: 12,
-
-//         color:
-//           Colors.subtext,
-
-//         marginRight:
-//           Metrics.x1,
-//       },
-
-//       admissionValue: {
-//         fontSize: 12,
-
-//         fontWeight: "700",
-
-//         color: "#4B5563",
-//       },
-
-//       studentAction: {
-//         marginLeft:
-//           Metrics.x2,
-//       },
-
-//       studentArrowContainer: {
-//         width: 38,
-
-//         height: 38,
-
-//         borderRadius: 12,
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "center",
-
-//         backgroundColor:
-//           "#F3F4F6",
-//       },
-
-//       studentArrow: {
-//         fontSize: 20,
-
-//         color:
-//           Colors.subtext,
-//       },
-
-
-//       /* ======================================================
-//          EMPTY
-//       ====================================================== */
-
-//       empty: {
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "center",
-
-//         paddingTop:
-//           Metrics.x8,
-
-//         paddingBottom:
-//           Metrics.x8,
-
-//         paddingHorizontal:
-//           Metrics.x5,
-//       },
-
-//       emptyIcon: {
-//         backgroundColor:
-//           "#EEF2FF",
-
-//         marginBottom:
-//           Metrics.x3,
-//       },
-
-//       emptyTitle: {
-//         fontSize: 18,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-
-//         textAlign:
-//           "center",
-//       },
-
-//       emptyText: {
-//         fontSize: 13,
-
-//         lineHeight: 19,
-
-//         color:
-//           Colors.subtext,
-
-//         textAlign:
-//           "center",
-
-//         marginTop:
-//           Metrics.x1,
-
-//         maxWidth: 360,
-//       },
-
-//       emptyButton: {
-//         marginTop:
-//           Metrics.x3,
-
-//         borderRadius: 12,
-//       },
-
-
-//       /* ======================================================
-//          LOADING
-//       ====================================================== */
-
-//       loadingScreen: {
-//         flex: 1,
-
-//         paddingTop:
-//           Metrics.x3,
-//       },
-
-//       loaderContent: {
-//         flex: 1,
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "center",
-
-//         paddingBottom:
-//           Metrics.x8,
-//       },
-
-//       loadingIcon: {
-//         backgroundColor:
-//           "#EEF2FF",
-
-//         marginBottom:
-//           Metrics.x3,
-//       },
-
-//       loader: {
-//         marginBottom:
-//           Metrics.x2,
-//       },
-
-//       loadingTitle: {
-//         fontSize: 17,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-//       },
-
-//       loadingText: {
-//         fontSize: 13,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop:
-//           Metrics.x1,
-
-//         textAlign:
-//           "center",
-//       },
-
-
-//       /* ======================================================
-//          PROFILE DROPDOWN
-//       ====================================================== */
-
-//       modalOverlay: {
-//         flex: 1,
-
-//         backgroundColor:
-//           "rgba(0,0,0,0.08)",
-//       },
-
-//       profileDropdown: {
-//         position: "absolute",
-
-//         top: 82,
-
-//         right: Metrics.x4,
-
-//         width: 310,
-
-//         backgroundColor:
-//           "#FFFFFF",
-
-//         borderRadius: 18,
-
-//         borderWidth: 1,
-
-//         borderColor:
-//           "#E5E7EB",
-
-//         padding:
-//           Metrics.x2,
-
-//         elevation: 8,
-//       },
-
-//       profileDropdownMobile: {
-//         left: Metrics.x3,
-
-//         right: Metrics.x3,
-
-//         width: undefined,
-//       },
-
-//       dropdownProfileHeader: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         padding:
-//           Metrics.x2,
-//       },
-
-//       dropdownAvatar: {
-//         backgroundColor:
-//           Colors.brandPrimary,
-//       },
-
-//       dropdownUserInfo: {
-//         flex: 1,
-
-//         marginLeft:
-//           Metrics.x2,
-//       },
-
-//       dropdownUserName: {
-//         fontSize: 15,
-
-//         fontWeight: "800",
-
-//         color: "#171717",
-//       },
-
-//       dropdownUserEmail: {
-//         fontSize: 12,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop: 2,
-//       },
-
-//       dropdownUserRole: {
-//         fontSize: 11,
-
-//         color:
-//           Colors.brandPrimary,
-
-//         fontWeight: "700",
-
-//         marginTop: 3,
-//       },
-
-//       dropdownDivider: {
-//         marginVertical:
-//           Metrics.x1,
-//       },
-
-//       dropdownItem: {
-//         flexDirection:
-//           "row",
-
-//         alignItems:
-//           "center",
-
-//         paddingVertical:
-//           Metrics.x2,
-
-//         paddingHorizontal:
-//           Metrics.x1,
-
-//         borderRadius: 12,
-//       },
-
-//       dropdownIconContainer: {
-//         width: 40,
-
-//         height: 40,
-
-//         borderRadius: 12,
-
-//         alignItems:
-//           "center",
-
-//         justifyContent:
-//           "center",
-
-//         backgroundColor:
-//           "#F3F4F6",
-//       },
-
-//       dropdownIcon: {
-//         fontSize: 18,
-//       },
-
-//       dropdownItemTextContainer: {
-//         flex: 1,
-
-//         marginLeft:
-//           Metrics.x2,
-//       },
-
-//       dropdownItemTitle: {
-//         fontSize: 14,
-
-//         fontWeight: "700",
-
-//         color: "#171717",
-//       },
-
-//       dropdownItemSubtitle: {
-//         fontSize: 11,
-
-//         color:
-//           Colors.subtext,
-
-//         marginTop: 2,
-//       },
-
-//       logoutItem: {
-//         marginTop:
-//           Metrics.x1,
-
-//         backgroundColor:
-//           "#FFF5F5",
-//       },
-
-//       logoutIconContainer: {
-//         backgroundColor:
-//           "#FDECEC",
-//       },
-
-//       logoutIcon: {
-//         color: "#D64545",
-//       },
-
-//       logoutTitle: {
-//         color: "#D64545",
-//       },
-
-
-//       /* ======================================================
-//          SNACKBAR
-//       ====================================================== */
-
-//       snackbar: {
-//         backgroundColor:
-//           Colors.errorBg,
-//       },
-
-
-//       /* ======================================================
-//          AUTH ERROR
-//       ====================================================== */
-
-//       center: {
-//         flex: 1,
-
-//         justifyContent:
-//           "center",
-
-//         alignItems:
-//           "center",
-
-//         padding:
-//           Metrics.x5,
-
-//         backgroundColor:
-//           "#F7F8FC",
-//       },
-
-//       errorText: {
-//         color:
-//           Colors.error,
-
-//         textAlign:
-//           "center",
-
-//         fontSize: 16,
-//       },
-//     };
-//   }
-// );
-
-
-// /* ============================================================
-//    EXPORT
-// ============================================================ */
-
-// export {
-//   PrincipalClassStudentsScreen,
-// };
-
-
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
+import React, { useMemo, useState } from "react";
 import {
   FlatList,
   Modal,
   Pressable,
+  StyleSheet,
   Text,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
-
 import {
   ActivityIndicator,
   Avatar,
@@ -2608,67 +16,46 @@ import {
   Card,
   Divider,
   IconButton,
+  Searchbar,
   Snackbar,
-  TextInput,
 } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
-import {
-  NativeStackNavigationProp,
-} from "@react-navigation/native-stack";
+import { studentServices } from "../../services/studentServices";
+import { sectionServices } from "../../services/sectionServices";
+import { RootStackParamList, RootStackScreenNames } from "../../types";
+import { useUserStore } from "../../store";
+import { Colors, Metrics } from "../../theme";
 
-import {
-  useQuery,
-} from "react-query";
+type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
-import {
-  useNavigation,
-} from "@react-navigation/native";
+type Props = {
+  route: {
+    params: {
+      sectionId: string;
+    };
+  };
+};
 
-import {
-  studentServices,
-} from "../../services/studentServices";
-
-import {
-  sectionServices,
-} from "../../services/sectionServices";
-
-import {
-  Colors,
-  makeStyles,
-  Metrics,
-} from "../../theme";
-
-import {
-  RootStackParamList,
-  RootStackScreenNames,
-} from "../../types";
-
-import {
-  useUserStore,
-} from "../../store";
-
-
-/* ============================================================
-   TYPES
-============================================================ */
-
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-
-type PrincipalClassStudentsScreenProps =
-  NativeStackScreenProps<
-    RootStackParamList,
-    RootStackScreenNames.PrincipalClassStudents
-  >;
-
-
-type StudentListItem = {
+type Student = {
   id?: string;
   admissionNo: string;
   name: string;
 };
 
+type SectionTeacher = {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  employeeId?: string | null;
+  designation?: string | null;
+  role?: string;
+};
 
-type SectionStudentsResponse = {
+type SectionResponse = {
   section?: {
     id: string;
     sectionName: string;
@@ -2679,2812 +66,1061 @@ type SectionStudentsResponse = {
       displayName?: string;
       academicYearId?: string;
     };
+    classTeacher?: SectionTeacher | null;
   };
-
   class?: {
     id: string;
     classNumber: string;
     displayName?: string;
     academicYearId?: string;
   };
-
-  students?: StudentListItem[];
-
+  students?: Student[];
   totalStudents?: number;
 };
 
+type AvailableTeacher = {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  employeeId?: string | null;
+  designation?: string | null;
+  department?: string | null;
+  role: string;
+  assignedSections: number;
+};
 
-// type PrincipalClassStudentsScreenProps = {
-//   route: {
-//     params: {
-//       sectionId: string;
-//     };
-//   };
-// };
+type AvailableTeachersResponse = {
+  teachers: AvailableTeacher[];
+};
 
-const PrincipalClassStudentsScreen = ({
-  route,
-}: PrincipalClassStudentsScreenProps) => {
+const PrincipalClassStudentsScreen = ({ route }: Props) => {
+  const navigation = useNavigation<Navigation>();
+  const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
+  const user = useUserStore((state) => state.user);
+  const logout = useUserStore((state) => state.logout);
+
   const { sectionId } = route.params;
+  const isSmallScreen = width < 600;
 
+  const [search, setSearch] = useState("");
+  const [teacherModalVisible, setTeacherModalVisible] = useState(false);
+  const [teacherSearch, setTeacherSearch] = useState("");
+  const [selectedTeacherId, setSelectedTeacherId] = useState("");
+  const [snackbarText, setSnackbarText] = useState("");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
 
-/* ============================================================
-   SCREEN
-============================================================ */
+  const showMessage = (message: string) => {
+    setSnackbarText(message);
+    setSnackbarVisible(true);
+  };
 
-// const PrincipalClassStudentsScreen = ({
-//   route,
-// }: PrincipalClassStudentsScreenProps) => {
-
-  const styles = useStyles();
-
-
-  /* ==========================================================
-     NAVIGATION
-  ========================================================== */
-
-  const navigation =
-    useNavigation<
-      NativeStackNavigationProp<
-        RootStackParamList
-      >
-    >();
-
-
-  /* ==========================================================
-     RESPONSIVE
-  ========================================================== */
-
-  const { width } =
-    useWindowDimensions();
-
-
-  const isSmallScreen =
-    width < 600;
-
-
-  const isTablet =
-    width >= 600 &&
-    width < 1024;
-
-
-  const horizontalPadding =
-    isSmallScreen
-      ? Metrics.x3
-      : isTablet
-        ? Metrics.x4
-        : Metrics.x6;
-
-
-    console.log("SECTION ID:", sectionId
-  );
-
-
-
-
-  /* ==========================================================
-     USER
-  ========================================================== */
-
-  const user =
-    useUserStore(
-      (state) => state.user
-    );
-
-
-  const logout =
-    useUserStore(
-      (state) => state.logout
-    );
-
-
-  /* ==========================================================
-     STATE
-  ========================================================== */
-
-  const [
-    search,
-    setSearch,
-  ] = useState("");
-
-
-  const [
-    showSnackbar,
-    setShowSnackbar,
-  ] = useState(false);
-
-
-  const [
-    snackbarText,
-    setSnackbarText,
-  ] = useState("");
-
-
-  const [
-    profileMenuVisible,
-    setProfileMenuVisible,
-  ] = useState(false);
-
-
-  const [
-    openingStudent,
-    setOpeningStudent,
-  ] = useState<string | null>(
-    null
-  );
-
-
-  /* ==========================================================
-     AUTHORIZATION
-  ========================================================== */
-
-  if (!user) {
-
-    return (
-      <View style={styles.center}>
-
-        <Text
-          style={styles.errorText}
-        >
-          Session not found.
-        </Text>
-
-      </View>
-    );
-
-  }
-
-
-  if (user.role !== "PRINCIPAL") {
-
-    return (
-      <View style={styles.center}>
-
-        <Text
-          style={styles.errorText}
-        >
-          You are not authorized to
-          access this screen.
-        </Text>
-
-      </View>
-    );
-
-  }
-
-
-  /* ==========================================================
-     API
-  ========================================================== */
-
-  const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useQuery<
-    SectionStudentsResponse
-  >(
-    [
-      "principal-section-students",
-      sectionId,
-    ],
-
-    () =>
-      sectionServices
-        .getStudentsBySection(
-          sectionId
-        ),
-
+  const sectionQuery = useQuery<SectionResponse>(
+    ["principal-section-students", sectionId],
+    () => sectionServices.getStudentsBySection(sectionId),
     {
-      enabled:
-        !!sectionId,
-
+      enabled: Boolean(sectionId),
       retry: 1,
     }
   );
 
+  const classId = sectionQuery.data?.section?.classId ?? "";
 
-  /* ==========================================================
-     ERROR
-  ========================================================== */
+  const classSectionsQuery = useQuery(
+    ["principal-sections-by-class", classId],
+    () => sectionServices.getSectionsByClass(classId),
+    {
+      enabled: Boolean(classId),
+      retry: 1,
+    }
+  );
 
-  useEffect(() => {
+  const teachersQuery = useQuery<AvailableTeachersResponse>(
+    ["available-class-teachers"],
+    () => sectionServices.getAvailableClassTeachers(),
+    {
+      enabled: teacherModalVisible,
+      retry: 1,
+    }
+  );
 
-    if (!isError) {
+  const assignTeacherMutation = useMutation(
+    (payload: { sectionId: string; teacherUserId: string }) =>
+      sectionServices.assignClassTeacher(payload),
+    {
+      onSuccess: (response) => {
+        setTeacherModalVisible(false);
+        setSelectedTeacherId("");
+        setTeacherSearch("");
+        showMessage(response.message || "Class teacher assigned.");
+        queryClient.invalidateQueries(["principal-section-students", sectionId]);
+        queryClient.invalidateQueries(["principal-sections-by-class", classId]);
+        queryClient.invalidateQueries(["available-class-teachers"]);
+      },
+      onError: (error: any) => {
+        showMessage(
+          error?.response?.data?.message ||
+            "Unable to assign the class teacher."
+        );
+      },
+    }
+  );
+
+  const removeTeacherMutation = useMutation(
+    (payload: { sectionId: string }) =>
+      sectionServices.removeClassTeacher(payload),
+    {
+      onSuccess: (response) => {
+        showMessage(response.message || "Class teacher removed.");
+        queryClient.invalidateQueries(["principal-section-students", sectionId]);
+        queryClient.invalidateQueries(["principal-sections-by-class", classId]);
+        queryClient.invalidateQueries(["available-class-teachers"]);
+      },
+      onError: (error: any) => {
+        showMessage(
+          error?.response?.data?.message ||
+            "Unable to remove the class teacher."
+        );
+      },
+    }
+  );
+
+  const section = sectionQuery.data?.section;
+  const classDetails = section?.class ?? sectionQuery.data?.class;
+  const students = sectionQuery.data?.students ?? [];
+  const classNumber = classDetails?.classNumber ?? "Class";
+  const sectionName = section?.sectionName ?? "Section";
+
+  const assignedSection = useMemo(() => {
+    const sections = classSectionsQuery.data?.sections ?? [];
+
+    return sections.find(
+      (item) => String(item.id) === String(sectionId)
+    );
+  }, [classSectionsQuery.data?.sections, sectionId]);
+
+  const classTeacher =
+    assignedSection?.classTeacher ?? section?.classTeacher ?? null;
+
+  const filteredStudents = useMemo(() => {
+    const value = search.trim().toLowerCase();
+
+    if (!value) {
+      return students;
+    }
+
+    return students.filter(
+      (student) =>
+        student.name?.toLowerCase().includes(value) ||
+        student.admissionNo?.toLowerCase().includes(value)
+    );
+  }, [search, students]);
+
+  const availableTeachers = useMemo(() => {
+    const value = teacherSearch.trim().toLowerCase();
+    const teachers = teachersQuery.data?.teachers ?? [];
+
+    if (!value) {
+      return teachers;
+    }
+
+    return teachers.filter((teacher) => {
+      return (
+        teacher.name?.toLowerCase().includes(value) ||
+        teacher.email?.toLowerCase().includes(value) ||
+        teacher.employeeId?.toLowerCase().includes(value) ||
+        teacher.designation?.toLowerCase().includes(value)
+      );
+    });
+  }, [teacherSearch, teachersQuery.data?.teachers]);
+
+  const openTeacherModal = () => {
+    setSelectedTeacherId(classTeacher?.id ?? "");
+    setTeacherSearch("");
+    setTeacherModalVisible(true);
+  };
+
+  const closeTeacherModal = () => {
+    if (assignTeacherMutation.isLoading) {
       return;
     }
 
-
-    const message =
-      // @ts-ignore
-      error?.response?.data?.message ??
-      "Unable to load students.";
-
-
-    setSnackbarText(message);
-
-    setShowSnackbar(true);
-
-  }, [
-    isError,
-    error,
-  ]);
-
-
-  /* ==========================================================
-     SECTION INFORMATION
-  ========================================================== */
-
-  const section =
-    data?.section;
-
-
-  const classDetails =
-    section?.class ??
-    data?.class;
-
-
-  const classNumber =
-    classDetails?.classNumber ??
-    "Class";
-
-
-  const sectionName =
-    section?.sectionName ??
-    "";
-
-
-  /* ==========================================================
-     STUDENTS
-  ========================================================== */
-
-  const students: StudentListItem[] =
-    data?.students ?? [];
-
-
-  /* ==========================================================
-     SEARCH
-  ========================================================== */
-
-  const searchValue =
-    search
-      .trim()
-      .toLowerCase();
-
-
-  const filteredStudents =
-    useMemo(() => {
-
-      if (!searchValue) {
-        return students;
-      }
-
-
-      return students.filter(
-        (student) =>
-          student.name
-            ?.toLowerCase()
-            .includes(
-              searchValue
-            ) ||
-
-          student.admissionNo
-            ?.toLowerCase()
-            .includes(
-              searchValue
-            )
-      );
-
-    }, [
-      students,
-      searchValue,
-    ]);
-
-
-  /* ==========================================================
-     LOGOUT
-  ========================================================== */
-
-  const handleLogout = () => {
-
-    setProfileMenuVisible(
-      false
-    );
-
-
-    logout();
-
-
-    navigation.reset({
-      index: 0,
-
-      routes: [
-        {
-          name:
-            RootStackScreenNames.Login,
-        },
-      ],
-    });
-
+    setTeacherModalVisible(false);
+    setTeacherSearch("");
+    setSelectedTeacherId("");
   };
 
-
-  /* ==========================================================
-     BACK
-  ========================================================== */
-
-  const goBackToSection = () => {
-
-    navigation.goBack();
-
-  };
-
-
-  /* ==========================================================
-     DASHBOARD
-  ========================================================== */
-
-  const goToDashboard = () => {
-
-    navigation.navigate(
-      RootStackScreenNames.PrincipalDashboard
-    );
-
-  };
-
-
-  /* ==========================================================
-     OPEN STUDENT
-  ========================================================== */
-
-  const openStudent = async (
-    student: StudentListItem
-  ) => {
-
-    try {
-
-      setOpeningStudent(
-        student.admissionNo
-      );
-
-
-      const fullStudent =
-        await studentServices
-          .getStudentById({
-            admissionNo:
-              student.admissionNo,
-          });
-
-
-      navigation.navigate(
-        RootStackScreenNames.StudentDetails,
-        {
-          student:
-            fullStudent,
-        }
-      );
-
-    } catch (err: any) {
-
-      console.error(
-        "STUDENT DETAILS ERROR:",
-        err
-      );
-
-
-      setSnackbarText(
-        err?.response?.data
-          ?.message ??
-        "Unable to load student details."
-      );
-
-
-      setShowSnackbar(true);
-
-    } finally {
-
-      setOpeningStudent(null);
-
+  const submitTeacherAssignment = () => {
+    if (!selectedTeacherId) {
+      showMessage("Please select a teacher.");
+      return;
     }
 
+    assignTeacherMutation.mutate({
+      sectionId,
+      teacherUserId: selectedTeacherId,
+    });
   };
 
+  const confirmRemoveTeacher = () => {
+    if (!classTeacher?.id) {
+      return;
+    }
 
-  /* ==========================================================
-     NAVBAR
-  ========================================================== */
-
-  const renderNavbar = () => {
-
-    return (
-      <View
-        style={styles.navbar}
-      >
-
-        {/* LEFT */}
-
-        <View
-          style={styles.navbarLeft}
-        >
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={
-              goBackToSection
-            }
-            style={
-              styles.backButton
-            }
-          >
-
-            <Text
-              style={
-                styles.backIcon
-              }
-            >
-              ‹
-            </Text>
-
-          </TouchableOpacity>
-
-
-          <Avatar.Icon
-            size={
-              isSmallScreen
-                ? 42
-                : 46
-            }
-            icon="school"
-            color="#FFFFFF"
-            style={
-              styles.navbarLogo
-            }
-          />
-
-
-          <View
-            style={
-              styles.navbarBrand
-            }
-          >
-
-            <Text
-              style={
-                styles.navbarSchoolName
-              }
-              numberOfLines={1}
-            >
-              {user.schoolName ||
-                "School Platform"}
-            </Text>
-
-
-            <Text
-              style={
-                styles.navbarSubtitle
-              }
-            >
-              Principal Administration
-            </Text>
-
-          </View>
-
-        </View>
-
-
-        {/* RIGHT */}
-
-        <View
-          style={
-            styles.navbarRight
-          }
-        >
-
-          <IconButton
-            icon="refresh"
-            size={
-              isSmallScreen
-                ? 20
-                : 22
-            }
-            iconColor={
-              Colors.brandPrimary
-            }
-            onPress={() => {
-              refetch();
-            }}
-            style={
-              styles.refreshButton
-            }
-          />
-
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              setProfileMenuVisible(
-                true
-              );
-            }}
-            style={[
-              styles.profileButton,
-              profileMenuVisible &&
-                styles.profileButtonActive,
-            ]}
-          >
-
-            <Avatar.Text
-              size={
-                isSmallScreen
-                  ? 38
-                  : 42
-              }
-              label={getInitials(
-                user.name
-              )}
-              color="#FFFFFF"
-              style={
-                styles.profileAvatar
-              }
-            />
-
-
-            {!isSmallScreen && (
-              <View
-                style={
-                  styles.profileDetails
-                }
-              >
-
-                <Text
-                  style={
-                    styles.profileName
-                  }
-                  numberOfLines={1}
-                >
-                  {user.name ||
-                    "Principal"}
-                </Text>
-
-
-                <Text
-                  style={
-                    styles.profileRole
-                  }
-                >
-                  Principal
-                </Text>
-
-              </View>
-            )}
-
-
-            <Text
-              style={
-                styles.profileArrow
-              }
-            >
-              {profileMenuVisible
-                ? "⌃"
-                : "⌄"}
-            </Text>
-
-          </TouchableOpacity>
-
-        </View>
-
-      </View>
-    );
-
+    removeTeacherMutation.mutate({ sectionId });
   };
 
+  const openStudent = async (student: Student) => {
+    try {
+      const fullStudent = await studentServices.getStudentById({
+        admissionNo: student.admissionNo,
+      });
 
-  /* ==========================================================
-     PROFILE DROPDOWN
-  ========================================================== */
-
-  const renderProfileDropdown =
-    () => {
-
-      if (!profileMenuVisible) {
-        return null;
-      }
-
-
-      return (
-        <Modal
-          visible={
-            profileMenuVisible
-          }
-          transparent
-          animationType="fade"
-          statusBarTranslucent
-          onRequestClose={() => {
-            setProfileMenuVisible(
-              false
-            );
-          }}
-        >
-
-          <Pressable
-            style={
-              styles.modalOverlay
-            }
-            onPress={() => {
-              setProfileMenuVisible(
-                false
-              );
-            }}
-          >
-
-            <View
-              style={[
-                styles.profileDropdown,
-                isSmallScreen &&
-                  styles.profileDropdownMobile,
-              ]}
-            >
-
-              {/* PROFILE HEADER */}
-
-              <View
-                style={
-                  styles.dropdownProfileHeader
-                }
-              >
-
-                <Avatar.Text
-                  size={46}
-                  label={getInitials(
-                    user.name
-                  )}
-                  color="#FFFFFF"
-                  style={
-                    styles.dropdownAvatar
-                  }
-                />
-
-
-                <View
-                  style={
-                    styles.dropdownUserInfo
-                  }
-                >
-
-                  <Text
-                    style={
-                      styles.dropdownUserName
-                    }
-                    numberOfLines={1}
-                  >
-                    {user.name ||
-                      "Principal"}
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.dropdownUserEmail
-                    }
-                    numberOfLines={1}
-                  >
-                    {user.email || ""}
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.dropdownUserRole
-                    }
-                  >
-                    Principal
-                  </Text>
-
-                </View>
-
-              </View>
-
-
-              <Divider
-                style={
-                  styles.dropdownDivider
-                }
-              />
-
-
-              {/* PROFILE */}
-
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={
-                  styles.dropdownItem
-                }
-                onPress={() => {
-
-                  setProfileMenuVisible(
-                    false
-                  );
-
-
-                  setSnackbarText(
-                    "Principal profile coming next."
-                  );
-
-
-                  setShowSnackbar(
-                    true
-                  );
-
-                }}
-              >
-
-                <View
-                  style={
-                    styles.dropdownIconContainer
-                  }
-                >
-
-                  <Text
-                    style={
-                      styles.dropdownIcon
-                    }
-                  >
-                    👤
-                  </Text>
-
-                </View>
-
-
-                <View
-                  style={
-                    styles.dropdownItemTextContainer
-                  }
-                >
-
-                  <Text
-                    style={
-                      styles.dropdownItemTitle
-                    }
-                  >
-                    Profile
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.dropdownItemSubtitle
-                    }
-                  >
-                    View your principal profile
-                  </Text>
-
-                </View>
-
-              </TouchableOpacity>
-
-
-              {/* LOGOUT */}
-
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={[
-                  styles.dropdownItem,
-                  styles.logoutItem,
-                ]}
-                onPress={
-                  handleLogout
-                }
-              >
-
-                <View
-                  style={[
-                    styles.dropdownIconContainer,
-                    styles.logoutIconContainer,
-                  ]}
-                >
-
-                  <Text
-                    style={[
-                      styles.dropdownIcon,
-                      styles.logoutIcon,
-                    ]}
-                  >
-                    ↪
-                  </Text>
-
-                </View>
-
-
-                <View
-                  style={
-                    styles.dropdownItemTextContainer
-                  }
-                >
-
-                  <Text
-                    style={[
-                      styles.dropdownItemTitle,
-                      styles.logoutTitle,
-                    ]}
-                  >
-                    Logout
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.dropdownItemSubtitle
-                    }
-                  >
-                    Sign out of this account
-                  </Text>
-
-                </View>
-
-              </TouchableOpacity>
-
-            </View>
-
-          </Pressable>
-
-        </Modal>
+      navigation.navigate(RootStackScreenNames.StudentDetails, {
+        student: fullStudent,
+      } as never);
+    } catch (error: any) {
+      showMessage(
+        error?.response?.data?.message ||
+          "Unable to load student details."
       );
-
-    };
-
-
-  /* ==========================================================
-     PAGE HEADER
-  ========================================================== */
-
-  const renderPageHeader =
-    () => {
-
-      return (
-        <View
-          style={
-            styles.pageHeader
-          }
-        >
-
-          <View
-            style={
-              styles.pageHeaderTop
-            }
-          >
-
-            <View
-              style={
-                styles.pageHeaderText
-              }
-            >
-
-              <Text
-                style={
-                  styles.eyebrow
-                }
-              >
-                STUDENTS
-              </Text>
-
-
-              <Text
-                style={
-                  styles.pageTitle
-                }
-              >
-                Class{" "}
-                {classNumber}
-                {" • "}
-                Section{" "}
-                {sectionName}
-              </Text>
-
-
-              <Text
-                style={
-                  styles.pageSubtitle
-                }
-              >
-                View all students enrolled
-                in this section.
-              </Text>
-
-            </View>
-
-
-            <Button
-              mode="outlined"
-              icon="arrow-left"
-              onPress={
-                goBackToSection
-              }
-              style={
-                styles.backToClassesButton
-              }
-              contentStyle={
-                styles.backToClassesContent
-              }
-            >
-              {!isSmallScreen
-                ? "Back"
-                : "Back"}
-            </Button>
-
-          </View>
-
-        </View>
-      );
-
-    };
-
-
-  /* ==========================================================
-     CLASS HERO
-  ========================================================== */
-
-  const renderClassHero =
-    () => {
-
-      return (
-        <Card
-          style={
-            styles.classHero
-          }
-        >
-
-          <Card.Content>
-
-            <View
-              style={
-                styles.classHeroRow
-              }
-            >
-
-              <View
-                style={
-                  styles.classHeroLeft
-                }
-              >
-
-                <Avatar.Icon
-                  size={60}
-                  icon="google-classroom"
-                  color="#FFFFFF"
-                  style={
-                    styles.classHeroIcon
-                  }
-                />
-
-
-                <View
-                  style={
-                    styles.classHeroInfo
-                  }
-                >
-
-                  <Text
-                    style={
-                      styles.classHeroEyebrow
-                    }
-                  >
-                    SECTION OVERVIEW
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.classHeroTitle
-                    }
-                  >
-                    Class{" "}
-                    {classNumber}
-                    {" • "}
-                    Section{" "}
-                    {sectionName}
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.classHeroSubtitle
-                    }
-                  >
-                    {formatNumber(
-                      students.length
-                    )}{" "}
-                    enrolled student
-                    {students.length === 1
-                      ? ""
-                      : "s"}
-                  </Text>
-
-                </View>
-
-              </View>
-
-
-              <View
-                style={
-                  styles.classHeroBadge
-                }
-              >
-
-                <Text
-                  style={
-                    styles.classHeroBadgeValue
-                  }
-                >
-                  {students.length}
-                </Text>
-
-
-                <Text
-                  style={
-                    styles.classHeroBadgeLabel
-                  }
-                >
-                  Students
-                </Text>
-
-              </View>
-
-            </View>
-
-          </Card.Content>
-
-        </Card>
-      );
-
-    };
-
-
-  /* ==========================================================
-     SEARCH
-  ========================================================== */
-
-  const renderSearch =
-    () => {
-
-      return (
-        <Card
-          style={
-            styles.searchCard
-          }
-        >
-
-          <Card.Content>
-
-            <View
-              style={
-                styles.searchHeader
-              }
-            >
-
-              <View
-                style={
-                  styles.searchHeaderText
-                }
-              >
-
-                <Text
-                  style={
-                    styles.searchTitle
-                  }
-                >
-                  Find a Student
-                </Text>
-
-
-                <Text
-                  style={
-                    styles.searchSubtitle
-                  }
-                >
-                  Search by name or admission
-                  number.
-                </Text>
-
-              </View>
-
-
-              {search.length > 0 && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() =>
-                    setSearch("")
-                  }
-                >
-
-                  <Text
-                    style={
-                      styles.clearSearch
-                    }
-                  >
-                    Clear
-                  </Text>
-
-                </TouchableOpacity>
-              )}
-
-            </View>
-
-
-            <TextInput
-              mode="outlined"
-              label="Search student"
-              placeholder="Name or admission number"
-              value={search}
-              onChangeText={
-                setSearch
-              }
-              autoCapitalize="none"
-              autoCorrect={false}
-              left={
-                <TextInput.Icon
-                  icon="magnify"
-                />
-              }
-              style={
-                styles.searchInput
-              }
-              outlineStyle={
-                styles.searchOutline
-              }
-            />
-
-          </Card.Content>
-
-        </Card>
-      );
-
-    };
-
-
-  /* ==========================================================
-     STUDENT ITEM
-  ========================================================== */
-
-  const renderStudent = ({
-    item,
-  }: {
-    item: StudentListItem;
-  }) => {
-
-    const initials =
-      getInitials(
-        item.name
-      );
-
-
-    const isOpening =
-      openingStudent ===
-      item.admissionNo;
-
-
-    return (
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: RootStackScreenNames.Login }],
+    });
+  };
+
+  const renderStudent = ({ item }: { item: Student }) => (
+    <Card style={styles.studentCard} mode="contained">
       <TouchableOpacity
-        activeOpacity={0.88}
-        onPress={() => {
-
-          if (!isOpening) {
-            openStudent(item);
-          }
-
-        }}
-        style={
-          styles.studentTouchable
-        }
+        activeOpacity={0.8}
+        onPress={() => openStudent(item)}
+        style={styles.studentRow}
       >
+        <Avatar.Text
+          size={42}
+          label={getInitials(item.name)}
+          style={styles.studentAvatar}
+          color="#FFFFFF"
+        />
 
-        <Card
-          style={
-            styles.studentCard
-          }
-        >
+        <View style={styles.studentInfo}>
+          <Text style={styles.studentName} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <Text style={styles.studentAdmission}>
+            Admission No. {item.admissionNo}
+          </Text>
+        </View>
 
-          <Card.Content>
-
-            <View
-              style={
-                styles.studentRow
-              }
-            >
-
-              {/* AVATAR */}
-
-              <Avatar.Text
-                size={52}
-                label={initials}
-                color="#4F46E5"
-                style={
-                  styles.studentAvatar
-                }
-              />
-
-
-              {/* INFO */}
-
-              <View
-                style={
-                  styles.studentInfo
-                }
-              >
-
-                <Text
-                  style={
-                    styles.studentName
-                  }
-                  numberOfLines={1}
-                >
-                  {item.name}
-                </Text>
-
-
-                <View
-                  style={
-                    styles.admissionRow
-                  }
-                >
-
-                  <Text
-                    style={
-                      styles.admissionLabel
-                    }
-                  >
-                    Admission No.
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.admissionValue
-                    }
-                  >
-                    {item.admissionNo}
-                  </Text>
-
-                </View>
-
-              </View>
-
-
-              {/* ACTION */}
-
-              <View
-                style={
-                  styles.studentAction
-                }
-              >
-
-                {isOpening ? (
-
-                  <ActivityIndicator
-                    size="small"
-                    color={
-                      Colors.brandPrimary
-                    }
-                  />
-
-                ) : (
-
-                  <View
-                    style={
-                      styles.studentArrowContainer
-                    }
-                  >
-
-                    <Text
-                      style={
-                        styles.studentArrow
-                      }
-                    >
-                      →
-                    </Text>
-
-                  </View>
-
-                )}
-
-              </View>
-
-            </View>
-
-          </Card.Content>
-
-        </Card>
-
+        <IconButton
+          icon="chevron-right"
+          iconColor={Colors.subtext}
+          size={22}
+        />
       </TouchableOpacity>
-    );
+    </Card>
+  );
 
-  };
-
-
-  /* ==========================================================
-     EMPTY
-  ========================================================== */
-
-  const renderEmpty =
-    () => {
-
-      return (
-        <View
-          style={
-            styles.empty
-          }
-        >
-
-          <Avatar.Icon
-            size={70}
-            icon={
-              searchValue
-                ? "magnify"
-                : "account-school-outline"
-            }
-            color="#4F46E5"
-            style={
-              styles.emptyIcon
-            }
-          />
-
-
-          <Text
-            style={
-              styles.emptyTitle
-            }
-          >
-            {isError
-              ? "Unable to load students"
-              : searchValue
-                ? "No matching students"
-                : "No students found"}
-          </Text>
-
-
-          <Text
-            style={
-              styles.emptyText
-            }
-          >
-            {isError
-              ? "Please try refreshing the page."
-              : searchValue
-                ? "Try searching with a different name or admission number."
-                : `No students are currently enrolled in Class ${classNumber} - Section ${sectionName}.`}
-          </Text>
-
-
-          {isError ? (
-
-            <Button
-              mode="outlined"
-              icon="refresh"
-              onPress={
-                refetch
-              }
-              style={
-                styles.emptyButton
-              }
-            >
-              Try Again
-            </Button>
-
-          ) : searchValue ? (
-
-            <Button
-              mode="outlined"
-              onPress={() =>
-                setSearch("")
-              }
-              style={
-                styles.emptyButton
-              }
-            >
-              Clear Search
-            </Button>
-
-          ) : null}
-
-        </View>
-      );
-
-    };
-
-
-  /* ==========================================================
-     LOADING
-  ========================================================== */
-
-  if (isLoading) {
-
+  if (!user) {
     return (
-      <View
-        style={
-          styles.page
-        }
-      >
-
-        <View
-          style={[
-            styles.loadingScreen,
-            {
-              paddingHorizontal:
-                horizontalPadding,
-            },
-          ]}
-        >
-
-          {renderNavbar()}
-
-
-          <View
-            style={
-              styles.loaderContent
-            }
-          >
-
-            <Avatar.Icon
-              size={68}
-              icon="account-school-outline"
-              color={
-                Colors.brandPrimary
-              }
-              style={
-                styles.loadingIcon
-              }
-            />
-
-
-            <ActivityIndicator
-              size="large"
-              color={
-                Colors.brandPrimary
-              }
-              style={
-                styles.loader
-              }
-            />
-
-
-            <Text
-              style={
-                styles.loadingTitle
-              }
-            >
-              Loading students...
-            </Text>
-
-
-            <Text
-              style={
-                styles.loadingText
-              }
-            >
-              Fetching students for
-              {" "}
-              Class{" "}
-              {classNumber}
-              {" • "}
-              Section{" "}
-              {sectionName}.
-            </Text>
-
-          </View>
-
-        </View>
-
-
-        {renderProfileDropdown()}
-
+      <View style={styles.center}>
+        <Text style={styles.errorText}>Session not found.</Text>
       </View>
     );
-
   }
 
-
-  /* ==========================================================
-     MAIN UI
-  ========================================================== */
+  if (user.role !== "PRINCIPAL" && user.role !== "ADMIN") {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>
+          You are not authorized to access this screen.
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View
-      style={
-        styles.page
-      }
-    >
-
+    <View style={styles.page}>
       <FlatList
-        data={
-          filteredStudents
-        }
-        renderItem={
-          renderStudent
-        }
-        keyExtractor={(item) =>
-          item.admissionNo
-        }
-        showsVerticalScrollIndicator={
-          false
-        }
+        data={filteredStudents}
+        renderItem={renderStudent}
+        keyExtractor={(item) => item.admissionNo}
+        showsVerticalScrollIndicator={false}
+        refreshing={sectionQuery.isFetching}
+        onRefresh={() => sectionQuery.refetch()}
         contentContainerStyle={[
           styles.listContent,
-          {
-            paddingHorizontal:
-              horizontalPadding,
-          },
+          { paddingHorizontal: isSmallScreen ? 16 : 28 },
         ]}
         ListHeaderComponent={
           <>
-
-            {renderNavbar()}
-
-            {renderPageHeader()}
-
-            {renderClassHero()}
-
-            {renderSearch()}
-
-
-            {filteredStudents.length >
-              0 && (
-
-              <View
-                style={
-                  styles.studentsHeader
-                }
-              >
-
+            <View style={styles.topBar}>
+              <View style={styles.topBarLeft}>
+                <IconButton
+                  icon="arrow-left"
+                  iconColor={Colors.brandPrimary}
+                  onPress={() => navigation.goBack()}
+                />
                 <View>
-
-                  <Text
-                    style={
-                      styles.studentsTitle
-                    }
-                  >
-                    Students
-                  </Text>
-
-
-                  <Text
-                    style={
-                      styles.studentsSubtitle
-                    }
-                  >
-                    Select a student to view
-                    their complete profile.
-                  </Text>
-
+                  <Text style={styles.pageEyebrow}>SECTION MANAGEMENT</Text>
+                  <Text style={styles.pageTitle}>Students</Text>
                 </View>
-
-
-                <View
-                  style={
-                    styles.studentsCountBadge
-                  }
-                >
-
-                  <Text
-                    style={
-                      styles.studentsCountText
-                    }
-                  >
-                    {
-                      filteredStudents.length
-                    }
-                  </Text>
-
-                </View>
-
               </View>
 
-            )}
+              <IconButton
+                icon="logout"
+                iconColor={Colors.brandPrimary}
+                onPress={handleLogout}
+              />
+            </View>
 
+            <Card style={styles.heroCard} mode="contained">
+              <Card.Content>
+                <View style={styles.heroTopRow}>
+                  <View style={styles.heroTitleArea}>
+                    <Avatar.Icon
+                      icon="google-classroom"
+                      size={52}
+                      color="#FFFFFF"
+                      style={styles.heroIcon}
+                    />
+                    <View style={styles.heroTextArea}>
+                      <Text style={styles.heroEyebrow}>SECTION OVERVIEW</Text>
+                      <Text style={styles.heroTitle}>
+                        {classNumber} • {sectionName}
+                      </Text>
+                      <Text style={styles.heroSubtitle}>
+                        {students.length} enrolled student
+                        {students.length === 1 ? "" : "s"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countValue}>{students.length}</Text>
+                    <Text style={styles.countLabel}>Students</Text>
+                  </View>
+                </View>
+              </Card.Content>
+            </Card>
+
+            <Card style={styles.teacherCard} mode="contained">
+              <Card.Content>
+                <View style={styles.sectionHeadingRow}>
+                  <View style={styles.headingIcon}>
+                    <Text style={styles.headingIconText}>T</Text>
+                  </View>
+                  <View style={styles.headingTextArea}>
+                    <Text style={styles.cardTitle}>Class Teacher</Text>
+                    <Text style={styles.cardSubtitle}>
+                      Manage the teacher assigned to this section.
+                    </Text>
+                  </View>
+                </View>
+
+                <Divider style={styles.divider} />
+
+                {classTeacher ? (
+                  <View style={styles.teacherDetailsRow}>
+                    <Avatar.Text
+                      size={48}
+                      label={getInitials(classTeacher.name)}
+                      style={styles.teacherAvatar}
+                      color="#FFFFFF"
+                    />
+                    <View style={styles.teacherInfo}>
+                      <Text style={styles.teacherName}>
+                        {classTeacher.name}
+                      </Text>
+                      <Text style={styles.teacherMeta}>
+                        {classTeacher.designation ||
+                          classTeacher.role ||
+                          "Class Teacher"}
+                      </Text>
+                      {!!classTeacher.employeeId && (
+                        <Text style={styles.teacherMeta}>
+                          Employee ID: {classTeacher.employeeId}
+                        </Text>
+                      )}
+                      {!!classTeacher.email && (
+                        <Text style={styles.teacherMeta}>
+                          {classTeacher.email}
+                        </Text>
+                      )}
+                    </View>
+                    <View style={styles.assignedPill}>
+                      <Text style={styles.assignedPillText}>Assigned</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.unassignedBox}>
+                    <Avatar.Icon
+                      size={42}
+                      icon="account-question-outline"
+                      color={Colors.subtext}
+                      style={styles.unassignedIcon}
+                    />
+                    <View style={styles.unassignedTextArea}>
+                      <Text style={styles.unassignedTitle}>
+                        No teacher assigned
+                      </Text>
+                      <Text style={styles.unassignedSubtitle}>
+                        Assign a class teacher to this section.
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                <View style={styles.teacherActions}>
+                  <Button
+                    mode="contained"
+                    icon={classTeacher ? "account-edit" : "account-plus"}
+                    onPress={openTeacherModal}
+                    buttonColor={Colors.brandPrimary}
+                    style={styles.primaryAction}
+                    contentStyle={styles.actionContent}
+                    loading={assignTeacherMutation.isLoading}
+                    disabled={assignTeacherMutation.isLoading}
+                  >
+                    {classTeacher ? "Change Teacher" : "Assign Teacher"}
+                  </Button>
+
+                  {classTeacher && (
+                    <Button
+                      mode="outlined"
+                      icon="account-remove"
+                      onPress={confirmRemoveTeacher}
+                      textColor="#B42318"
+                      style={styles.removeAction}
+                      contentStyle={styles.actionContent}
+                      loading={removeTeacherMutation.isLoading}
+                      disabled={removeTeacherMutation.isLoading}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </View>
+              </Card.Content>
+            </Card>
+
+            <Card style={styles.searchCard} mode="contained">
+              <Card.Content>
+                <Text style={styles.cardTitle}>Find a Student</Text>
+                <Text style={styles.cardSubtitle}>
+                  Search by student name or admission number.
+                </Text>
+                <Searchbar
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="Search students..."
+                  style={styles.searchbar}
+                  inputStyle={styles.searchInput}
+                  elevation={0}
+                />
+              </Card.Content>
+            </Card>
+
+            <View style={styles.studentsHeader}>
+              <View>
+                <Text style={styles.studentsTitle}>Students</Text>
+                <Text style={styles.studentsSubtitle}>
+                  Select a student to view their complete profile.
+                </Text>
+              </View>
+              <View style={styles.studentCountPill}>
+                <Text style={styles.studentCountPillText}>
+                  {filteredStudents.length}
+                </Text>
+              </View>
+            </View>
           </>
         }
         ListEmptyComponent={
-          renderEmpty()
-        }
-        refreshing={
-          isFetching
-        }
-        onRefresh={
-          refetch
+          <View style={styles.emptyState}>
+            {sectionQuery.isLoading ? (
+              <ActivityIndicator color={Colors.brandPrimary} />
+            ) : (
+              <>
+                <Avatar.Icon
+                  size={54}
+                  icon="account-search-outline"
+                  color={Colors.subtext}
+                  style={styles.emptyIcon}
+                />
+                <Text style={styles.emptyTitle}>No students found</Text>
+                <Text style={styles.emptySubtitle}>
+                  Try changing your search or refresh the section.
+                </Text>
+              </>
+            )}
+          </View>
         }
       />
 
+      <Modal
+        visible={teacherModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={closeTeacherModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderText}>
+                <Text style={styles.modalTitle}>Select Class Teacher</Text>
+                <Text style={styles.modalSubtitle}>
+                  Choose a teacher for {classNumber} • {sectionName}.
+                </Text>
+              </View>
+              <IconButton
+                icon="close"
+                onPress={closeTeacherModal}
+                disabled={assignTeacherMutation.isLoading}
+              />
+            </View>
 
-      {renderProfileDropdown()}
+            <Searchbar
+              value={teacherSearch}
+              onChangeText={setTeacherSearch}
+              placeholder="Search teachers..."
+              style={styles.teacherSearchbar}
+              elevation={0}
+            />
 
+            {teachersQuery.isLoading ? (
+              <View style={styles.modalLoading}>
+                <ActivityIndicator color={Colors.brandPrimary} />
+              </View>
+            ) : (
+              <FlatList
+                data={availableTeachers}
+                keyExtractor={(item) => item.id}
+                style={styles.teacherList}
+                keyboardShouldPersistTaps="handled"
+                ListEmptyComponent={
+                  <View style={styles.modalEmpty}>
+                    <Text style={styles.emptyTitle}>
+                      No teachers available
+                    </Text>
+                    <Text style={styles.emptySubtitle}>
+                      Try another search term.
+                    </Text>
+                  </View>
+                }
+                renderItem={({ item }) => {
+                  const selected = selectedTeacherId === item.id;
+
+                  return (
+                    <Pressable
+                      onPress={() => setSelectedTeacherId(item.id)}
+                      style={[
+                        styles.teacherOption,
+                        selected && styles.teacherOptionSelected,
+                      ]}
+                    >
+                      <Avatar.Text
+                        size={42}
+                        label={getInitials(item.name)}
+                        style={styles.teacherOptionAvatar}
+                        color="#FFFFFF"
+                      />
+                      <View style={styles.teacherOptionInfo}>
+                        <Text style={styles.teacherOptionName}>
+                          {item.name}
+                        </Text>
+                        <Text style={styles.teacherOptionMeta}>
+                          {item.designation || item.role}
+                        </Text>
+                        {!!item.employeeId && (
+                          <Text style={styles.teacherOptionMeta}>
+                            Employee ID: {item.employeeId}
+                          </Text>
+                        )}
+                        <Text style={styles.teacherOptionMeta}>
+                          Assigned sections: {item.assignedSections}
+                        </Text>
+                      </View>
+                      <IconButton
+                        icon={
+                          selected
+                            ? "radiobox-marked"
+                            : "radiobox-blank"
+                        }
+                        iconColor={
+                          selected
+                            ? Colors.brandPrimary
+                            : Colors.subtext
+                        }
+                      />
+                    </Pressable>
+                  );
+                }}
+              />
+            )}
+
+            <View style={styles.modalActions}>
+              <Button
+                mode="outlined"
+                onPress={closeTeacherModal}
+                disabled={assignTeacherMutation.isLoading}
+                style={styles.modalCancelButton}
+              >
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                onPress={submitTeacherAssignment}
+                buttonColor={Colors.brandPrimary}
+                disabled={
+                  !selectedTeacherId ||
+                  assignTeacherMutation.isLoading
+                }
+                loading={assignTeacherMutation.isLoading}
+                style={styles.modalConfirmButton}
+              >
+                Save Teacher
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Snackbar
-        visible={
-          showSnackbar
-        }
-        onDismiss={() => {
-          setShowSnackbar(
-            false
-          );
-        }}
-        duration={3000}
-        style={
-          styles.snackbar
-        }
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3200}
       >
         {snackbarText}
       </Snackbar>
-
     </View>
   );
-
 };
 
-
-/* ============================================================
-   INITIALS
-============================================================ */
-
-const getInitials = (
-  name?: string | null
-) => {
-
+const getInitials = (name?: string | null) => {
   if (!name) {
     return "S";
   }
 
-
-  const parts =
-    name
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
-
+  const parts = name.trim().split(/\s+/).filter(Boolean);
 
   if (parts.length === 1) {
-
-    return parts[0]
-      .slice(0, 2)
-      .toUpperCase();
-
+    return parts[0].slice(0, 2).toUpperCase();
   }
-
 
   return (
-    parts[0][0] +
-    parts[
-      parts.length - 1
-    ][0]
+    parts[0][0] + parts[parts.length - 1][0]
   ).toUpperCase();
-
 };
 
-
-/* ============================================================
-   NUMBER FORMAT
-============================================================ */
-
-const formatNumber = (
-  value: number
-) => {
-
-  return new Intl.NumberFormat(
-    "en-IN"
-  ).format(value);
-
-};
-
-
-/* ============================================================
-   STYLES
-============================================================ */
-
-const useStyles = makeStyles(
-  () => {
-
-    return {
-
-      /* ======================================================
-         PAGE
-      ====================================================== */
-
-      page: {
-        flex: 1,
-        backgroundColor:
-          "#F7F8FC",
-      },
-
-
-      listContent: {
-        paddingTop:
-          Metrics.x3,
-
-        paddingBottom:
-          Metrics.x8,
-      },
-
-
-      /* ======================================================
-         NAVBAR
-      ====================================================== */
-
-      navbar: {
-        minHeight: 72,
-
-        paddingHorizontal:
-          Metrics.x3,
-
-        paddingVertical:
-          Metrics.x2,
-
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "space-between",
-
-        backgroundColor:
-          "#FFFFFF",
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E9EAF0",
-
-        borderRadius: 16,
-
-        marginBottom:
-          Metrics.x5,
-
-        elevation: 1,
-      },
-
-
-      navbarLeft: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        flex: 1,
-
-        minWidth: 0,
-      },
-
-
-      backButton: {
-        width: 38,
-
-        height: 38,
-
-        borderRadius: 12,
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "center",
-
-        backgroundColor:
-          "#F3F4F6",
-
-        marginRight:
-          Metrics.x2,
-      },
-
-
-      backIcon: {
-        fontSize: 28,
-
-        lineHeight: 30,
-
-        color:
-          Colors.subtext,
-      },
-
-
-      navbarLogo: {
-        backgroundColor:
-          Colors.brandPrimary,
-
-        marginRight:
-          Metrics.x2,
-      },
-
-
-      navbarBrand: {
-        flex: 1,
-
-        minWidth: 0,
-      },
-
-
-      navbarSchoolName: {
-        fontSize: 15,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      navbarSubtitle: {
-        fontSize: 11,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 2,
-      },
-
-
-      navbarRight: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        marginLeft:
-          Metrics.x2,
-      },
-
-
-      refreshButton: {
-        margin: 0,
-
-        marginRight:
-          Metrics.x1,
-      },
-
-
-      /* ======================================================
-         PROFILE
-      ====================================================== */
-
-      profileButton: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        paddingVertical:
-          Metrics.x1,
-
-        paddingHorizontal:
-          Metrics.x1,
-
-        borderRadius: 24,
-      },
-
-
-      profileButtonActive: {
-        backgroundColor:
-          "#F4F5F9",
-      },
-
-
-      profileAvatar: {
-        backgroundColor:
-          Colors.brandPrimary,
-      },
-
-
-      profileDetails: {
-        marginLeft:
-          Metrics.x2,
-
-        maxWidth: 145,
-      },
-
-
-      profileName: {
-        fontSize: 13,
-
-        fontWeight: "700",
-
-        color: "#171717",
-      },
-
-
-      profileRole: {
-        fontSize: 11,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 1,
-      },
-
-
-      profileArrow: {
-        fontSize: 17,
-
-        color:
-          Colors.subtext,
-
-        marginLeft:
-          Metrics.x1,
-      },
-
-
-      /* ======================================================
-         PAGE HEADER
-      ====================================================== */
-
-      pageHeader: {
-        marginBottom:
-          Metrics.x5,
-      },
-
-
-      pageHeaderTop: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "flex-start",
-
-        justifyContent:
-          "space-between",
-      },
-
-
-      pageHeaderText: {
-        flex: 1,
-
-        paddingRight:
-          Metrics.x3,
-      },
-
-
-      eyebrow: {
-        fontSize: 10,
-
-        fontWeight: "800",
-
-        letterSpacing: 1,
-
-        color:
-          Colors.brandPrimary,
-
-        marginBottom:
-          Metrics.x1,
-      },
-
-
-      pageTitle: {
-        fontSize: 30,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      pageSubtitle: {
-        fontSize: 14,
-
-        lineHeight: 21,
-
-        color:
-          Colors.subtext,
-
-        marginTop:
-          Metrics.x1,
-
-        maxWidth: 650,
-      },
-
-
-      backToClassesButton: {
-        borderRadius: 12,
-      },
-
-
-      backToClassesContent: {
-        minHeight: 44,
-      },
-
-
-      /* ======================================================
-         CLASS HERO
-      ====================================================== */
-
-      classHero: {
-        backgroundColor:
-          Colors.brandPrimary,
-
-        borderRadius: 18,
-
-        marginBottom:
-          Metrics.x5,
-
-        elevation: 2,
-      },
-
-
-      classHeroRow: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "space-between",
-      },
-
-
-      classHeroLeft: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        flex: 1,
-      },
-
-
-      classHeroIcon: {
-        backgroundColor:
-          "rgba(255,255,255,0.14)",
-
-        marginRight:
-          Metrics.x3,
-      },
-
-
-      classHeroInfo: {
-        flex: 1,
-      },
-
-
-      classHeroEyebrow: {
-        fontSize: 10,
-
-        fontWeight: "800",
-
-        letterSpacing: 1,
-
-        color:
-          "rgba(255,255,255,0.72)",
-
-        marginBottom: 2,
-      },
-
-
-      classHeroTitle: {
-        fontSize: 23,
-
-        fontWeight: "800",
-
-        color: "#FFFFFF",
-      },
-
-
-      classHeroSubtitle: {
-        fontSize: 13,
-
-        color:
-          "rgba(255,255,255,0.78)",
-
-        marginTop: 2,
-      },
-
-
-      classHeroBadge: {
-        minWidth: 70,
-
-        paddingVertical:
-          Metrics.x2,
-
-        paddingHorizontal:
-          Metrics.x2,
-
-        borderRadius: 14,
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "center",
-
-        backgroundColor:
-          "rgba(255,255,255,0.14)",
-      },
-
-
-      classHeroBadgeValue: {
-        fontSize: 22,
-
-        fontWeight: "800",
-
-        color: "#FFFFFF",
-      },
-
-
-      classHeroBadgeLabel: {
-        fontSize: 10,
-
-        color:
-          "rgba(255,255,255,0.75)",
-
-        marginTop: 1,
-      },
-
-
-      /* ======================================================
-         SEARCH
-      ====================================================== */
-
-      searchCard: {
-        backgroundColor:
-          "#FFFFFF",
-
-        borderRadius: 18,
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E9EAF0",
-
-        elevation: 1,
-
-        marginBottom:
-          Metrics.x5,
-      },
-
-
-      searchHeader: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "space-between",
-
-        marginBottom:
-          Metrics.x3,
-      },
-
-
-      searchHeaderText: {
-        flex: 1,
-      },
-
-
-      searchTitle: {
-        fontSize: 17,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      searchSubtitle: {
-        fontSize: 12,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 2,
-      },
-
-
-      clearSearch: {
-        fontSize: 13,
-
-        fontWeight: "700",
-
-        color:
-          Colors.brandPrimary,
-      },
-
-
-      searchInput: {
-        backgroundColor:
-          "#FFFFFF",
-      },
-
-
-      searchOutline: {
-        borderRadius: 12,
-      },
-
-
-      /* ======================================================
-         STUDENTS HEADER
-      ====================================================== */
-
-      studentsHeader: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "space-between",
-
-        marginBottom:
-          Metrics.x3,
-      },
-
-
-      studentsTitle: {
-        fontSize: 20,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      studentsSubtitle: {
-        fontSize: 12,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 2,
-      },
-
-
-      studentsCountBadge: {
-        minWidth: 38,
-
-        height: 36,
-
-        paddingHorizontal:
-          Metrics.x2,
-
-        borderRadius: 12,
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "center",
-
-        backgroundColor:
-          "#EEF2FF",
-      },
-
-
-      studentsCountText: {
-        fontSize: 13,
-
-        fontWeight: "800",
-
-        color: "#4F46E5",
-      },
-
-
-      /* ======================================================
-         STUDENT CARD
-      ====================================================== */
-
-      studentTouchable: {
-        marginBottom:
-          Metrics.x3,
-      },
-
-
-      studentCard: {
-        backgroundColor:
-          "#FFFFFF",
-
-        borderRadius: 18,
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E9EAF0",
-
-        elevation: 1,
-      },
-
-
-      studentRow: {
-        minHeight: 72,
-
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-      },
-
-
-      studentAvatar: {
-        backgroundColor:
-          "#EEF2FF",
-
-        marginRight:
-          Metrics.x3,
-      },
-
-
-      studentInfo: {
-        flex: 1,
-
-        minWidth: 0,
-      },
-
-
-      studentName: {
-        fontSize: 17,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      admissionRow: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        flexWrap:
-          "wrap",
-
-        marginTop:
-          Metrics.x1,
-      },
-
-
-      admissionLabel: {
-        fontSize: 12,
-
-        color:
-          Colors.subtext,
-
-        marginRight:
-          Metrics.x1,
-      },
-
-
-      admissionValue: {
-        fontSize: 12,
-
-        fontWeight: "700",
-
-        color: "#4B5563",
-      },
-
-
-      studentAction: {
-        marginLeft:
-          Metrics.x2,
-      },
-
-
-      studentArrowContainer: {
-        width: 38,
-
-        height: 38,
-
-        borderRadius: 12,
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "center",
-
-        backgroundColor:
-          "#F3F4F6",
-      },
-
-
-      studentArrow: {
-        fontSize: 20,
-
-        color:
-          Colors.subtext,
-      },
-
-
-      /* ======================================================
-         EMPTY
-      ====================================================== */
-
-      empty: {
-        alignItems:
-          "center",
-
-        justifyContent:
-          "center",
-
-        paddingTop:
-          Metrics.x8,
-
-        paddingBottom:
-          Metrics.x8,
-
-        paddingHorizontal:
-          Metrics.x5,
-      },
-
-
-      emptyIcon: {
-        backgroundColor:
-          "#EEF2FF",
-
-        marginBottom:
-          Metrics.x3,
-      },
-
-
-      emptyTitle: {
-        fontSize: 18,
-
-        fontWeight: "800",
-
-        color: "#171717",
-
-        textAlign:
-          "center",
-      },
-
-
-      emptyText: {
-        fontSize: 13,
-
-        lineHeight: 19,
-
-        color:
-          Colors.subtext,
-
-        textAlign:
-          "center",
-
-        marginTop:
-          Metrics.x1,
-
-        maxWidth: 360,
-      },
-
-
-      emptyButton: {
-        marginTop:
-          Metrics.x3,
-
-        borderRadius: 12,
-      },
-
-
-      /* ======================================================
-         LOADING
-      ====================================================== */
-
-      loadingScreen: {
-        flex: 1,
-
-        paddingTop:
-          Metrics.x3,
-      },
-
-
-      loaderContent: {
-        flex: 1,
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "center",
-
-        paddingBottom:
-          Metrics.x8,
-      },
-
-
-      loadingIcon: {
-        backgroundColor:
-          "#EEF2FF",
-
-        marginBottom:
-          Metrics.x3,
-      },
-
-
-      loader: {
-        marginBottom:
-          Metrics.x2,
-      },
-
-
-      loadingTitle: {
-        fontSize: 17,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      loadingText: {
-        fontSize: 13,
-
-        color:
-          Colors.subtext,
-
-        marginTop:
-          Metrics.x1,
-
-        textAlign:
-          "center",
-      },
-
-
-      /* ======================================================
-         PROFILE DROPDOWN
-      ====================================================== */
-
-      modalOverlay: {
-        flex: 1,
-
-        backgroundColor:
-          "rgba(0,0,0,0.08)",
-      },
-
-
-      profileDropdown: {
-        position: "absolute",
-
-        top: 82,
-
-        right: Metrics.x4,
-
-        width: 310,
-
-        backgroundColor:
-          "#FFFFFF",
-
-        borderRadius: 18,
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E5E7EB",
-
-        padding:
-          Metrics.x2,
-
-        elevation: 8,
-      },
-
-
-      profileDropdownMobile: {
-        left: Metrics.x3,
-
-        right: Metrics.x3,
-
-        width: undefined,
-      },
-
-
-      dropdownProfileHeader: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        padding:
-          Metrics.x2,
-      },
-
-
-      dropdownAvatar: {
-        backgroundColor:
-          Colors.brandPrimary,
-      },
-
-
-      dropdownUserInfo: {
-        flex: 1,
-
-        marginLeft:
-          Metrics.x2,
-      },
-
-
-      dropdownUserName: {
-        fontSize: 15,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      dropdownUserEmail: {
-        fontSize: 12,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 2,
-      },
-
-
-      dropdownUserRole: {
-        fontSize: 11,
-
-        color:
-          Colors.brandPrimary,
-
-        fontWeight: "700",
-
-        marginTop: 3,
-      },
-
-
-      dropdownDivider: {
-        marginVertical:
-          Metrics.x1,
-      },
-
-
-      dropdownItem: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        paddingVertical:
-          Metrics.x2,
-
-        paddingHorizontal:
-          Metrics.x1,
-
-        borderRadius: 12,
-      },
-
-
-      dropdownIconContainer: {
-        width: 40,
-
-        height: 40,
-
-        borderRadius: 12,
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "center",
-
-        backgroundColor:
-          "#F3F4F6",
-      },
-
-
-      dropdownIcon: {
-        fontSize: 18,
-      },
-
-
-      dropdownItemTextContainer: {
-        flex: 1,
-
-        marginLeft:
-          Metrics.x2,
-      },
-
-
-      dropdownItemTitle: {
-        fontSize: 14,
-
-        fontWeight: "700",
-
-        color: "#171717",
-      },
-
-
-      dropdownItemSubtitle: {
-        fontSize: 11,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 2,
-      },
-
-
-      logoutItem: {
-        marginTop:
-          Metrics.x1,
-
-        backgroundColor:
-          "#FFF5F5",
-      },
-
-
-      logoutIconContainer: {
-        backgroundColor:
-          "#FDECEC",
-      },
-
-
-      logoutIcon: {
-        color: "#D64545",
-      },
-
-
-      logoutTitle: {
-        color: "#D64545",
-      },
-
-
-      /* ======================================================
-         SNACKBAR
-      ====================================================== */
-
-      snackbar: {
-        backgroundColor:
-          Colors.errorBg,
-      },
-
-
-      /* ======================================================
-         AUTH ERROR
-      ====================================================== */
-
-      center: {
-        flex: 1,
-
-        justifyContent:
-          "center",
-
-        alignItems:
-          "center",
-
-        padding:
-          Metrics.x5,
-
-        backgroundColor:
-          "#F7F8FC",
-      },
-
-
-      errorText: {
-        color:
-          Colors.error,
-
-        textAlign:
-          "center",
-
-        fontSize: 16,
-      },
-
-    };
-
-  }
-);
-
-
-/* ============================================================
-   EXPORT
-============================================================ */
-
-export {
-  PrincipalClassStudentsScreen,
-};
+const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: "#F6F8FC",
+  },
+  listContent: {
+    paddingTop: 12,
+    paddingBottom: 40,
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    backgroundColor: "#F6F8FC",
+  },
+  errorText: {
+    color: "#B42318",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  topBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  pageEyebrow: {
+    color: Colors.subtext,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  pageTitle: {
+    color: "#182230",
+    fontSize: 25,
+    fontWeight: "800",
+    marginTop: 2,
+  },
+  heroCard: {
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 14,
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  heroTitleArea: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  heroIcon: {
+    backgroundColor: Colors.brandPrimary,
+  },
+  heroTextArea: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  heroEyebrow: {
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    color: Colors.subtext,
+  },
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#182230",
+    marginTop: 3,
+  },
+  heroSubtitle: {
+    color: Colors.subtext,
+    fontSize: 13,
+    marginTop: 4,
+  },
+  countBadge: {
+    minWidth: 70,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    backgroundColor: "#EEF2FF",
+  },
+  countValue: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: Colors.brandPrimary,
+  },
+  countLabel: {
+    fontSize: 10,
+    color: Colors.subtext,
+    fontWeight: "700",
+    marginTop: 1,
+  },
+  teacherCard: {
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 14,
+  },
+  sectionHeadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headingIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EEF2FF",
+  },
+  headingIconText: {
+    color: Colors.brandPrimary,
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  headingTextArea: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  cardTitle: {
+    color: "#182230",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  cardSubtitle: {
+    color: Colors.subtext,
+    fontSize: 12,
+    marginTop: 3,
+    lineHeight: 17,
+  },
+  divider: {
+    marginVertical: 14,
+    backgroundColor: "#E9EDF4",
+  },
+  teacherDetailsRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  teacherAvatar: {
+    backgroundColor: Colors.brandPrimary,
+  },
+  teacherInfo: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 8,
+  },
+  teacherName: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#182230",
+  },
+  teacherMeta: {
+    color: Colors.subtext,
+    fontSize: 12,
+    marginTop: 3,
+  },
+  assignedPill: {
+    backgroundColor: "#E8F7EE",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  assignedPillText: {
+    color: "#167647",
+    fontSize: 10,
+    fontWeight: "800",
+  },
+  unassignedBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: "#F8FAFC",
+  },
+  unassignedIcon: {
+    backgroundColor: "#E9EDF4",
+  },
+  unassignedTextArea: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  unassignedTitle: {
+    color: "#344054",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  unassignedSubtitle: {
+    color: Colors.subtext,
+    fontSize: 12,
+    marginTop: 3,
+  },
+  teacherActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 16,
+  },
+  primaryAction: {
+    flex: 1,
+    borderRadius: 10,
+  },
+  removeAction: {
+    borderColor: "#F0B8B2",
+    borderRadius: 10,
+  },
+  actionContent: {
+    minHeight: 42,
+  },
+  searchCard: {
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 18,
+  },
+  searchbar: {
+    marginTop: 14,
+    borderRadius: 12,
+    backgroundColor: "#F5F7FB",
+  },
+  searchInput: {
+    fontSize: 14,
+  },
+  studentsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  studentsTitle: {
+    color: "#182230",
+    fontSize: 19,
+    fontWeight: "800",
+  },
+  studentsSubtitle: {
+    color: Colors.subtext,
+    fontSize: 12,
+    marginTop: 3,
+  },
+  studentCountPill: {
+    minWidth: 34,
+    height: 30,
+    paddingHorizontal: 9,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E9EDFF",
+  },
+  studentCountPillText: {
+    color: Colors.brandPrimary,
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  studentCard: {
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 10,
+  },
+  studentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingLeft: 12,
+  },
+  studentAvatar: {
+    backgroundColor: "#64748B",
+  },
+  studentInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  studentName: {
+    color: "#182230",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  studentAdmission: {
+    color: Colors.subtext,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 45,
+    paddingHorizontal: 20,
+  },
+  emptyIcon: {
+    backgroundColor: "#E9EDF4",
+  },
+  emptyTitle: {
+    color: "#344054",
+    fontSize: 15,
+    fontWeight: "800",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    color: Colors.subtext,
+    fontSize: 12,
+    marginTop: 5,
+    textAlign: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(15, 23, 42, 0.42)",
+  },
+  modalCard: {
+    maxHeight: "88%",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    backgroundColor: "#FFFFFF",
+    padding: 18,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  modalHeaderText: {
+    flex: 1,
+    paddingTop: 5,
+  },
+  modalTitle: {
+    color: "#182230",
+    fontSize: 19,
+    fontWeight: "800",
+  },
+  modalSubtitle: {
+    color: Colors.subtext,
+    fontSize: 12,
+    marginTop: 5,
+    lineHeight: 17,
+  },
+  teacherSearchbar: {
+    marginTop: 12,
+    borderRadius: 12,
+    backgroundColor: "#F5F7FB",
+  },
+  teacherList: {
+    marginTop: 12,
+  },
+  teacherOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#E9EDF4",
+  },
+  teacherOptionSelected: {
+    borderColor: Colors.brandPrimary,
+    backgroundColor: "#F3F5FF",
+  },
+  teacherOptionAvatar: {
+    backgroundColor: "#64748B",
+  },
+  teacherOptionInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  teacherOptionName: {
+    color: "#182230",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  teacherOptionMeta: {
+    color: Colors.subtext,
+    fontSize: 11,
+    marginTop: 3,
+  },
+  modalLoading: {
+    paddingVertical: 45,
+    alignItems: "center",
+  },
+  modalEmpty: {
+    paddingVertical: 35,
+    alignItems: "center",
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    borderRadius: 10,
+  },
+  modalConfirmButton: {
+    flex: 1,
+    borderRadius: 10,
+  },
+});
+
+export { PrincipalClassStudentsScreen };

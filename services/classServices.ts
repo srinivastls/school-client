@@ -80,12 +80,16 @@ const endpoints = {
    GET ALL CLASSES
 ============================================================ */
 
-const getAllClasses =
+const getAllClasses = (academicYearId: string) =>
   async (): Promise<GetAllClassesResponse> => {
 
     const { data } =
       await api.get<GetAllClassesResponse>(
-        endpoints.getAll
+        endpoints.getAll,{
+          params: {
+            academicYearId,
+          }
+        }
       );
 
     return data;

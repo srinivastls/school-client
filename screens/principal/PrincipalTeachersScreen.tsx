@@ -195,8 +195,8 @@ const PrincipalTeachersScreen = () => {
                 ]}
               >
                 {item.isActive
-                  ? "ACTIVE"
-                  : "INACTIVE"}
+                  ? "Active"
+                  : "Inactive"}
               </Text>
             </View>
           </View>
@@ -252,44 +252,59 @@ const PrincipalTeachersScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        Teachers
-      </Text>
+      <View style={styles.header}>
+  <View style={styles.headerTextContainer}>
+    <Text style={styles.eyebrow}>
+      SCHOOL MANAGEMENT
+    </Text>
 
-      <Text style={styles.subtitle}>
-        Manage teachers in your school
-      </Text>
+    <Text style={styles.title}>
+      Teachers
+    </Text>
 
-      <TouchableRipple
-  style={styles.createButton}
-  onPress={() =>
-    navigation.navigate(
-      RootStackScreenNames.PrincipalCreateTeacher
-    )
-  }
-  rippleColor={Colors.brandPrimaryBg}
->
-  <Text style={styles.createButtonText}>
-    + CREATE TEACHER
-  </Text>
-</TouchableRipple>
+    <Text style={styles.subtitle}>
+      Manage and view all teachers in your school
+    </Text>
+  </View>
+
+  <TouchableRipple
+    style={styles.createButton}
+    onPress={() =>
+      navigation.navigate(
+        RootStackScreenNames.PrincipalCreateTeacher
+      )
+    }
+    rippleColor={Colors.brandPrimaryBg}
+  >
+    <Text style={styles.createButtonText}>
+      + Create Teacher
+    </Text>
+  </TouchableRipple>
+</View>
+
 
       <TextInput
-        mode="outlined"
-        label="Search teachers"
-        value={search}
-        onChangeText={setSearch}
-        autoCapitalize="none"
-        autoCorrect={false}
-        style={styles.search}
-        right={
-          isFetching ? (
-            <TextInput.Icon
-              icon="loading"
-            />
-          ) : undefined
-        }
+  mode="outlined"
+  label="Search teachers"
+  placeholder="Name, email, employee ID..."
+  value={search}
+  onChangeText={setSearch}
+  autoCapitalize="none"
+  autoCorrect={false}
+  style={styles.search}
+  outlineStyle={styles.searchOutline}
+  left={<TextInput.Icon icon="magnify" />}
+  right={
+    isFetching ? (
+      <TextInput.Icon icon="loading" />
+    ) : search.trim() ? (
+      <TextInput.Icon
+        icon="close"
+        onPress={() => setSearch("")}
       />
+    ) : undefined
+  }
+/>
 
 
       <FlatList
@@ -352,41 +367,95 @@ const useStyles = makeStyles(() => {
   return {
     container: {
       flex: 1,
-      padding: Metrics.x4,
+      paddingHorizontal: Metrics.x4,
+      paddingTop: Metrics.x4,
+      backgroundColor: "#F5F7FB",
+    },
+
+    // HEADER
+    header: {
+      marginBottom: Metrics.x5,
+    },
+
+    headerTextContainer: {
+      marginBottom: Metrics.x3,
+    },
+
+    eyebrow: {
+      fontSize: 11,
+      fontWeight: "800",
+      letterSpacing: 1.2,
+      color: Colors.brandPrimary,
+      marginBottom: Metrics.x1,
     },
 
     title: {
-      fontSize: 28,
-      fontWeight: "700",
+      fontSize: 30,
+      lineHeight: 36,
+      fontWeight: "800",
+      color: "#111827",
     },
 
     subtitle: {
-      fontSize: 15,
-      color: Colors.subtext,
+      fontSize: 14,
+      lineHeight: 21,
+      color: "#6B7280",
       marginTop: Metrics.x1,
-      marginBottom: Metrics.x4,
     },
 
+    // CREATE BUTTON
+    createButton: {
+      minHeight: 46,
+      paddingHorizontal: Metrics.x4,
+      paddingVertical: Metrics.x3,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: Colors.brandPrimary,
+      elevation: 0,
+    },
+
+    createButtonText: {
+      color: Colors.textOnPrimary ?? "#FFFFFF",
+      fontSize: 13,
+      fontWeight: "800",
+      letterSpacing: 0.2,
+      textAlign: "center",
+    },
+
+    // SEARCH
     search: {
-      marginBottom: Metrics.x3,
+      marginBottom: Metrics.x4,
+      backgroundColor: "#FFFFFF",
+      fontSize: 14,
+    },
+
+    // LIST
+    list: {
+      paddingBottom: Metrics.x8,
     },
 
     count: {
-      fontSize: 13,
-      color: Colors.subtext,
+      fontSize: 12,
+      fontWeight: "600",
+      color: "#6B7280",
       marginBottom: Metrics.x3,
     },
+    searchOutline: {
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#DDE2EC",
+},
 
-    list: {
-      paddingBottom: Metrics.x5,
-    },
-
+    // TEACHER CARD
     card: {
       padding: Metrics.x4,
       marginBottom: Metrics.x3,
-      borderRadius: Metrics.x3,
-      backgroundColor:
-        Colors.brandPrimaryBg,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: "#E8EBF2",
+      backgroundColor: "#FFFFFF",
+      elevation: 0,
     },
 
     topRow: {
@@ -397,109 +466,111 @@ const useStyles = makeStyles(() => {
 
     nameContainer: {
       flex: 1,
+      minWidth: 0,
       marginRight: Metrics.x2,
     },
 
     name: {
-      fontSize: 17,
-      fontWeight: "700",
+      fontSize: 16,
+      lineHeight: 21,
+      fontWeight: "800",
+      color: "#111827",
     },
 
     employeeId: {
       fontSize: 12,
-      color: Colors.subtext,
+      fontWeight: "500",
+      color: "#6B7280",
       marginTop: Metrics.x1,
     },
 
     email: {
-      fontSize: 14,
-      color: Colors.subtext,
-      marginTop: Metrics.x2,
+      fontSize: 13,
+      lineHeight: 19,
+      color: "#4B5563",
+      marginTop: Metrics.x3,
     },
 
     detail: {
-      fontSize: 13,
-      color: Colors.subtext,
+      fontSize: 12,
+      lineHeight: 18,
+      color: "#6B7280",
       marginTop: Metrics.x1,
     },
 
     designation: {
       fontSize: 13,
-      fontWeight: "600",
+      fontWeight: "700",
+      color: "#374151",
       marginTop: Metrics.x2,
     },
 
+    // STATUS BADGES
     statusBadge: {
+      minHeight: 27,
       paddingHorizontal: Metrics.x2,
       paddingVertical: Metrics.x1,
-      borderRadius: 20,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
     },
 
     activeBadge: {
-      backgroundColor:
-        Colors.successBg,
+      backgroundColor: "#DCFCE7",
     },
 
     inactiveBadge: {
-      backgroundColor:
-        Colors.errorBg,
+      backgroundColor: "#FEE2E2",
     },
 
     statusText: {
       fontSize: 10,
       fontWeight: "800",
+      letterSpacing: 0.3,
     },
 
     activeText: {
-      color: "#ffffff",
+      color: "#15803D",
     },
 
     inactiveText: {
-      color: "#ffffff",
+      color: "#B91C1C",
     },
 
+    // LOADING
     loader: {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
+      backgroundColor: "#F5F7FB",
     },
 
     loadingText: {
       marginTop: Metrics.x3,
-      color: Colors.subtext,
+      fontSize: 13,
+      color: "#6B7280",
     },
 
+    // EMPTY STATE
     empty: {
       alignItems: "center",
-      paddingTop: Metrics.x5,
+      paddingHorizontal: Metrics.x4,
+      paddingTop: Metrics.x8,
     },
 
     emptyTitle: {
       fontSize: 17,
-      fontWeight: "600",
+      fontWeight: "800",
+      color: "#111827",
     },
 
     emptyText: {
-      fontSize: 14,
-      color: Colors.subtext,
+      fontSize: 13,
+      lineHeight: 20,
+      color: "#6B7280",
       textAlign: "center",
       marginTop: Metrics.x2,
     },
-
-    createButton: {
-  paddingVertical: Metrics.x3,
-  paddingHorizontal: Metrics.x4,
-  borderRadius: Metrics.x2,
-  backgroundColor: Colors.brandPrimary,
-  marginBottom: Metrics.x4,
-},
-
-createButtonText: {
-  color: "#fff",
-  fontSize: 15,
-  fontWeight: "700",
-  textAlign: "center",
-},
   };
 });
 

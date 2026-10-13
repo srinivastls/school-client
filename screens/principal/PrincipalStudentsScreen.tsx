@@ -8,6 +8,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  ScrollView,
   Text,
   TouchableOpacity,
   useWindowDimensions,
@@ -60,6 +61,11 @@ import {
   useUserStore,
 } from "../../store";
 
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
+import * as XLSX from "xlsx";
+
 /* ============================================================
    TYPES
 ============================================================ */
@@ -97,6 +103,276 @@ type Student = {
 
 };
 
+
+type ExportRow = {
+  "Student ID": string;
+  "Student Name": string;
+  "Admission No": string;
+  "Class": string;
+  "Section": string;
+  "Father Name": string;
+  "Date of Birth": string;
+  "Date of Joining": string;
+  "Academic Year ID": string;
+  "Phone No": string;
+  "Aadhaar": string;
+  "Tie Amount": string;
+  "Tie Pending Amount": string;
+  "Diary Amount": string;
+  "Diary Pending Amount": string;
+  "Belt Amount": string;
+  "Belt Pending Amount": string;
+  "Arrears Amount": string;
+  "Arrears Pending Amount": string;
+  "Pending Tuition Fee": string;
+  "Pending Textbook Fee": string;
+  "Pending Notebook Fee": string;
+  "Pending Amount": string;
+  "Coupon Code": string;
+  "TC No": string;
+  "Siblings": string;
+};
+
+const asText = (value: unknown): string => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+};
+
+const getStudentClass = (student: Student): string => {
+  const rawClass: any = student.classNumber as any;
+
+  if (rawClass !== null && rawClass !== undefined) {
+    if (
+      typeof rawClass === "string" ||
+      typeof rawClass === "number"
+    ) {
+      return String(rawClass);
+    }
+
+    if (typeof rawClass === "object") {
+      const nestedValue =
+        rawClass.classNumber ??
+        rawClass.className ??
+        rawClass.name ??
+        rawClass.value ??
+        rawClass.id ??
+        rawClass._id;
+
+      if (
+        nestedValue &&
+        typeof nestedValue === "object"
+      ) {
+        return asText(
+          nestedValue.classNumber ??
+            nestedValue.className ??
+            nestedValue.name ??
+            nestedValue.value ??
+            nestedValue.id ??
+            nestedValue._id
+        );
+      }
+
+      if (
+        nestedValue !== null &&
+        nestedValue !== undefined
+      ) {
+        return String(nestedValue);
+      }
+    }
+  }
+
+  return asText(
+    student.className ??
+      student.class ??
+      ""
+  );
+};
+
+const getExportRows = (
+  studentsToExport: Student[]
+): ExportRow[] => {
+  return studentsToExport.map((student) => ({
+    "Student ID": asText(student.id ?? student._id),
+    "Student Name": asText(
+      student.name ??
+        student.studentName ??
+        ""
+    ),
+    "Admission No": asText(
+      student.admissionNo ??
+        student.admissionNumber ??
+        ""
+    ),
+    Class: getStudentClass(student),
+    Section: asText(student.sectionName),
+    "Father Name": asText(student.fatherName),
+    "Date of Birth": asText(student.dob),
+    "Date of Joining": asText(student.doj),
+    "Academic Year ID": asText(student.academicYearId),
+    "Phone No": asText(student.phoneNo),
+    Aadhaar: asText(student.aadhaar),
+    "Tie Amount": asText(student.tie?.amount),
+    "Tie Pending Amount": asText(
+      student.tie?.pendingAmount
+    ),
+    "Diary Amount": asText(student.diary?.amount),
+    "Diary Pending Amount": asText(
+      student.diary?.pendingAmount
+    ),
+    "Belt Amount": asText(student.belt?.amount),
+    "Belt Pending Amount": asText(
+      student.belt?.pendingAmount
+    ),
+    "Arrears Amount": asText(student.arrears?.amount),
+    "Arrears Pending Amount": asText(
+      student.arrears?.pendingAmount
+    ),
+    "Pending Tuition Fee": asText(
+      student.pendingTuitionFee
+    ),
+    "Pending Textbook Fee": asText(
+      student.pendingTextbookFee
+    ),
+    "Pending Notebook Fee": asText(
+      student.pendingNotebookFee
+    ),
+    "Pending Amount": asText(student.pendingAmount),
+    "Coupon Code": asText(student.couponCode),
+    "TC No": asText(student.tcNo),
+    Siblings: asText(student.siblings),
+    "Complete Record": asText(student),
+  }));
+};
+
+const escapeHtml = (value: unknown): string =>
+  asText(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const buildStudentReportHtml = (
+  rows: ExportRow[],
+  selectedClass: string
+): string => {
+  const columns = Object.keys(
+    rows[0] ?? {
+      "Student ID": "",
+      "Student Name": "",
+      "Admission No": "",
+      Class: "",
+      Section: "",
+      "Father Name": "",
+      "Date of Birth": "",
+      "Date of Joining": "",
+      "Academic Year ID": "",
+      "Phone No": "",
+      Aadhaar: "",
+      "Tie Amount": "",
+      "Tie Pending Amount": "",
+      "Diary Amount": "",
+      "Diary Pending Amount": "",
+      "Belt Amount": "",
+      "Belt Pending Amount": "",
+      "Arrears Amount": "",
+      "Arrears Pending Amount": "",
+      "Pending Tuition Fee": "",
+      "Pending Textbook Fee": "",
+      "Pending Notebook Fee": "",
+      "Pending Amount": "",
+      "Coupon Code": "",
+      "TC No": "",
+      Siblings: "",
+      "Complete Record": "",
+    }
+  );
+
+  const headerHtml = columns
+    .map((column) => `<th>${escapeHtml(column)}</th>`)
+    .join("");
+
+  const bodyHtml = rows.length
+    ? rows
+        .map(
+          (row) =>
+            `<tr>${columns
+              .map(
+                (column) =>
+                  `<td>${escapeHtml(
+                    row[column as keyof ExportRow]
+                  )}</td>`
+              )
+              .join("")}</tr>`
+        )
+        .join("")
+    : `<tr><td colspan="${columns.length}">No students found.</td></tr>`;
+
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 12mm;
+          }
+          body {
+            font-family: Arial, sans-serif;
+            color: #111827;
+            font-size: 9px;
+          }
+          h1 {
+            font-size: 16px;
+            margin: 0 0 4px;
+          }
+          p {
+            margin: 0 0 12px;
+            color: #4b5563;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+          }
+          th, td {
+            border: 1px solid #d1d5db;
+            padding: 4px;
+            text-align: left;
+            vertical-align: top;
+            word-break: break-word;
+          }
+          th {
+            background: #eef2ff;
+            font-weight: bold;
+          }
+          tr {
+            page-break-inside: avoid;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Student Report</h1>
+        <p>
+          Class: ${escapeHtml(selectedClass === "ALL" ? "All Classes" : selectedClass)}
+          | Students: ${rows.length}
+        </p>
+        <table>
+          <thead><tr>${headerHtml}</tr></thead>
+          <tbody>${bodyHtml}</tbody>
+        </table>
+      </body>
+    </html>
+  `;
+};
 
 /* ============================================================
    SCREEN
@@ -145,7 +421,7 @@ const PrincipalStudentsScreen = () => {
   const user =
     useUserStore(
       (state) => state.user
-    );
+    )!;
 
   const logout =
     useUserStore(
@@ -161,6 +437,11 @@ const PrincipalStudentsScreen = () => {
     search,
     setSearch,
   ] = useState("");
+
+  const [
+    selectedClass,
+    setSelectedClass,
+  ] = useState("ALL");
 
   const [
     showSnackbar,
@@ -194,7 +475,7 @@ const PrincipalStudentsScreen = () => {
     );
   }
 
-  if (user.role !== "PRINCIPAL") {
+  if (user.role !== "PRINCIPAL" && user.role !== "ADMIN") {
     return (
       <View style={styles.center}>
         <Text
@@ -299,47 +580,53 @@ const PrincipalStudentsScreen = () => {
       .trim()
       .toLowerCase();
 
-  const filteredStudents =
-    useMemo(() => {
-      if (!searchValue) {
-        return students;
-      }
+  const availableClasses = useMemo(() => {
+    const classSet = new Set(
+      students
+        .map((student) => getStudentClass(student).trim())
+        .filter(Boolean)
+    );
 
-      return students.filter(
-        (student) => {
-          const studentName =
-            (
-              student.name ??
-              student.studentName ??
-              ""
-            )
-              .toString()
-              .toLowerCase();
+    return Array.from(classSet).sort((a, b) =>
+      a.localeCompare(b, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      })
+    );
+  }, [students]);
 
-          const admissionNo =
-            (
-              student.admissionNo ??
-              student.admissionNumber ??
-              ""
-            )
-              .toString()
-              .toLowerCase();
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      const studentName = asText(
+        student.name ??
+          student.studentName ??
+          ""
+      ).toLowerCase();
 
-          return (
-            studentName.includes(
-              searchValue
-            ) ||
-            admissionNo.includes(
-              searchValue
-            )
-          );
-        }
-      );
-    }, [
-      students,
-      searchValue,
-    ]);
+      const admissionNo = asText(
+        student.admissionNo ??
+          student.admissionNumber ??
+          ""
+      ).toLowerCase();
 
+      const className = getStudentClass(student);
+
+      const matchesSearch =
+        !searchValue ||
+        studentName.includes(searchValue) ||
+        admissionNo.includes(searchValue);
+
+      const matchesClass =
+        selectedClass === "ALL" ||
+        className === selectedClass;
+
+      return matchesSearch && matchesClass;
+    });
+  }, [
+    students,
+    searchValue,
+    selectedClass,
+  ]);
 
   /* ==========================================================
      TOTAL STUDENTS
@@ -632,185 +919,186 @@ const PrincipalStudentsScreen = () => {
      NAVBAR
   ========================================================== */
 
-  const renderNavbar =
-    () => {
-      return (
-        <View
-          style={
-            styles.navbar
-          }
-        >
+  // const renderNavbar =
+  //   () => {
+  //     return null;
+  //     return (
+  //       <View
+  //         style={
+  //           styles.navbar
+  //         }
+  //       >
 
-          {/* LEFT */}
+  //         {/* LEFT */}
 
-          <View
-            style={
-              styles.navbarLeft
-            }
-          >
+  //         <View
+  //           style={
+  //             styles.navbarLeft
+  //           }
+  //         >
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={
-                goToDashboard
-              }
-              style={
-                styles.backButton
-              }
-            >
+  //           <TouchableOpacity
+  //             activeOpacity={0.8}
+  //             onPress={
+  //               goToDashboard
+  //             }
+  //             style={
+  //               styles.backButton
+  //             }
+  //           >
 
-              <Text
-                style={
-                  styles.backIcon
-                }
-              >
-                ‹
-              </Text>
+  //             <Text
+  //               style={
+  //                 styles.backIcon
+  //               }
+  //             >
+  //               ‹
+  //             </Text>
 
-            </TouchableOpacity>
+  //           </TouchableOpacity>
 
-            <Avatar.Icon
-              size={
-                isSmallScreen
-                  ? 42
-                  : 46
-              }
-              icon="school"
-              color="#FFFFFF"
-              style={
-                styles.navbarLogo
-              }
-            />
+  //           <Avatar.Icon
+  //             size={
+  //               isSmallScreen
+  //                 ? 42
+  //                 : 46
+  //             }
+  //             icon="school"
+  //             color="#FFFFFF"
+  //             style={
+  //               styles.navbarLogo
+  //             }
+  //           />
 
-            <View
-              style={
-                styles.navbarBrand
-              }
-            >
+  //           <View
+  //             style={
+  //               styles.navbarBrand
+  //             }
+  //           >
 
-              <Text
-                style={
-                  styles.navbarSchoolName
-                }
-                numberOfLines={1}
-              >
-                {user.schoolName ||
-                  "School Platform"}
-              </Text>
+  //             <Text
+  //               style={
+  //                 styles.navbarSchoolName
+  //               }
+  //               numberOfLines={1}
+  //             >
+  //               {user.schoolName ||
+  //                 "School Platform"}
+  //             </Text>
 
-              <Text
-                style={
-                  styles.navbarSubtitle
-                }
-              >
-                Principal Administration
-              </Text>
+  //             <Text
+  //               style={
+  //                 styles.navbarSubtitle
+  //               }
+  //             >
+  //               Principal Administration
+  //             </Text>
 
-            </View>
+  //           </View>
 
-          </View>
+  //         </View>
 
 
-          {/* RIGHT */}
+  //         {/* RIGHT */}
 
-          <View
-            style={
-              styles.navbarRight
-            }
-          >
+  //         <View
+  //           style={
+  //             styles.navbarRight
+  //           }
+  //         >
 
-            <IconButton
-              icon="refresh"
-              size={
-                isSmallScreen
-                  ? 20
-                  : 22
-              }
-              iconColor={
-                Colors.brandPrimary
-              }
-              onPress={() => {
-                refetch();
-              }}
-              style={
-                styles.refreshButton
-              }
-            />
+  //           <IconButton
+  //             icon="refresh"
+  //             size={
+  //               isSmallScreen
+  //                 ? 20
+  //                 : 22
+  //             }
+  //             iconColor={
+  //               Colors.brandPrimary
+  //             }
+  //             onPress={() => {
+  //               refetch();
+  //             }}
+  //             style={
+  //               styles.refreshButton
+  //             }
+  //           />
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                setProfileMenuVisible(
-                  true
-                );
-              }}
-              style={[
-                styles.profileButton,
-                profileMenuVisible &&
-                  styles.profileButtonActive,
-              ]}
-            >
+  //           <TouchableOpacity
+  //             activeOpacity={0.8}
+  //             onPress={() => {
+  //               setProfileMenuVisible(
+  //                 true
+  //               );
+  //             }}
+  //             style={[
+  //               styles.profileButton,
+  //               profileMenuVisible &&
+  //                 styles.profileButtonActive,
+  //             ]}
+  //           >
 
-              <Avatar.Text
-                size={
-                  isSmallScreen
-                    ? 38
-                    : 42
-                }
-                label={getInitials(
-                  user.name
-                )}
-                color="#FFFFFF"
-                style={
-                  styles.profileAvatar
-                }
-              />
+  //             <Avatar.Text
+  //               size={
+  //                 isSmallScreen
+  //                   ? 38
+  //                   : 42
+  //               }
+  //               label={getInitials(
+  //                 user.name
+  //               )}
+  //               color="#FFFFFF"
+  //               style={
+  //                 styles.profileAvatar
+  //               }
+  //             />
 
-              {!isSmallScreen && (
-                <View
-                  style={
-                    styles.profileDetails
-                  }
-                >
+  //             {!isSmallScreen && (
+  //               <View
+  //                 style={
+  //                   styles.profileDetails
+  //                 }
+  //               >
 
-                  <Text
-                    style={
-                      styles.profileName
-                    }
-                    numberOfLines={1}
-                  >
-                    {user.name ||
-                      "Principal"}
-                  </Text>
+  //                 <Text
+  //                   style={
+  //                     styles.profileName
+  //                   }
+  //                   numberOfLines={1}
+  //                 >
+  //                   {user.name ||
+  //                     "Principal"}
+  //                 </Text>
 
-                  <Text
-                    style={
-                      styles.profileRole
-                    }
-                  >
-                    Principal
-                  </Text>
+  //                 <Text
+  //                   style={
+  //                     styles.profileRole
+  //                   }
+  //                 >
+  //                   Principal
+  //                 </Text>
 
-                </View>
-              )}
+  //               </View>
+  //             )}
 
-              <Text
-                style={
-                  styles.profileArrow
-                }
-              >
-                {profileMenuVisible
-                  ? "⌃"
-                  : "⌄"}
-              </Text>
+  //             <Text
+  //               style={
+  //                 styles.profileArrow
+  //               }
+  //             >
+  //               {profileMenuVisible
+  //                 ? "⌃"
+  //                 : "⌄"}
+  //             </Text>
 
-            </TouchableOpacity>
+  //           </TouchableOpacity>
 
-          </View>
+  //         </View>
 
-        </View>
-      );
-    };
+  //       </View>
+  //     );
+  //   };
 
 
   /* ==========================================================
@@ -1061,6 +1349,119 @@ const PrincipalStudentsScreen = () => {
     };
 
 
+  const exportRows = useMemo(
+    () => getExportRows(filteredStudents),
+    [filteredStudents]
+  );
+
+  const exportToExcel = async () => {
+    try {
+      const worksheet =
+        XLSX.utils.json_to_sheet(exportRows);
+      const workbook =
+        XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Students"
+      );
+
+      const base64 = XLSX.write(workbook, {
+        type: "base64",
+        bookType: "xlsx",
+      });
+
+      const fileUri = `${FileSystem.cacheDirectory}students-${Date.now()}.xlsx`;
+
+      await FileSystem.writeAsStringAsync(
+        fileUri,
+        base64,
+        {
+          encoding:
+            FileSystem.EncodingType.Base64,
+        }
+      );
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          dialogTitle: "Export student Excel file",
+          UTI:
+            "com.microsoft.excel.xlsx",
+        });
+      } else {
+        setSnackbarText(
+          "Excel file created, but sharing is not available on this device."
+        );
+        setShowSnackbar(true);
+      }
+    } catch (exportError) {
+      console.error("Excel export failed:", exportError);
+      setSnackbarText(
+        "Unable to export the student Excel file."
+      );
+      setShowSnackbar(true);
+    }
+  };
+
+  const exportToPDF = async () => {
+    try {
+      const html = buildStudentReportHtml(
+        exportRows,
+        selectedClass
+      );
+
+      const { uri } =
+        await Print.printToFileAsync({
+          html,
+          margins: {
+            top: 24,
+            bottom: 24,
+            left: 24,
+            right: 24,
+          },
+        });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: "application/pdf",
+          dialogTitle: "Export student PDF file",
+          UTI: "com.adobe.pdf",
+        });
+      } else {
+        setSnackbarText(
+          "PDF file created, but sharing is not available on this device."
+        );
+        setShowSnackbar(true);
+      }
+    } catch (exportError) {
+      console.error("PDF export failed:", exportError);
+      setSnackbarText(
+        "Unable to export the student PDF file."
+      );
+      setShowSnackbar(true);
+    }
+  };
+
+  const printStudents = async () => {
+    try {
+      const html = buildStudentReportHtml(
+        exportRows,
+        selectedClass
+      );
+
+      await Print.printAsync({ html });
+    } catch (printError) {
+      console.error("Printing failed:", printError);
+      setSnackbarText(
+        "Unable to print the student report."
+      );
+      setShowSnackbar(true);
+    }
+  };
+
   /* ==========================================================
      SEARCH
   ========================================================== */
@@ -1149,6 +1550,99 @@ const PrincipalStudentsScreen = () => {
               }
             />
 
+            <Text style={styles.filterLabel}>
+              Filter by class
+            </Text>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.classChipsContent}
+              style={styles.classChipsScroll}
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setSelectedClass("ALL")}
+                style={[
+                  styles.classChip,
+                  selectedClass === "ALL" &&
+                    styles.classChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.classChipText,
+                    selectedClass === "ALL" &&
+                      styles.classChipTextActive,
+                  ]}
+                >
+                  All Classes
+                </Text>
+              </TouchableOpacity>
+
+              {availableClasses.map((className) => (
+                <TouchableOpacity
+                  key={className}
+                  activeOpacity={0.8}
+                  onPress={() => setSelectedClass(className)}
+                  style={[
+                    styles.classChip,
+                    selectedClass === className &&
+                      styles.classChipActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.classChipText,
+                      selectedClass === className &&
+                        styles.classChipTextActive,
+                    ]}
+                  >
+                    {`Class ${className}`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={styles.exportButtonsRow}>
+              <Button
+                mode="outlined"
+                icon="file-pdf-box"
+                onPress={exportToPDF}
+                style={styles.exportButton}
+                compact
+              >
+                PDF
+              </Button>
+
+              <Button
+                mode="outlined"
+                icon="file-excel"
+                onPress={exportToExcel}
+                style={styles.exportButton}
+                compact
+              >
+                Excel
+              </Button>
+
+              <Button
+                mode="outlined"
+                icon="printer"
+                onPress={printStudents}
+                style={styles.exportButton}
+                compact
+              >
+                Print
+              </Button>
+            </View>
+
+            <Text style={styles.exportSummary}>
+              Exporting {filteredStudents.length} student(s)
+              {selectedClass === "ALL"
+                ? ""
+                : ` from class ${selectedClass}`}
+            </Text>
+
           </Card.Content>
 
         </Card>
@@ -1176,21 +1670,13 @@ const PrincipalStudentsScreen = () => {
       item.admissionNumber ??
       "N/A";
 
-    const className =
-      item.classNumber ??
-      item.className ??
-      item.class ??
-      "";
+    const className = getStudentClass(item);
 
     return (
-      <TouchableOpacity
-        activeOpacity={0.88}
+      <View
         style={
           styles.studentTouchable
         }
-        onPress={() => {
-          navigation.navigate(RootStackScreenNames.StudentDetails, { student: item });
-        }}
       >
 
         <Card
@@ -1223,10 +1709,13 @@ const PrincipalStudentsScreen = () => {
 
               {/* INFO */}
 
-              <View
+              <Pressable
                 style={
                   styles.studentInfo
                 }
+                onPress={() => {
+                  navigation.navigate(RootStackScreenNames.StudentDetails, { student: item });
+                }}
               >
 
                 <Text
@@ -1255,11 +1744,11 @@ const PrincipalStudentsScreen = () => {
                     }
                     numberOfLines={1}
                   >
-                    Class: {className["classNumber"] }
+                    Class: {className}
                   </Text>
                 ) : null}
 
-              </View>
+              </Pressable>
 
 
               {/* RIGHT */}
@@ -1286,13 +1775,19 @@ const PrincipalStudentsScreen = () => {
 
                 </View>
 
-                <Text
-                  style={
-                    styles.studentArrow
-                  }
+                <Pressable
+                  style={styles.studentAction}
+                  onPress={() => navigation.navigate(RootStackScreenNames.StudentDetails, { student: item })}
                 >
-                  →
-                </Text>
+                  <Text style={styles.studentActionText}>View</Text>
+                </Pressable>
+
+                <Pressable
+                  style={[styles.studentAction, styles.collectFeeAction]}
+                  onPress={() => navigation.navigate(RootStackScreenNames.PrincipalFeeCollection, { admissionNo })}
+                >
+                  <Text style={styles.collectFeeText}>Collect Fee</Text>
+                </Pressable>
 
               </View>
 
@@ -1302,7 +1797,7 @@ const PrincipalStudentsScreen = () => {
 
         </Card>
 
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -1402,7 +1897,6 @@ const PrincipalStudentsScreen = () => {
           ]}
         >
 
-          {renderNavbar()}
 
           <View
             style={
@@ -1515,7 +2009,6 @@ const PrincipalStudentsScreen = () => {
 
         ListHeaderComponent={
           <>
-            {renderNavbar()}
             {renderPageHeader()}
             {renderSummary()}
             {renderSearch()}
@@ -1664,68 +2157,25 @@ const useStyles = makeStyles(
          PAGE
       ====================================================== */
 
-      page: {
-        flex: 1,
-        backgroundColor:
-          "#F7F8FC",
-      },
+      
+page: {
+  flex: 1,
+  backgroundColor: "#F5F7FB",
+},
 
-      listContent: {
-        paddingTop:
-          Metrics.x3,
-
-        paddingBottom:
-          Metrics.x8,
-      },
+listContent: {
+  paddingTop: Metrics.x3,
+  paddingBottom: Metrics.x8,
+},
 
 
       /* ======================================================
          NAVBAR
       ====================================================== */
 
-      navbar: {
-        minHeight: 72,
+      
 
-        paddingHorizontal:
-          Metrics.x3,
-
-        paddingVertical:
-          Metrics.x2,
-
-        flexDirection: "row",
-
-        alignItems: "center",
-
-        justifyContent:
-          "space-between",
-
-        backgroundColor:
-          "#FFFFFF",
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E9EAF0",
-
-        borderRadius: 16,
-
-        marginBottom:
-          Metrics.x5,
-
-        elevation: 1,
-      },
-
-      navbarLeft: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        flex: 1,
-
-        minWidth: 0,
-      },
+      
 
       backButton: {
         width: 38,
@@ -1874,213 +2324,166 @@ const useStyles = makeStyles(
          PAGE HEADER
       ====================================================== */
 
-      pageHeader: {
-        marginBottom:
-          Metrics.x5,
-      },
+      
+pageHeader: {
+  marginBottom: Metrics.x5,
+},
 
-      pageHeaderText: {
-        marginBottom:
-          Metrics.x3,
-      },
+pageHeaderText: {
+  marginBottom: Metrics.x3,
+},
 
-      eyebrow: {
-        fontSize: 10,
+eyebrow: {
+  fontSize: 11,
+  fontWeight: "800",
+  letterSpacing: 1.2,
+  color: Colors.brandPrimary,
+  marginBottom: Metrics.x1,
+},
 
-        fontWeight: "800",
+pageTitle: {
+  fontSize: 30,
+  lineHeight: 36,
+  fontWeight: "800",
+  color: "#111827",
+},
 
-        letterSpacing: 1,
+pageSubtitle: {
+  fontSize: 14,
+  lineHeight: 21,
+  color: "#6B7280",
+  marginTop: Metrics.x1,
+  maxWidth: 650,
+},
 
-        color:
-          Colors.brandPrimary,
+registerButton: {
+  borderRadius: 12,
+  backgroundColor: Colors.brandPrimary,
+},
 
-        marginBottom:
-          Metrics.x1,
-      },
-
-      pageTitle: {
-        fontSize: 30,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-      pageSubtitle: {
-        fontSize: 14,
-
-        lineHeight: 21,
-
-        color:
-          Colors.subtext,
-
-        marginTop:
-          Metrics.x1,
-
-        maxWidth: 650,
-      },
-
-      registerButton: {
-        borderRadius: 14,
-      },
-
-      registerButtonContent: {
-        minHeight: 48,
-      },
+registerButtonContent: {
+  minHeight: 46,
+  paddingHorizontal: Metrics.x2,
+},
 
 
       /* ======================================================
          SUMMARY
       ====================================================== */
 
-      summaryGrid: {
-        flexDirection:
-          "row",
+      
+summaryGrid: {
+  flexDirection: "row",
+  marginHorizontal: -Metrics.x1,
+  marginBottom: Metrics.x5,
+},
 
-        marginHorizontal:
-          -Metrics.x2,
+summaryGridMobile: {
+  flexDirection: "row",
+  width: "100%",
+},
 
-        marginBottom:
-          Metrics.x5,
-      },
+summaryCard: {
+  flex: 1,
+  marginHorizontal: Metrics.x1,
+  marginBottom: Metrics.x2,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#E8EBF2",
+  elevation: 0,
+  shadowColor: "#111827",
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.04,
+  shadowRadius: 8,
+},
 
-      summaryGridMobile: {
-        flexDirection:
-          "column",
-      },
+summaryTop: {
+  marginBottom: Metrics.x2,
+},
 
-      summaryCard: {
-        flex: 1,
+summaryIcon: {
+  margin: 0,
+},
 
-        marginHorizontal:
-          Metrics.x2,
+summaryValue: {
+  fontSize: 26,
+  lineHeight: 32,
+  fontWeight: "800",
+  color: "#111827",
+},
 
-        marginBottom:
-          Metrics.x2,
+summaryCode: {
+  fontSize: 20,
+  fontWeight: "800",
+  color: "#111827",
+  marginTop: 5,
+},
 
-        backgroundColor:
-          "#FFFFFF",
-
-        borderRadius: 18,
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E9EAF0",
-
-        elevation: 1,
-      },
-
-      summaryTop: {
-        marginBottom:
-          Metrics.x2,
-      },
-
-      summaryIcon: {
-        margin: 0,
-      },
-
-      summaryValue: {
-        fontSize: 25,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-      summaryCode: {
-        fontSize: 20,
-
-        fontWeight: "800",
-
-        color: "#171717",
-
-        marginTop: 5,
-      },
-
-      summaryLabel: {
-        fontSize: 12,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 3,
-      },
+summaryLabel: {
+  fontSize: 12,
+  fontWeight: "500",
+  color: "#6B7280",
+  marginTop: 4,
+},
 
 
       /* ======================================================
          SEARCH
       ====================================================== */
 
-      searchCard: {
-        backgroundColor:
-          "#FFFFFF",
+      
+searchCard: {
+  backgroundColor: "#FFFFFF",
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#E8EBF2",
+  elevation: 0,
+  marginBottom: Metrics.x5,
+},
 
-        borderRadius: 18,
+searchHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: Metrics.x3,
+},
 
-        borderWidth: 1,
+searchHeaderText: {
+  flex: 1,
+},
 
-        borderColor:
-          "#E9EAF0",
+searchTitle: {
+  fontSize: 17,
+  fontWeight: "800",
+  color: "#111827",
+},
 
-        elevation: 1,
+searchSubtitle: {
+  fontSize: 12,
+  color: "#6B7280",
+  marginTop: 3,
+},
 
-        marginBottom:
-          Metrics.x5,
-      },
+clearSearch: {
+  fontSize: 13,
+  fontWeight: "700",
+  color: Colors.brandPrimary,
+},
 
-      searchHeader: {
-        flexDirection:
-          "row",
+searchInput: {
+  backgroundColor: "#FAFBFD",
+  fontSize: 14,
+},
 
-        alignItems:
-          "center",
-
-        justifyContent:
-          "space-between",
-
-        marginBottom:
-          Metrics.x3,
-      },
-
-      searchHeaderText: {
-        flex: 1,
-      },
-
-      searchTitle: {
-        fontSize: 17,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-      searchSubtitle: {
-        fontSize: 12,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 2,
-      },
-
-      clearSearch: {
-        fontSize: 13,
-
-        fontWeight: "700",
-
-        color:
-          Colors.brandPrimary,
-      },
-
-      searchInput: {
-        backgroundColor:
-          "#FFFFFF",
-      },
-
-      searchOutline: {
-        borderRadius: 12,
-      },
+searchOutline: {
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#DDE2EC",
+},
 
 
       /* ======================================================
@@ -2150,114 +2553,109 @@ const useStyles = makeStyles(
          STUDENT CARD
       ====================================================== */
 
-      studentTouchable: {
-        marginBottom:
-          Metrics.x3,
-      },
+      
+studentTouchable: {
+  marginBottom: Metrics.x3,
+},
 
-      studentCard: {
-        backgroundColor:
-          "#FFFFFF",
+studentCard: {
+  backgroundColor: "#FFFFFF",
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#E8EBF2",
+  elevation: 0,
+  shadowColor: "#111827",
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.035,
+  shadowRadius: 8,
+},
 
-        borderRadius: 18,
+studentCardRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  minHeight: 78,
+},
 
-        borderWidth: 1,
+studentAvatar: {
+  backgroundColor: Colors.brandPrimary,
+  marginRight: Metrics.x3,
+},
 
-        borderColor:
-          "#E9EAF0",
+studentInfo: {
+  flex: 1,
+  minWidth: 0,
+},
 
-        elevation: 1,
-      },
+studentName: {
+  fontSize: 16,
+  lineHeight: 21,
+  fontWeight: "800",
+  color: "#111827",
+},
 
-      studentCardRow: {
-        flexDirection:
-          "row",
+studentAdmission: {
+  fontSize: 12,
+  color: "#6B7280",
+  marginTop: Metrics.x1,
+},
 
-        alignItems:
-          "center",
+studentClass: {
+  fontSize: 12,
+  color: "#6B7280",
+  marginTop: 3,
+},
 
-        minHeight: 78,
-      },
+studentRight: {
+  alignItems: "flex-end",
+  marginLeft: Metrics.x2,
+},
 
-      studentAvatar: {
-        backgroundColor:
-          Colors.brandPrimary,
+admissionBadge: {
+  maxWidth: 110,
+  minHeight: 28,
+  paddingHorizontal: Metrics.x2,
+  borderRadius: 8,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#F3F4F6",
+},
 
-        marginRight:
-          Metrics.x3,
-      },
+admissionBadgeText: {
+  fontSize: 10,
+  fontWeight: "800",
+  color: "#4B5563",
+},
 
-      studentInfo: {
-        flex: 1,
+studentAction: {
+  minHeight: 34,
+  paddingHorizontal: Metrics.x2,
+  borderRadius: 9,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#EEF2FF",
+  marginTop: Metrics.x1,
+},
 
-        minWidth: 0,
-      },
+studentActionText: {
+  color: Colors.brandPrimary,
+  fontSize: 11,
+  fontWeight: "800",
+},
 
-      studentName: {
-        fontSize: 17,
+collectFeeAction: {
+  backgroundColor: Colors.brandPrimary,
+},
 
-        fontWeight: "800",
+collectFeeText: {
+  color: Colors.textOnPrimary,
+  fontSize: 11,
+  fontWeight: "800",
+},
 
-        color: "#171717",
-      },
-
-      studentAdmission: {
-        fontSize: 13,
-
-        color:
-          Colors.subtext,
-
-        marginTop:
-          Metrics.x1,
-      },
-
-      studentClass: {
-        fontSize: 12,
-
-        color:
-          Colors.subtext,
-
-        marginTop: 3,
-      },
-
-      studentRight: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        marginLeft:
-          Metrics.x2,
-      },
-
-      admissionBadge: {
-        maxWidth: 110,
-
-        minHeight: 32,
-
-        paddingHorizontal:
-          Metrics.x2,
-
-        borderRadius: 10,
-
-        alignItems: "center",
-
-        justifyContent:
-          "center",
-
-        backgroundColor:
-          "#F3F4F6",
-      },
-
-      admissionBadgeText: {
-        fontSize: 11,
-
-        fontWeight: "800",
-
-        color: "#374151",
-      },
-
+      
       studentArrow: {
         fontSize: 22,
 
@@ -2576,6 +2974,68 @@ const useStyles = makeStyles(
         color: "#D64545",
       },
 
+
+      filterLabel: {
+        marginTop: Metrics.x3,
+        marginBottom: Metrics.x1,
+        color: Colors.text,
+        fontSize: 13,
+        fontWeight: "600",
+      },
+
+      classChipsScroll: {
+        marginTop: Metrics.x1,
+      },
+
+      classChipsContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: Metrics.x1,
+        paddingRight: Metrics.x2,
+      },
+
+      classChip: {
+        borderWidth: 1,
+        borderColor: Colors.border,
+        borderRadius: 18,
+        paddingHorizontal: Metrics.x3,
+        paddingVertical: Metrics.x2,
+        marginRight: Metrics.x2,
+        backgroundColor: Colors.surface,
+      },
+
+      classChipActive: {
+        borderColor: Colors.brandPrimary,
+        backgroundColor: Colors.brandPrimary,
+      },
+
+      classChipText: {
+        color: Colors.text,
+        fontSize: 12,
+        fontWeight: "600",
+      },
+
+      classChipTextActive: {
+        color: "#FFFFFF",
+      },
+
+      exportButtonsRow: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        alignItems: "center",
+        marginTop: Metrics.x2,
+        gap: Metrics.x2,
+      },
+
+      exportButton: {
+        marginTop: Metrics.x1,
+      },
+
+      exportSummary: {
+        marginTop: Metrics.x2,
+        color: Colors.subtext,
+        fontSize: 12,
+      },
 
       /* ======================================================
          SNACKBAR

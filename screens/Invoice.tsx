@@ -11,6 +11,7 @@ import { Button, Card, Divider, Snackbar } from "react-native-paper";
 import { Colors, makeStyles, Metrics } from "../theme";
 import { RootStackParamList, RootStackScreenNames } from "../types";
 import { formatToIndianAmount } from "../utils";
+import * as Print from "expo-print";
 
 /* ============================================================
    TYPES
@@ -251,17 +252,30 @@ function buildReceiptHtml(params: {
    Opens the HTML in a new tab/window — user clicks Ctrl+P
    or File → Print → Save as PDF.
 ============================================================ */
-function printViaWebWindow(html: string) {
-  const win = window.open("", "_blank");
-  if (!win) {
-    alert("Pop-up blocked. Please allow pop-ups for this site.");
+async function printReceiptHtml(html: string): Promise<void> {
+  if (Platform.OS === "web") {
+    // Browser only: open the report in a separate tab/window.
+    // Do not use window.open on Android/iOS because React Native does not
+    // provide a browser window object there.
+    if (typeof window === "undefined" || typeof window.open !== "function") {
+      throw new Error("Browser print is unavailable in this environment.");
+    }
+
+    const win = window.open("", "_blank");
+    if (!win) {
+      throw new Error("Pop-up blocked. Please allow pop-ups for this site.");
+    }
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.onload = () => win.print();
     return;
   }
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
-  // Trigger print dialog automatically after content loads
-  win.onload = () => win.print();
+
+  // Android/iOS: use Expo Print instead of window.open.
+  await Print.printAsync({ html });
 }
 
 /* ============================================================
@@ -390,7 +404,7 @@ const Invoice = ({
   };
 
   /* ---- ACTIONS ---- */
-  const handleA4 = () => {
+  const handleA4 = async () => {
     setBusyA4(true);
     try {
       const html = buildReceiptHtml({ ...receiptParams, format: "a4" });
@@ -399,8 +413,8 @@ const Invoice = ({
         downloadHtmlFile(html, `receipt-${receiptNumber ?? admissionNo}.html`);
         showMsg("File downloaded! Open it in your browser and press Ctrl+P to save as PDF.");
       } else {
-        // On native (Android/iOS), open print dialog
-        printViaWebWindow(html);
+        // On native (Android/iOS), use Expo Print.
+        await printReceiptHtml(html);
       }
     } catch (e) {
       console.error("A4 error", e);
@@ -410,16 +424,17 @@ const Invoice = ({
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     try {
       const html = buildReceiptHtml({ ...receiptParams, format: "a4" });
-      printViaWebWindow(html);
+      await printReceiptHtml(html);
     } catch (e) {
+      console.error("Print error", e);
       showMsg("Failed to open print dialog.");
     }
   };
 
-  const handleThermal = () => {
+  const handleThermal = async () => {
     setBusyThermal(true);
     try {
       const html = buildReceiptHtml({ ...receiptParams, format: "thermal" });
@@ -427,9 +442,10 @@ const Invoice = ({
         downloadHtmlFile(html, `receipt-thermal-${receiptNumber ?? admissionNo}.html`);
         showMsg("Thermal receipt downloaded! Open in browser and Ctrl+P to print.");
       } else {
-        printViaWebWindow(html);
+        await printReceiptHtml(html);
       }
     } catch (e) {
+      console.error("Thermal print error", e);
       showMsg("Failed to generate thermal receipt.");
     } finally {
       setBusyThermal(false);

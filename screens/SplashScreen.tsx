@@ -57,37 +57,11 @@ const SplashScreen = ({
             "userStore"
           );
 
-        console.log(
-          "================================="
-        );
+        
 
-        console.log(
-          "🔥 SPLASH AUTH DEBUG"
-        );
+        
 
-        console.log(
-          "ZUSTAND HYDRATED:",
-          hasHydrated
-        );
-
-        console.log(
-          "ZUSTAND USER:",
-          user
-        );
-
-        console.log(
-          "ZUSTAND TOKEN:",
-          Boolean(accessToken)
-        );
-
-        console.log(
-          "ASYNC STORAGE userStore:",
-          raw
-        );
-
-        console.log(
-          "================================="
-        );
+        
 
       } catch (error) {
 
@@ -121,9 +95,6 @@ const SplashScreen = ({
       accessToken
     ) {
 
-      console.log(
-        "🔥 SPLASH → HOME"
-      );
 
       navigation.reset({
 
@@ -141,10 +112,6 @@ const SplashScreen = ({
       return;
     }
 
-
-    console.log(
-      "🔥 SPLASH → LOGIN"
-    );
 
     navigation.reset({
 

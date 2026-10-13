@@ -307,71 +307,54 @@ const PrincipalParentDetailsScreen =
               HEADER
           ================================================== */}
 
-          <View
-            style={
-              styles.header
-            }
-          >
+          {/* ==================================================
+    MODERN PROFILE HEADER
+================================================== */}
 
-            <View
-              style={
-                styles.avatar
-              }
-            >
+<View style={styles.header}>
+  <View style={styles.avatar}>
+    <Text style={styles.avatarText}>
+      {initial}
+    </Text>
+  </View>
 
-              <Text
-                style={
-                  styles.avatarText
-                }
-              >
-                {initial}
-              </Text>
+  <Text style={styles.name}>
+    {parent.name || "Parent"}
+  </Text>
 
-            </View>
+  <Text style={styles.designation}>
+    Parent Account
+  </Text>
 
+  <View
+    style={[
+      styles.statusBadge,
+      parent.isActive
+        ? styles.activeBadge
+        : styles.inactiveBadge,
+    ]}
+  >
+    <View
+      style={[
+        styles.statusDot,
+        parent.isActive
+          ? styles.activeDot
+          : styles.inactiveDot,
+      ]}
+    />
 
-            <Text
-              style={
-                styles.name
-              }
-            >
-              {parent.name ||
-                "Parent"}
-            </Text>
-
-
-            <Text
-              style={
-                styles.designation
-              }
-            >
-              Parent Account
-            </Text>
-
-
-            <View
-              style={[
-                styles.statusBadge,
-
-                parent.isActive
-                  ? styles.activeBadge
-                  : styles.inactiveBadge,
-              ]}
-            >
-
-              <Text
-                style={
-                  styles.statusText
-                }
-              >
-                {parent.isActive
-                  ? "ACTIVE"
-                  : "INACTIVE"}
-              </Text>
-
-            </View>
-
-          </View>
+    <Text
+      style={[
+        styles.statusText,
+        parent.isActive
+          ? styles.activeText
+          : styles.inactiveText,
+      ]}
+    >
+      {parent.isActive ? "Active" : "Inactive"}
+    </Text>
+  </View>
+</View>
 
 
           {/* ==================================================
@@ -495,144 +478,60 @@ const PrincipalParentDetailsScreen =
                   ) => (
 
                     <View
-                      key={
-                        child.id
-                      }
+  key={child.id}
+  style={[
+    styles.childCard,
+    index !== parent.children.length - 1 &&
+      styles.childCardSpacing,
+  ]}
+>
+  <View style={styles.childHeader}>
+    <View style={styles.childAvatar}>
+      <Text style={styles.childAvatarText}>
+        {child.name.charAt(0).toUpperCase()}
+      </Text>
+    </View>
 
-                      style={[
-                        styles.childCard,
+    <View style={styles.childMain}>
+      <Text style={styles.childName}>
+        {child.name}
+      </Text>
 
-                        index !==
-                          parent.children.length -
-                            1 &&
-                          styles.childCardSpacing,
-                      ]}
-                    >
+      <Text style={styles.childAdmission}>
+        Admission No: {child.admissionNo}
+      </Text>
+    </View>
 
-                      <View
-                        style={
-                          styles.childHeader
-                        }
-                      >
+    <View style={styles.childStatusBadge}>
+      <Text style={styles.childStatusText}>
+        {child.status}
+      </Text>
+    </View>
+  </View>
 
-                        <View
-                          style={
-                            styles.childAvatar
-                          }
-                        >
+  <View style={styles.childDetails}>
+    <InfoRow
+      label="Class"
+      value={child.class.displayName}
+    />
 
-                          <Text
-                            style={
-                              styles.childAvatarText
-                            }
-                          >
-                            {child.name
-                              .charAt(
-                                0
-                              )
-                              .toUpperCase()}
-                          </Text>
+    <InfoRow
+      label="Section"
+      value={child.section.sectionName}
+    />
 
-                        </View>
+    <InfoRow
+      label="Relationship"
+      value={formatRelationship(child.relationship)}
+    />
 
-
-                        <View
-                          style={
-                            styles.childMain
-                          }
-                        >
-
-                          <Text
-                            style={
-                              styles.childName
-                            }
-                          >
-                            {child.name}
-                          </Text>
-
-
-                          <Text
-                            style={
-                              styles.childAdmission
-                            }
-                          >
-                            Admission No:{" "}
-                            {
-                              child.admissionNo
-                            }
-                          </Text>
-
-                        </View>
-
-
-                        <View
-                          style={
-                            styles.childStatusBadge
-                          }
-                        >
-
-                          <Text
-                            style={
-                              styles.childStatusText
-                            }
-                          >
-                            {child.status}
-                          </Text>
-
-                        </View>
-
-                      </View>
-
-
-                      <View
-                        style={
-                          styles.childDetails
-                        }
-                      >
-
-                        <InfoRow
-                          label="Class"
-                          value={
-                            child
-                              .class
-                              .displayName
-                          }
-                        />
-
-
-                        <InfoRow
-                          label="Section"
-                          value={
-                            child
-                              .section
-                              .sectionName
-                          }
-                        />
-
-
-                        <InfoRow
-                          label="Relationship"
-                          value={
-                            formatRelationship(
-                              child.relationship
-                            )
-                          }
-                        />
-
-
-                        <InfoRow
-                          label="Primary"
-                          value={
-                            child.isPrimary
-                              ? "Yes"
-                              : "No"
-                          }
-                          last
-                        />
-
-                      </View>
-
-                    </View>
+    <InfoRow
+      label="Primary"
+      value={child.isPrimary ? "Yes" : "No"}
+      last
+    />
+  </View>
+</View>
 
                   )
                 )
@@ -705,38 +604,26 @@ const PrincipalParentDetailsScreen =
           ================================================== */}
 
           <Button
-            mode={
-              parent.isActive
-                ? "outlined"
-                : "contained"
-            }
-
-            loading={
-              loading
-            }
-
-            disabled={
-              loading
-            }
-
-            onPress={
-              onToggleStatus
-            }
-
-            style={
-              parent.isActive
-                ? styles.disableButton
-                : styles.enableButton
-            }
-
-            contentStyle={
-              styles.actionButtonContent
-            }
-          >
-            {parent.isActive
-              ? "DEACTIVATE PARENT"
-              : "ACTIVATE PARENT"}
-          </Button>
+  mode={parent.isActive ? "outlined" : "contained"}
+  loading={loading}
+  disabled={loading}
+  onPress={onToggleStatus}
+  style={
+    parent.isActive
+      ? styles.disableButton
+      : styles.enableButton
+  }
+  contentStyle={styles.actionButtonContent}
+  textColor={
+    parent.isActive
+      ? "#DC2626"
+      : "#FFFFFF"
+  }
+>
+  {parent.isActive
+    ? "DEACTIVATE PARENT"
+    : "ACTIVATE PARENT"}
+</Button>
 
 
           <Button
@@ -905,343 +792,284 @@ const formatDate = (
    STYLES
 ============================================================ */
 
-const styles =
-  StyleSheet.create({
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F7FB",
+  },
 
-    container: {
-      flex: 1,
+  content: {
+    paddingHorizontal: Metrics.x4,
+    paddingTop: Metrics.x4,
+    paddingBottom: Metrics.x8,
+  },
+
+  /* ========================================================
+     PROFILE HEADER
+  ======================================================== */
+
+  header: {
+    alignItems: "center",
+    paddingVertical: Metrics.x4,
+    marginBottom: Metrics.x4,
+  },
+
+  avatar: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.brandPrimaryBg,
+    borderWidth: 4,
+    borderColor: "#FFFFFF",
+    marginBottom: Metrics.x3,
+    elevation: 3,
+    shadowColor: "#000000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 3,
     },
+  },
 
-    content: {
-      padding:
-        Metrics.x4,
+  avatarText: {
+    fontSize: 34,
+    fontWeight: "800",
+    color: Colors.brandPrimary,
+  },
 
-      paddingBottom:
-        Metrics.x6,
+  name: {
+    fontSize: 27,
+    lineHeight: 35,
+    fontWeight: "800",
+    color: "#172033",
+    textAlign: "center",
+  },
+
+  designation: {
+    fontSize: 14,
+    color: Colors.subtext,
+    marginTop: Metrics.x1,
+    textAlign: "center",
+  },
+
+  /* ========================================================
+     STATUS
+  ======================================================== */
+
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Metrics.x3,
+    paddingVertical: Metrics.x2,
+    borderRadius: 24,
+    marginTop: Metrics.x3,
+  },
+
+  activeBadge: {
+    backgroundColor: "#DCFCE7",
+  },
+
+  inactiveBadge: {
+    backgroundColor: "#FEE2E2",
+  },
+
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginRight: Metrics.x2,
+  },
+
+  activeDot: {
+    backgroundColor: "#16A34A",
+  },
+
+  inactiveDot: {
+    backgroundColor: "#DC2626",
+  },
+
+  statusText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  activeText: {
+    color: "#15803D",
+  },
+
+  inactiveText: {
+    color: "#B91C1C",
+  },
+
+  /* ========================================================
+     CARDS
+  ======================================================== */
+
+  card: {
+    marginBottom: Metrics.x4,
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E8ECF3",
+    elevation: 0,
+    shadowColor: "#000000",
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 3,
     },
-
-
-    /* ========================================================
-       HEADER
-    ======================================================== */
-
-    header: {
-      alignItems:
-        "center",
-
-      marginBottom:
-        Metrics.x5,
-    },
-
-    avatar: {
-      width: 80,
-
-      height: 80,
-
-      borderRadius: 40,
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-
-      backgroundColor:
-        Colors.brandPrimaryBg,
-
-      marginBottom:
-        Metrics.x3,
-    },
-
-    avatarText: {
-      fontSize: 32,
-
-      fontWeight:
-        "800",
-    },
-
-    name: {
-      fontSize: 26,
-
-      fontWeight:
-        "800",
-
-      textAlign:
-        "center",
-    },
-
-    designation: {
-      fontSize: 15,
-
-      color:
-        Colors.subtext,
-
-      marginTop:
-        Metrics.x1,
-    },
-
-
-    /* ========================================================
-       STATUS
-    ======================================================== */
-
-    statusBadge: {
-      marginTop:
-        Metrics.x2,
-
-      paddingHorizontal:
-        Metrics.x3,
-
-      paddingVertical:
-        Metrics.x1,
-
-      borderRadius:
-        20,
-    },
-
-    activeBadge: {
-      backgroundColor:
-        Colors.successBg,
-    },
-
-    inactiveBadge: {
-      backgroundColor:
-        Colors.errorBg,
-    },
-
-    statusText: {
-      color:
-        "#fff",
-
-      fontSize: 11,
-
-      fontWeight:
-        "800",
-    },
-
-
-    /* ========================================================
-       CARD
-    ======================================================== */
-
-    card: {
-      marginBottom:
-        Metrics.x4,
-
-      borderRadius:
-        Metrics.x3,
-    },
-
-    sectionTitle: {
-      fontSize: 18,
-
-      fontWeight:
-        "800",
-
-      marginBottom:
-        Metrics.x3,
-    },
-
-
-    /* ========================================================
-       INFO
-    ======================================================== */
-
-    infoRow: {
-      minHeight: 50,
-
-      paddingVertical:
-        Metrics.x2,
-
-      justifyContent:
-        "center",
-    },
-
-    infoRowBorder: {
-      borderBottomWidth:
-        1,
-
-      borderBottomColor:
-        "#EEEEEE",
-    },
-
-    infoLabel: {
-      fontSize: 12,
-
-      color:
-        Colors.subtext,
-
-      marginBottom:
-        Metrics.x1,
-    },
-
-    infoValue: {
-      fontSize: 15,
-
-      fontWeight:
-        "600",
-    },
-
-
-    /* ========================================================
-       CHILDREN
-    ======================================================== */
-
-    childCard: {
-      padding:
-        Metrics.x3,
-
-      borderRadius:
-        Metrics.x3,
-
-      backgroundColor:
-        Colors.brandPrimaryBg,
-    },
-
-    childCardSpacing: {
-      marginBottom:
-        Metrics.x3,
-    },
-
-    childHeader: {
-      flexDirection:
-        "row",
-
-      alignItems:
-        "center",
-    },
-
-    childAvatar: {
-      width: 46,
-
-      height: 46,
-
-      borderRadius: 23,
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-
-      backgroundColor:
-        Colors.brandPrimary,
-    },
-
-    childAvatarText: {
-      color:
-        "#FFFFFF",
-
-      fontSize: 19,
-
-      fontWeight:
-        "800",
-    },
-
-    childMain: {
-      flex: 1,
-
-      marginLeft:
-        Metrics.x3,
-    },
-
-    childName: {
-      fontSize: 17,
-
-      fontWeight:
-        "800",
-    },
-
-    childAdmission: {
-      fontSize: 12,
-
-      color:
-        Colors.subtext,
-
-      marginTop:
-        Metrics.x1,
-    },
-
-    childStatusBadge: {
-      paddingHorizontal:
-        Metrics.x2,
-
-      paddingVertical:
-        Metrics.x1,
-
-      borderRadius:
-        15,
-
-      backgroundColor:
-        Colors.successBg,
-    },
-
-    childStatusText: {
-      fontSize: 9,
-
-      fontWeight:
-        "800",
-
-      color:
-        "#FFFFFF",
-    },
-
-    childDetails: {
-      marginTop:
-        Metrics.x2,
-
-      paddingTop:
-        Metrics.x1,
-
-      borderTopWidth:
-        1,
-
-      borderTopColor:
-        "rgba(0,0,0,0.06)",
-    },
-
-    emptyChildren: {
-      paddingVertical:
-        Metrics.x3,
-    },
-
-    muted: {
-      color:
-        Colors.subtext,
-
-      fontSize: 14,
-    },
-
-
-    /* ========================================================
-       ACTION
-    ======================================================== */
-
-    disableButton: {
-      borderRadius:
-        Metrics.x2,
-
-      borderColor:
-        Colors.errorBg,
-
-      marginTop:
-        Metrics.x2,
-    },
-
-    enableButton: {
-      borderRadius:
-        Metrics.x2,
-
-      marginTop:
-        Metrics.x2,
-    },
-
-    actionButtonContent: {
-      paddingVertical:
-        Metrics.x1,
-    },
-
-  });
+  },
+
+  sectionTitle: {
+    fontSize: 17,
+    lineHeight: 24,
+    fontWeight: "800",
+    color: "#172033",
+    marginBottom: Metrics.x3,
+  },
+
+  /* ========================================================
+     INFORMATION ROWS
+  ======================================================== */
+
+  infoRow: {
+    minHeight: 50,
+    paddingVertical: Metrics.x3,
+    justifyContent: "center",
+  },
+
+  infoRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEF1F5",
+  },
+
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    color: Colors.subtext,
+    marginBottom: Metrics.x1,
+    textTransform: "uppercase",
+  },
+
+  infoValue: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: "#263247",
+  },
+
+  /* ========================================================
+     CHILDREN
+  ======================================================== */
+
+  childCard: {
+    padding: Metrics.x3,
+    borderRadius: 16,
+    backgroundColor: "#F7F9FC",
+    borderWidth: 1,
+    borderColor: "#E8ECF3",
+  },
+
+  childCardSpacing: {
+    marginBottom: Metrics.x3,
+  },
+
+  childHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  childAvatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.brandPrimary,
+  },
+
+  childAvatarText: {
+    color: "#FFFFFF",
+    fontSize: 19,
+    fontWeight: "800",
+  },
+
+  childMain: {
+    flex: 1,
+    marginLeft: Metrics.x3,
+    paddingRight: Metrics.x2,
+  },
+
+  childName: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "800",
+    color: "#172033",
+  },
+
+  childAdmission: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: Colors.subtext,
+    marginTop: Metrics.x1,
+  },
+
+  childStatusBadge: {
+    paddingHorizontal: Metrics.x2,
+    paddingVertical: Metrics.x1,
+    borderRadius: 15,
+    backgroundColor: "#DCFCE7",
+  },
+
+  childStatusText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#15803D",
+  },
+
+  childDetails: {
+    marginTop: Metrics.x3,
+    paddingTop: Metrics.x2,
+    borderTopWidth: 1,
+    borderTopColor: "#E8ECF3",
+  },
+
+  emptyChildren: {
+    paddingVertical: Metrics.x3,
+  },
+
+  muted: {
+    color: Colors.subtext,
+    fontSize: 14,
+    lineHeight: 21,
+  },
+
+  /* ========================================================
+     ACTIONS
+  ======================================================== */
+
+  disableButton: {
+    marginTop: Metrics.x2,
+    borderRadius: 12,
+    borderColor: "#DC2626",
+  },
+
+  enableButton: {
+    marginTop: Metrics.x2,
+    borderRadius: 12,
+    backgroundColor: Colors.brandPrimary,
+  },
+
+  actionButtonContent: {
+    minHeight: 46,
+    paddingVertical: Metrics.x1,
+  },
+});
 
 
 export {

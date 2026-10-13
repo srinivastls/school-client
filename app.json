@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "school",
+    "name": "shikshavega",
     "slug": "srinu",
-    "version": "1.0.0",
+    "version": "1.0.0+4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,9 +24,8 @@
         "NSLocalNetworkUsageDescription": "This app requires local network access to print fee receipts."
       },
       "supportsTablet": true,
-      "bundleIdentifier": "com.school.app"
+      "bundleIdentifier": "com.soir.shikshavega.app"
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -42,17 +41,21 @@
         "ACCESS_NETWORK_STATE",
         "CHANGE_WIFI_MULTICAST_STATE"
       ],
-      "package": "com.school.app"
+      "package": "com.soir.shikshavega.app"
     },
     "web": {
-  "favicon": "./assets/favicon.png",
-  "output": "single"
-},
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
     "extra": {
       "eas": {
         "projectId": "8be2abcc-eab0-4c4d-aa19-11be8f76e87f"
       }
     },
-    "owner": "srinivastls-team"
+    "owner": "srinivastls-team",
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
   }
 }

@@ -59,6 +59,7 @@ import {
 } from "../../services/platformAdminServices";
 
 import { useUserStore } from "../../store";
+import { DashboardModuleCard } from "../admin/DashboardModuleCard";
 
 
 /* ============================================================
@@ -337,6 +338,34 @@ const getDaysUntilExpiry = (
   );
 };
 
+type DashboardModule = {
+  title: string;
+  icon: string;
+  accentColor: string;
+  route: RootStackScreenNames;
+};
+
+const DASHBOARD_MODULES: DashboardModule[] = [
+  {
+    title: "Add School",
+    icon: "+",
+    accentColor: "#1D4ED8",
+    route: RootStackScreenNames.PlatformAdminCreateSchool,
+  },
+  {
+    title: "Schools",
+    icon: "🏫",
+    accentColor: "#059669",
+    route: RootStackScreenNames.PlatformSchools,
+  },
+  {
+    title: "Profile",
+    icon: "👤",
+    accentColor: "#7C3AED",
+    route: RootStackScreenNames.AdminProfileScreen,
+  }
+
+]
 
 const getExpiryInfo = (
   school: School
@@ -1283,6 +1312,8 @@ const PlatformAdminDashboard = ({
     );
   };
 
+  
+
 
   /* ==========================================================
      HEADER
@@ -1302,6 +1333,8 @@ const PlatformAdminDashboard = ({
           <View
             style={[
               styles.platformHeader,
+
+              { display: "none" },
 
               {
                 marginHorizontal:
@@ -1369,55 +1402,7 @@ const PlatformAdminDashboard = ({
               }
             >
 
-              <View
-                style={styles.primaryNavigation}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    navigation.navigate(
-                      RootStackScreenNames.PlatformSchools
-                    )
-                  }
-                  style={styles.navigationItem}
-                >
-                  <IconButton
-                    icon="school-outline"
-                    size={18}
-                    iconColor={Colors.subtext}
-                    style={styles.navigationIcon}
-                  />
-
-                  {!isSmallScreen && (
-                    <Text style={styles.navigationLabel}>
-                      Schools
-                    </Text>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    navigation.navigate(
-                      RootStackScreenNames.PlatformAdminCreateSchool
-                    )
-                  }
-                  style={styles.navigationItem}
-                >
-                  <IconButton
-                    icon="plus-circle-outline"
-                    size={18}
-                    iconColor={Colors.subtext}
-                    style={styles.navigationIcon}
-                  />
-
-                  {!isSmallScreen && (
-                    <Text style={styles.navigationLabel}>
-                      Add School
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
+              
 
               <IconButton
                 icon={
@@ -1454,7 +1439,7 @@ const PlatformAdminDashboard = ({
               <TouchableOpacity
   activeOpacity={0.8}
   onPress={() => {
-    setProfileMenuVisible(true);
+    setProfileMenuVisible(false);
   }}
   style={[
     styles.profileButton,
@@ -1558,6 +1543,25 @@ const PlatformAdminDashboard = ({
             </View>
 
           </View>
+
+          <SectionHeading
+            title="Modules"
+            subtitle="Quick access to your modules"
+          />
+
+          <View style={styles.modulesGrid}>
+  {DASHBOARD_MODULES.map((module) => (
+    <DashboardModuleCard
+      key={module.title}
+      title={module.title}
+      icon={module.icon}
+      accentColor={module.accentColor}
+      onPress={() =>
+        navigation.navigate(module.route as never)
+      }
+    />
+  ))}
+</View>
 
 
           {/* ==================================================
@@ -2373,6 +2377,10 @@ const renderProfileDropdown = () => {
         style={styles.modalOverlay}
         onPress={() => {
           setProfileMenuVisible(false);
+    navigation.navigate(
+      RootStackScreenNames.AdminProfileScreen
+    );
+  
         }}
       >
         <View
@@ -2410,6 +2418,8 @@ const renderProfileDropdown = () => {
                 Platform Administrator
               </Text>
             </View>
+
+            
           </View>
 
           <Divider style={styles.dropdownDivider} />
@@ -2677,6 +2687,7 @@ const SectionHeading = ({
 );
 
 
+
 /* ============================================================
    STAT CARD
 ============================================================ */
@@ -2843,6 +2854,7 @@ const SchoolStat = ({
     </Text>
 
   </View>
+  
 );
 
 

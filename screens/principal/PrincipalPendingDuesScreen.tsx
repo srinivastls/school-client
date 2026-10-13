@@ -1,6 +1,8 @@
 import React, {
+  useCallback,
   useMemo,
   useState,
+  useEffect,
 } from "react";
 
 import {
@@ -24,6 +26,15 @@ import {
 
 import DropDownPicker from "react-native-dropdown-picker";
 
+import {
+  StackActions,
+  useNavigation,
+} from "@react-navigation/native";
+
+import {
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
+
 import * as Print from "expo-print";
 
 import * as Sharing from "expo-sharing";
@@ -33,7 +44,12 @@ import * as FileSystem from "expo-file-system";
 import * as XLSX from "xlsx";
 
 import {
+  ClassList,
+} from "../../components";
+
+import {
   reportServices,
+  studentServices,
   PendingDuesResponse,
   PendingDuesStudent,
     PendingDuesClassSummary,
@@ -44,6 +60,12 @@ import {
   makeStyles,
   Metrics,
 } from "../../theme";
+
+import {
+  RootStackParamList,
+  RootStackScreenNames,
+  Student,
+} from "../../types";
 
 
 /* ============================================================
@@ -128,6 +150,8 @@ const getClassName = (
 };
 
 
+
+
 /* ============================================================
    SCREEN
 ============================================================ */
@@ -137,6 +161,11 @@ const PrincipalPendingDuesScreen =
 
     const styles =
       useStyles();
+
+    const navigation =
+      useNavigation<
+        NativeStackNavigationProp<RootStackParamList>
+      >();
 
 
     /* ========================================================
@@ -190,6 +219,11 @@ const PrincipalPendingDuesScreen =
     ] =
       useState(false);
 
+    const [
+      fetchingStudent,
+      setFetchingStudent,
+    ] = useState(false);
+
 
     const [
       refreshing,
@@ -240,6 +274,8 @@ const PrincipalPendingDuesScreen =
        OPTIONS
     ======================================================== */
 
+    
+
     const percentageOptions:
       PercentageOption[] =
       [
@@ -263,6 +299,7 @@ const PrincipalPendingDuesScreen =
           value: "100",
         },
       ];
+      
 
 
     /* ========================================================
@@ -273,45 +310,76 @@ const PrincipalPendingDuesScreen =
        This means the first request can be ALL CLASSES.
     ======================================================== */
 
-    const classOptions =
-      useMemo<ClassOption[]>(
-        () => {
 
-          const values =
-            report?.classSummary
-              ?.map(
-                (item) =>
-                  String(
-                    item.classNumber
-                  )
-              ) ??
-            [];
+    const [classOptions, setClassOptions] =
+  useState<ClassOption[]>([
+    {
+      label: "All Classes",
+      value: "ALL",
+    },
+  ]);
 
-          const unique =
-            Array.from(
-              new Set(values)
-            );
+  const updateClassOptions = (
+  data: PendingDuesResponse
+) => {
+  const values =
+    data.classSummary?.map((item) =>
+      String(item.classNumber)
+    ) ?? [];
 
-          return [
-            {
-              label:
-                "All Classes",
-              value:
-                "ALL",
-            },
+  const unique = Array.from(
+    new Set(values)
+  );
 
-            ...unique.map(
-              (value) => ({
-                label:
-                  `Class ${value}`,
-                value,
-              })
-            ),
-          ];
+  const options: ClassOption[] = [
+    {
+      label: "All Classes",
+      value: "ALL",
+    },
+    ...unique.map((value) => ({
+      label: `Class ${value}`,
+      value,
+    })),
+  ];
 
-        },
-        [report]
+
+  setClassOptions(options);
+};
+
+
+useEffect(() => {
+  const loadInitialReport = async () => {
+    try {
+      setLoading(true);
+
+      const data =
+        await reportServices.getPendingDues({
+          classNumber: undefined,
+          perc: selectedPercentage,
+        });
+
+      setReport(data);
+
+      updateClassOptions(data);
+
+    } catch (error: any) {
+      console.error(
+        "INITIAL PENDING DUES ERROR:",
+        error
       );
+
+      showMessage(
+        error?.response?.data?.message ??
+          "Unable to load class options.",
+        Colors.errorBg
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadInitialReport();
+}, []);
 
 
     /* ========================================================
@@ -342,145 +410,119 @@ const PrincipalPendingDuesScreen =
        GENERATE
     ======================================================== */
 
-    const generateReport =
-      async () => {
+    const generateReport = async () => {
+  if (loading) {
+    return;
+  }
 
-        if (loading) {
-          return;
-        }
+  setLoading(true);
 
-        setLoading(
-          true
-        );
+  try {
+    const data =
+      await reportServices.getPendingDues({
+        classNumber:
+          selectedClass === "ALL"
+            ? undefined
+            : selectedClass,
+        perc: selectedPercentage,
+      });
 
-        try {
+    setReport(data);
 
-          const data =
-            await reportServices.getPendingDues(
-              {
-                classNumber:
-                  selectedClass ===
-                  "ALL"
-                    ? undefined
-                    : selectedClass,
+    updateClassOptions(data);
 
-                perc:
-                  selectedPercentage,
-              }
-            );
+    if (!data.students.length) {
+      showMessage(
+        "No pending dues found.",
+        Colors.errorBg
+      );
+    } else {
+      showMessage(
+        `${data.summary.totalStudents} students found.`,
+        Colors.successBg
+      );
+    }
+  } catch (error: any) {
+    console.error(
+      "PENDING DUES ERROR:",
+      error
+    );
 
+    setReport(null);
 
-          setReport(
-            data
-          );
-
-
-          if (
-            !data.students.length
-          ) {
-
-            showMessage(
-              "No pending dues found.",
-              Colors.errorBg
-            );
-
-          } else {
-
-            showMessage(
-              `${data.summary.totalStudents} students found.`,
-              Colors.successBg
-            );
-
-          }
-
-        } catch (
-          error: any
-        ) {
-
-          console.error(
-            "PENDING DUES ERROR:",
-            error
-          );
-
-          setReport(
-            null
-          );
-
-          showMessage(
-            error?.response?.data
-              ?.message ??
-              "Unable to generate pending dues report.",
-            Colors.errorBg
-          );
-
-        } finally {
-
-          setLoading(
-            false
-          );
-
-        }
-
-      };
+    showMessage(
+      error?.response?.data?.message ??
+        "Unable to generate pending dues report.",
+      Colors.errorBg
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
 
     /* ========================================================
        REFRESH
     ======================================================== */
 
-    const refreshReport =
-      async () => {
+    const refreshReport = async () => {
+  if (!report) {
+    return;
+  }
 
-        if (!report) {
-          return;
-        }
+  setRefreshing(true);
 
-        setRefreshing(
-          true
-        );
+  try {
+    const data =
+      await reportServices.getPendingDues({
+        classNumber:
+          selectedClass === "ALL"
+            ? undefined
+            : selectedClass,
+        perc: selectedPercentage,
+      });
 
+    setReport(data);
+
+    updateClassOptions(data);
+  } catch (error: any) {
+    showMessage(
+      error?.response?.data?.message ??
+        "Unable to refresh report.",
+      Colors.errorBg
+    );
+  } finally {
+    setRefreshing(false);
+  }
+};
+
+
+    const openStudent = useCallback(
+      async (admissionNo: string) => {
+        if (fetchingStudent) return;
+        setFetchingStudent(true);
         try {
-
-          const data =
-            await reportServices.getPendingDues(
-              {
-                classNumber:
-                  selectedClass ===
-                  "ALL"
-                    ? undefined
-                    : selectedClass,
-
-                perc:
-                  selectedPercentage,
-              }
-            );
-
-
-          setReport(
-            data
+          const student = await studentServices.getStudentById({
+            admissionNo,
+          });
+          navigation.dispatch(
+            StackActions.push(
+              RootStackScreenNames.StudentDetails,
+              { student: student as Student }
+            )
           );
-
-        } catch (
-          error: any
-        ) {
-
+        } catch (error: any) {
           showMessage(
-            error?.response?.data
-              ?.message ??
-              "Unable to refresh report.",
+            error?.response?.data?.message ??
+              "Unable to fetch student details",
             Colors.errorBg
           );
-
         } finally {
-
-          setRefreshing(
-            false
-          );
-
+          setFetchingStudent(false);
         }
-
-      };
-
+      },
+      [fetchingStudent, navigation]
+    );
 
     /* ========================================================
        FILTERED STUDENTS
@@ -1459,6 +1501,7 @@ ${rows}
             key={
               student.id
             }
+            onPress={() => openStudent(student.admissionNo)}
             style={
               styles.studentCard
             }
@@ -2244,56 +2287,39 @@ ${rows}
 
 
                   <DropDownPicker
-                    open={
-                      classDropdownOpen
-                    }
+  open={classDropdownOpen}
+  value={selectedClass}
+  items={classOptions}
+  setOpen={setClassDropdownOpen}
+  setValue={setSelectedClass}
+  setItems={setClassOptions}
+  placeholder="Select class"
+  listMode="SCROLLVIEW"
+  zIndex={2000}
+  zIndexInverse={1000}
+  style={styles.dropdown}
+  dropDownContainerStyle={
+    styles.dropdownContainer
+  }
+  textStyle={styles.dropdownText}
+  placeholderStyle={
+    styles.dropdownPlaceholder
+  }
+/>
 
-                    value={
-                      selectedClass
-                    }
 
-                    items={
-                      classOptions
-                    }
-
-                    setOpen={
-                      setClassDropdownOpen
-                    }
-
-                    setValue={
-                      setSelectedClass
-                    }
-
-                    setItems={() => {}}
-
-                    placeholder="Select class"
-
-                    listMode="SCROLLVIEW"
-
-                    zIndex={2000}
-
-                    zIndexInverse={
-                      1000
-                    }
-
-                    style={
-                      styles.dropdown
-                    }
-
-                    dropDownContainerStyle={
-                      styles.dropdownContainer
-                    }
-
-                    textStyle={
-                      styles.dropdownText
-                    }
-
-                    placeholderStyle={
-                      styles.dropdownPlaceholder
-                    }
-
-                  />
-
+                  <View style={styles.classListContainer}>
+                    <ClassList
+                      selectedClass={selectedClass === "ALL" ? null : selectedClass}
+                      setSelectedClass={(value) =>
+                        setSelectedClass(
+                          (typeof value === "function" ? value(null) : value) ||
+                            "ALL"
+                        )
+                      }
+                      zIndex={1500}
+                    />
+                  </View>
 
                   <View
                     style={
@@ -2889,6 +2915,11 @@ const useStyles =
     fieldSpacing: {
       height:
         Metrics.x4,
+    },
+
+    classListContainer: {
+      marginTop: Metrics.x2,
+      marginBottom: Metrics.x2,
     },
 
 

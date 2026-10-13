@@ -5,7 +5,6 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -14,6 +13,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList, RootStackScreenNames } from "../../types";
 import { Colors } from "../../theme";
 import { studentServices } from "../../services/studentServices";
+import styles from "./admin.styles";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
@@ -175,9 +175,9 @@ export const AdminStudentEdit = ({ route, navigation }: Props) => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Edit Student</Text>
-        <Text style={styles.subtitle}>Admission number: {route.params.admissionNo}</Text>
+      <ScrollView contentContainerStyle={styles.studentContent}>
+        <Text style={styles.studentTitle}>Edit Student</Text>
+        <Text style={styles.studentSubtitle}>Admission number: {route.params.admissionNo}</Text>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -186,15 +186,15 @@ export const AdminStudentEdit = ({ route, navigation }: Props) => {
           const locked = field === "admissionNo";
 
           return (
-            <View key={field} style={styles.field}>
-              <Text style={styles.label}>{field}</Text>
+            <View key={field} style={styles.studentField}>
+              <Text style={styles.studentLabel}>{field}</Text>
               <TextInput
                 value={form[field]}
                 onChangeText={(text) => update(field, text)}
                 editable={!locked}
                 placeholder={`Enter ${field}`}
                 placeholderTextColor={Colors.textSecondary}
-                style={[styles.input, locked && styles.locked]}
+                style={[styles.studentInput, locked && styles.locked]}
               />
             </View>
           );
@@ -212,17 +212,3 @@ export const AdminStudentEdit = ({ route, navigation }: Props) => {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16, paddingBottom: 40 },
-  title: { fontSize: 25, fontWeight: "800", color: Colors.text },
-  subtitle: { marginTop: 5, marginBottom: 18, color: Colors.textSecondary },
-  field: { marginBottom: 12 },
-  label: { fontSize: 12, fontWeight: "800", color: Colors.textSecondary, marginBottom: 6, textTransform: "capitalize" },
-  input: { borderWidth: 1, borderColor: Colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 11, color: Colors.text },
-  locked: { backgroundColor: Colors.surface },
-  saveButton: { marginTop: 12, backgroundColor: Colors.brandPrimary, padding: 14, borderRadius: 10, alignItems: "center" },
-  saveText: { color: Colors.textOnPrimary, fontWeight: "800" },
-  loader: { flex: 1 },
-  error: { color: Colors.error, marginBottom: 12 },
-});

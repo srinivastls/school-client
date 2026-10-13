@@ -173,7 +173,7 @@ export const AdminStudentManagement = ({ navigation }: Props) => {
         </View>
         <Pressable
           style={styles.addButton}
-          onPress={() => navigation.navigate(RootStackScreenNames.StudentRegistration)}
+          onPress={() => navigation.navigate(RootStackScreenNames.AdminStudentRegistration)}
         >
           <Text style={styles.addButtonText}>+ Add</Text>
         </Pressable>

@@ -51,6 +51,25 @@ export enum RootStackScreenNames {
   PrincipalAcademicYearManagement = "PrincipalAcademicYearManagement",
   ClassManagement = "ClassManagement",
   PrincipalClassTeachers = "PrincipalClassTeachers",
+  PromotionDemotion = "PromotionDemotion",
+  // Common names for screens shared by principal and admin modules.
+  Students = "PrincipalStudents",
+  Teachers = "PrincipalTeachers",
+  Parents = "PrincipalParents",
+  Classes = "PrincipalClasses",
+  ClassStudents = "PrincipalClassStudents",
+  ClassDetails = "PrincipalClassDetails",
+  ClassTeachers = "PrincipalClassTeachers",
+  ClassConfiguration = "ClassManagement",
+  AcademicYears = "PrincipalAcademicYearManagement",
+  Academics = "PrincipalAcademics",
+  Finance = "PrincipalFinance",
+  FeeCollection = "PrincipalFeeCollection",
+  PendingDues = "PrincipalPendingDues",
+  Defaulters = "PrincipalDefaulterStudents",
+  Attendance = "PrincipalAttendanceDashboard",
+  CreateTeacher = "PrincipalCreateTeacher",
+  RegisterStudent = "RegisterStudent",
   TeacherTimetable = "TeacherTimetable",
   TeacherProfile = "TeacherProfile",
   TeacherMyClasses= "TeacherMyClasses",
@@ -64,19 +83,28 @@ export enum RootStackScreenNames {
   TeacherMyAttendance = "TeacherMyAttendance",
   TeacherLeave = "TeacherLeave",
   TeacherAttendance = "TeacherAttendance",
+  SectionManagement = "SectionManagement",
+
+  BulkImport = "BulkImport",
   // Admin Module
 AdminFeatureMenu = "AdminFeatureMenu",
+
+
 
 AdminStudentManagement = "AdminStudentManagement",
 AdminStudentRegistration = "AdminStudentRegistration",
 AdminStudentDetails = "AdminStudentDetails",
 AdminStudentEdit = "AdminStudentEdit",
+AdminTeacherAttendance = "AdminTeacherAttendance",
+AdminLeaveApprovals = "AdminLeaveApprovals",
 AdminFinanceManagement = "AdminFinanceManagement",
 AdminStaffManagement = "AdminStaffManagement",
 AdminAttendanceCalendar = "AdminAttendanceCalendar",
 AdminCommunication = "AdminCommunication",
 AdminSchoolSettings = "AdminSchoolSettings",
 AdminReports = "AdminReports",
+ProfileScreen = "ProfileScreen",
+AdminProfileScreen = "AdminProfileScreen",
 }
 
 export type ParentChild = {
@@ -106,6 +134,8 @@ export type RootStackParamList = {
   [RootStackScreenNames.CouponList]: undefined;
   [RootStackScreenNames.AdminList]: undefined;
   [RootStackScreenNames.Principaladmin]: undefined;
+  [RootStackScreenNames.PromotionDemotion]: undefined;
+  [RootStackScreenNames.SectionManagement]: undefined;
   [RootStackScreenNames.PrincipalClassDetails]:{
     classNumber: string;
   };
@@ -115,6 +145,10 @@ export type RootStackParamList = {
   [RootStackScreenNames.ClassManagement]: undefined;
   [RootStackScreenNames.TeacherMyClasses]: undefined;
   [RootStackScreenNames.AdminStudentRegistration]: undefined;
+  [RootStackScreenNames.BulkImport]: undefined;
+  [RootStackScreenNames.ProfileScreen]: undefined;
+  [RootStackScreenNames.AdminProfileScreen]: undefined;
+
   [RootStackScreenNames.AdminStudentDetails]: {
     admissionNo: string;
   };
@@ -129,6 +163,10 @@ export type RootStackParamList = {
 [RootStackScreenNames.TeacherMyStudents]: undefined;
 [RootStackScreenNames.TeacherTimetable]: undefined;
 [RootStackScreenNames.TeacherAttendance]: undefined;
+[RootStackScreenNames.AdminTeacherAttendance]: {
+  date: string;
+};
+[RootStackScreenNames.AdminLeaveApprovals]: undefined;
 [RootStackScreenNames.AdminFeatureMenu]: undefined;
 
 [RootStackScreenNames.AdminStudentManagement]: undefined;
@@ -144,6 +182,7 @@ export type RootStackParamList = {
 [RootStackScreenNames.AdminSchoolSettings]: undefined;
 
 [RootStackScreenNames.AdminReports]: undefined;
+
 [RootStackScreenNames.AdminStudentDetails]: {
   admissionNo: string;
 };
@@ -203,7 +242,9 @@ export type RootStackParamList = {
   [RootStackScreenNames.PrincipalFinance]: undefined;
   [RootStackScreenNames.PrincipalDashboard]: undefined;
   [RootStackScreenNames.PrincipalAcademics]: undefined;
-  [RootStackScreenNames.PrincipalFeeCollection]: undefined;
+  [RootStackScreenNames.PrincipalFeeCollection]: {
+    admissionNo?: string;
+  } | undefined;
   [RootStackScreenNames.StudentRegistration]:undefined;
   [RootStackScreenNames.EditStudent]: { preFetchedData: Student };
   [RootStackScreenNames.PlatformSchools]: undefined;

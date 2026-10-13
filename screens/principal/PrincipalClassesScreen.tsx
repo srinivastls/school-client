@@ -102,12 +102,6 @@ const PrincipalClassesScreen = () => {
   const academicYearId =
   academicYear?.id;
 
-  console.log(
-    "ACADEMIC YEAR ID:",
-    academicYearId
-  );
-
-
   /* ==========================================================================
      API
   ========================================================================== */

@@ -611,7 +611,7 @@ const TeacherMyClassesScreen = () => {
 
               <Avatar.Icon
                 size={44}
-                icon="calendar-school"
+                icon="school"
                 color={
                   Colors.brandPrimary
                 }

@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  
 } from "react-native";
 
 import {
@@ -19,6 +20,7 @@ import {
   Divider,
   IconButton,
   Snackbar,
+  
 } from "react-native-paper";
 
 import {
@@ -28,6 +30,8 @@ import {
 import type {
   NativeStackNavigationProp,
 } from "@react-navigation/native-stack";
+
+import {useEffect} from "react";
 
 import {
   RootStackParamList,
@@ -43,6 +47,10 @@ import {
 import {
   useUserStore,
 } from "../../store";
+import { CommonScreens } from "../../navigation/modules";
+
+import { principalServices } from "../../services/principalServices";
+import { academicYearServices } from "../../services";
 
 
 /* ============================================================
@@ -152,6 +160,11 @@ const PrincipalDashboard = () => {
   ] =
     useState(false);
 
+  type DashboardFilter = "All" | PrincipalTile["section"];
+
+  const [selectedFilter, setSelectedFilter] =
+    useState<DashboardFilter>("All");
+
 
   /* ==========================================================
      AUTHORIZATION
@@ -245,6 +258,141 @@ const PrincipalDashboard = () => {
 
   };
 
+  useEffect(() => {
+  const fetchPrincipalSummary = async () => {
+    try {
+      setSummaryLoading(true);
+
+      const [
+        studentsResponse,
+        teachersResponse,
+        parentsResponse,
+        classesResponse,
+      ] = await Promise.all([
+        principalServices.getStudents(),
+        principalServices.getTeachers(),
+        principalServices.getParents(),
+        principalServices.getClasses(await academicYearServices.getCurrentAcademicYear() || ""),
+      ]);
+
+      const students = Array.isArray(studentsResponse)
+        ? studentsResponse
+        : studentsResponse?.data ?? [];
+
+      const teachers = Array.isArray(teachersResponse)
+        ? teachersResponse
+        : teachersResponse?.data ?? [];
+
+      const parents = Array.isArray(parentsResponse)
+        ? parentsResponse
+        : parentsResponse?.data ?? [];
+
+      const classes = Array.isArray(classesResponse)
+        ? classesResponse
+        : classesResponse?.data ?? [];
+
+      setSummary({
+        totalStudents: students.length,
+        totalTeachers: teachers.length,
+        totalParents: parents.length,
+        totalClasses: classes.length,
+      });
+    } catch (error) {
+      console.error(
+        "Failed to fetch principal summary:",
+        error
+      );
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  fetchPrincipalSummary();
+}, []);
+
+
+useEffect(() => {
+  const fetchPrincipalSummary = async () => {
+    try {
+      setSummaryLoading(true);
+
+      const currentAcademicYearId = await academicYearServices.getCurrentAcademicYear();
+
+
+      const results = await Promise.allSettled([
+        principalServices.getStudents(),
+        principalServices.getTeachers(),
+        principalServices.getParents(),
+        principalServices.getClasses(currentAcademicYearId || ""),
+      ]);
+
+      const [
+        studentsResult,
+        teachersResult,
+        parentsResult,
+        classesResult,
+      ] = results;
+
+
+
+      const getResponseData = (result: PromiseSettledResult<any>) => {
+        if (result.status !== "fulfilled") {
+          console.error("API request failed:", result.reason);
+          return null;
+        }
+
+        return result.value;
+      };
+
+      const studentsResponse = getResponseData(studentsResult);
+      const teachersResponse = getResponseData(teachersResult);
+      const parentsResponse = getResponseData(parentsResult);
+      const classesResponse = getResponseData(classesResult);
+
+
+      const getItems = (response: any, key: string): any[] => {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  if (Array.isArray(response?.[key])) {
+    return response[key];
+  }
+
+  if (Array.isArray(response?.data)) {
+    return response.data;
+  }
+
+  if (Array.isArray(response?.results)) {
+    return response.results;
+  }
+
+  return [];
+};
+
+      const students = getItems(studentsResponse, "students");
+const teachers = getItems(teachersResponse, "teachers");
+const parents = getItems(parentsResponse, "parents");
+const classes = getItems(classesResponse, "classes");
+
+      setSummary({
+        totalStudents: students.length,
+        totalTeachers: teachers.length,
+        totalParents: parents.length,
+        totalClasses: classes.length,
+      });
+    } catch (error) {
+      console.error(
+        "Failed to fetch principal summary:",
+        error
+      );
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  fetchPrincipalSummary();
+}, []);
 
   /* ==========================================================
      PRINCIPAL TILES
@@ -312,6 +460,33 @@ const PrincipalDashboard = () => {
       },
 
     },
+
+    {
+      title: "Teacher Attendance",
+      subtitle: "View and manage teacher attendance",
+      icon: "calendar-check",
+      iconBackground: "#FFF6DF",
+      iconColor: "#C26A09",
+      section: "People & Users",
+    onPress: () => {
+        navigation.navigate(
+          RootStackScreenNames.AdminTeacherAttendance as never
+        );
+    },
+  },
+  {
+    title: "Leave Approvals",
+      subtitle: "Review and manage leave requests",
+      icon: "text-box-check-outline",
+      iconBackground: "#EEF2FF",
+    iconColor: "#1D4ED8",
+      section: "Administration",
+    onPress: () => {
+        navigation.navigate(
+          RootStackScreenNames.AdminLeaveApprovals as never
+        );
+    },
+  },
 
 
     {
@@ -383,7 +558,7 @@ const PrincipalDashboard = () => {
         "Create and manage academic years",
 
       icon:
-        "calendar-school",
+        "school",
 
       iconBackground:
         "#F1EEFF",
@@ -454,9 +629,9 @@ const PrincipalDashboard = () => {
 
       onPress: () => {
 
-        // navigation.navigate(
-        //   RootStackScreenNames.PrincipalClassDetails
-        // );
+        navigation.navigate(
+          RootStackScreenNames.SectionManagement
+        );
 
       },
 
@@ -512,9 +687,9 @@ const PrincipalDashboard = () => {
 
       onPress: () => {
 
-        // navigation.navigate(
-        //   RootStackScreenNames.PromotionDemotion
-        // );
+        navigation.navigate(
+          RootStackScreenNames.PromotionDemotion
+        );
 
       },
 
@@ -609,6 +784,18 @@ const PrincipalDashboard = () => {
 
       },
 
+    },
+
+    {
+      title: "Fee Defaulters",
+      subtitle: "View students with unpaid fees",
+      icon: "cash-remove",
+      iconBackground: "#FFE5E5",
+      iconColor: "#D64545",
+      section: "Finance",
+      onPress: () => {
+        navigation.navigate(CommonScreens.defaulters);
+      },
     },
 
 
@@ -742,40 +929,102 @@ const PrincipalDashboard = () => {
      GROUP TILES
   ========================================================== */
 
-  const groupedTiles =
-    useMemo(() => {
+  const groupedTiles = useMemo(() => {
+  const sections = [
+    "People & Users",
+    "Academics",
+    "Finance",
+    "Administration",
+    "Communication",
+  ] as const;
 
-      const sections = [
+  return sections
+    .filter(
+      section =>
+        selectedFilter === "All" ||
+        selectedFilter === section
+    )
+    .map(section => ({
+      section,
+      items: tiles.filter(
+        tile => tile.section === section
+      ),
+    }));
+}, [selectedFilter, tiles]);
 
-        "People & Users",
+const [summary, setSummary] = useState({
+  totalStudents: 0,
+  totalTeachers: 0,
+  totalParents: 0,
+  totalClasses: 0,
+});
 
-        "Academics",
+const [summaryLoading, setSummaryLoading] = useState(true);
 
-        "Finance",
+const principalSummary = [
+  {
+    title: "Total Students",
+    value: summaryLoading ? "..." : String(summary.totalStudents),
+    icon: "school-outline",
+    iconBackground: "#EEF2FF",
+    iconColor: "#4F46E5",
+  },
+  {
+    title: "Total Teachers",
+    value: summaryLoading ? "..." : String(summary.totalTeachers),
+    icon: "human-male-board",
+    iconBackground: "#EFFAF5",
+    iconColor: "#16834B",
+  },
+  {
+    title: "Total Parents",
+    value: summaryLoading ? "..." : String(summary.totalParents),
+    icon: "account-group",
+    iconBackground: "#FFF5ED",
+    iconColor: "#C55A11",
+  },
+  {
+    title: "Total Classes",
+    value: summaryLoading ? "..." : String(summary.totalClasses),
+    icon: "google-classroom",
+    iconBackground: "#EEF6FF",
+    iconColor: "#2775CA",
+  },
+];
 
-        "Administration",
 
-        "Communication",
+const renderSummaryCard = (item: (typeof principalSummary)[number]) => {
+  return (
+    <Card style={styles.summaryCard}>
+      <Card.Content style={styles.summaryCardContent}>
+        <View
+          style={[
+            styles.summaryIconWrapper,
+            {
+              backgroundColor: item.iconBackground,
+            },
+          ]}
+        >
+          <Avatar.Icon
+            size={42}
+            icon={item.icon}
+            color={item.iconColor}
+            style={[
+              styles.summaryIcon,
+              {
+                backgroundColor: item.iconBackground,
+              },
+            ]}
+          />
+        </View>
 
-      ] as const;
+        <Text style={styles.summaryValue}>{item.value}</Text>
 
-
-      return sections.map(
-        section => ({
-
-          section,
-
-          items:
-            tiles.filter(
-              tile =>
-                tile.section ===
-                section
-            ),
-
-        })
-      );
-
-    }, []);
+        <Text style={styles.summaryTitle}>{item.title}</Text>
+      </Card.Content>
+    </Card>
+  );
+};
 
 
   /* ==========================================================
@@ -1115,6 +1364,25 @@ const PrincipalDashboard = () => {
 
           </Card>
 
+          <View style={styles.summarySection}>
+  <Text style={styles.summarySectionTitle}>
+    School Summary
+  </Text>
+
+  <View style={styles.summaryGrid}>
+    {principalSummary.map((item) => (
+      <View
+        key={item.title}
+        style={styles.summaryWrapper}
+      >
+        {renderSummaryCard(item)}
+      </View>
+    ))}
+  </View>
+</View>
+
+          {renderFilterBar()}
+
         </View>
       );
 
@@ -1165,95 +1433,56 @@ const PrincipalDashboard = () => {
      TILE
   ========================================================== */
 
-  const renderTile =
-    ({
-      item,
-    }: {
-      item: PrincipalTile;
-    }) => {
+  
+/* ==========================================================
+   COMPACT TILE
+========================================================== */
 
-      return (
-        <TouchableOpacity
-          activeOpacity={0.88}
-          onPress={
-            item.onPress
-          }
-          style={[
-            styles.tileTouchable,
-
-            isDesktop &&
-              styles.tileTouchableDesktop,
-          ]}
-        >
-
-          <Card
-            style={
-              styles.tile
-            }
+const renderTile = ({
+  item,
+}: {
+  item: PrincipalTile;
+}) => {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.78}
+      onPress={item.onPress}
+      style={styles.tileTouchable}
+    >
+      <Card
+        style={styles.tile}
+        mode="elevated"
+      >
+        <Card.Content style={styles.tileContent}>
+          {/* Icon */}
+          <View
+            style={[
+              styles.tileIconWrapper,
+              {
+                backgroundColor: item.iconBackground,
+              },
+            ]}
           >
+            <Avatar.Icon
+              size={42}
+              icon={item.icon}
+              color={item.iconColor}
+              style={styles.tileIcon}
+            />
+          </View>
 
-            <Card.Content>
-
-              <View
-                style={
-                  styles.tileTop
-                }
-              >
-
-                <Avatar.Icon
-                  size={48}
-                  icon={item.icon}
-                  color={
-                    item.iconColor
-                  }
-                  style={[
-                    styles.tileIcon,
-                    {
-                      backgroundColor:
-                        item.iconBackground,
-                    },
-                  ]}
-                />
-
-
-                <Text
-                  style={
-                    styles.tileArrow
-                  }
-                >
-                  →
-                </Text>
-
-              </View>
-
-
-              <Text
-                style={
-                  styles.tileTitle
-                }
-                numberOfLines={1}
-              >
-                {item.title}
-              </Text>
-
-
-              <Text
-                style={
-                  styles.tileSubtitle
-                }
-                numberOfLines={2}
-              >
-                {item.subtitle}
-              </Text>
-
-            </Card.Content>
-
-          </Card>
-
-        </TouchableOpacity>
-      );
-
-    };
+          {/* Title */}
+          <Text
+            style={styles.tileTitle}
+            numberOfLines={2}
+          >
+            {item.title}
+          </Text>
+        </Card.Content>
+      </Card>
+    </TouchableOpacity>
+  );
+};
 
 
   /* ==========================================================
@@ -1585,6 +1814,94 @@ const PrincipalDashboard = () => {
     };
 
 
+    const filterOptions: DashboardFilter[] = [
+  "All",
+  "People & Users",
+  "Academics",
+  "Finance",
+  "Administration",
+  "Communication",
+];
+
+const filteredTiles = useMemo(() => {
+  if (selectedFilter === "All") {
+    return tiles;
+  }
+
+  return tiles.filter(
+    tile => tile.section === selectedFilter
+  );
+}, [selectedFilter, tiles]);
+
+
+const renderTilesGrid = (items: PrincipalTile[]) => {
+  return (
+    <View
+      style={[
+        styles.tilesGrid,
+        isSmallScreen && styles.tilesGridMobile,
+      ]}
+    >
+      {items.map(item => (
+        <View
+          key={item.title}
+          style={[
+            styles.tileWrapper,
+            !isSmallScreen &&
+              styles.tileWrapperDesktop,
+          ]}
+        >
+          {renderTile({ item })}
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const renderFilterBar = () => {
+  return (
+    <View style={styles.filterContainer}>
+      <Text style={styles.filterTitle}>
+        Quick Access
+      </Text>
+
+      <FlatList
+        data={filterOptions}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={item => item}
+        contentContainerStyle={styles.filterList}
+        renderItem={({ item }) => {
+          const isActive =
+            selectedFilter === item;
+
+          return (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setSelectedFilter(item)}
+              style={[
+                styles.filterChip,
+                isActive && styles.filterChipActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  isActive &&
+                    styles.filterChipTextActive,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+    </View>
+  );
+};
+
+
   /* ==========================================================
      MAIN UI
   ========================================================== */
@@ -1597,35 +1914,23 @@ const PrincipalDashboard = () => {
     >
 
       <FlatList
-        data={
-          groupedTiles
-        }
-        keyExtractor={
-          item =>
-            item.section
-        }
-        renderItem={({
-          item,
-        }) =>
-          renderSection(
-            item
-          )
-        }
-        ListHeaderComponent={
-          renderHeader
-        }
-        showsVerticalScrollIndicator={
-          false
-        }
-        contentContainerStyle={[
-          styles.listContent,
-
-          {
-            paddingHorizontal:
-              horizontalPadding,
-          },
-        ]}
-      />
+  data={filteredTiles}
+  keyExtractor={item => item.title}
+  numColumns={3}
+  renderItem={({ item }) => (
+    <View style={styles.tileWrapper}>
+      {renderTile({ item })}
+    </View>
+  )}
+  ListHeaderComponent={renderHeader}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={[
+    styles.listContent,
+    {
+      paddingHorizontal: horizontalPadding,
+    },
+  ]}
+/>
 
 
       {renderProfileDropdown()}
@@ -1838,6 +2143,7 @@ const useStyles =
       ====================================================== */
 
       platformHeader: {
+        display: "none",
         minHeight: 72,
 
         paddingHorizontal:
@@ -1888,6 +2194,151 @@ const useStyles =
 
         minWidth: 0,
       },
+
+      
+/* ======================================================
+   COMPACT TILES GRID
+====================================================== */
+
+tilesGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  marginHorizontal: -4,
+},
+
+tilesGridMobile: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+},
+
+tileWrapper: {
+  width: "33.333%",
+},
+
+tileWrapperDesktop: {
+  width: "33.333%",
+},
+
+tileTouchable: {
+  marginHorizontal: 4,
+  marginBottom: 8,
+},
+
+tile: {
+  minHeight: 112,
+  borderRadius: 16,
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#E9EAF0",
+  elevation: 1,
+},
+
+tileContent: {
+  minHeight: 110,
+  paddingVertical: 12,
+  paddingHorizontal: 3,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+tileIconWrapper: {
+  width: 54,
+  height: 54,
+  borderRadius: 16,
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 9,
+},
+
+tileIcon: {
+  margin: 0,
+  backgroundColor: "transparent",
+},
+
+tileTitle: {
+  fontSize: 11,
+  lineHeight: 15,
+  fontWeight: "700",
+  color: "#171717",
+  textAlign: "center",
+},
+
+tileSubtitle: {
+  display: "none",
+},
+
+tileTop: {
+  display: "none",
+},
+
+tileArrow: {
+  display: "none",
+},
+
+
+summarySection: {
+  marginBottom: Metrics.x5,
+},
+
+summarySectionTitle: {
+  fontSize: 20,
+  fontWeight: "800",
+  color: "#171717",
+  marginBottom: Metrics.x3,
+},
+
+summaryGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  marginHorizontal: -4,
+},
+
+summaryWrapper: {
+  width: "25%",
+  paddingHorizontal: 4,
+  marginBottom: 8,
+},
+
+summaryCard: {
+  borderRadius: 16,
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#E9EAF0",
+  elevation: 1,
+  minHeight: 145,
+},
+
+summaryCardContent: {
+  paddingVertical: 14,
+  paddingHorizontal: 12,
+  alignItems: "flex-start",
+},
+
+summaryIconWrapper: {
+  width: 46,
+  height: 46,
+  borderRadius: 14,
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 10,
+},
+
+summaryIcon: {
+  margin: 0,
+},
+
+summaryValue: {
+  fontSize: 25,
+  fontWeight: "800",
+  color: "#171717",
+  marginBottom: 3,
+},
+
+summaryTitle: {
+  fontSize: 12,
+  fontWeight: "600",
+  color: Colors.subtext,
+},
 
 
       platformLogo: {
@@ -2204,116 +2655,12 @@ const useStyles =
       },
 
 
-      /* ======================================================
-         TILES GRID
-      ====================================================== */
-
-      tilesGrid: {
-        flexDirection:
-          "row",
-
-        flexWrap:
-          "wrap",
-
-        marginHorizontal:
-          -Metrics.x2,
-      },
-
-
-      tilesGridMobile: {
-        flexDirection:
-          "column",
-      },
-
-
-      tileWrapper: {
-        width: "100%",
-      },
-
-
-      tileWrapperDesktop: {
-        width: "50%",
-      },
-
-
-      tileTouchable: {
-        flex: 1,
-
-        margin:
-          Metrics.x2,
-      },
-
+      
 
       tileTouchableDesktop: {
         flex: 1,
       },
 
-
-      tile: {
-        minHeight: 160,
-
-        backgroundColor:
-          "#FFFFFF",
-
-        borderRadius: 18,
-
-        borderWidth: 1,
-
-        borderColor:
-          "#E9EAF0",
-
-        elevation: 1,
-      },
-
-
-      tileTop: {
-        flexDirection:
-          "row",
-
-        alignItems:
-          "center",
-
-        justifyContent:
-          "space-between",
-
-        marginBottom:
-          Metrics.x3,
-      },
-
-
-      tileIcon: {
-        margin: 0,
-      },
-
-
-      tileArrow: {
-        fontSize: 22,
-
-        color:
-          "#9CA3AF",
-      },
-
-
-      tileTitle: {
-        fontSize: 17,
-
-        fontWeight: "800",
-
-        color: "#171717",
-      },
-
-
-      tileSubtitle: {
-        fontSize: 13,
-
-        lineHeight: 19,
-
-        color:
-          Colors.subtext,
-
-        marginTop:
-          Metrics.x1,
-      },
 
 
       /* ======================================================
@@ -2527,6 +2874,46 @@ const useStyles =
           "#D64545",
       },
 
+      filterContainer: {
+  marginBottom: Metrics.x5,
+},
+
+filterTitle: {
+  fontSize: 16,
+  fontWeight: "800",
+  color: "#171717",
+  marginBottom: Metrics.x2,
+},
+
+filterList: {
+  paddingVertical: Metrics.x1,
+  gap: Metrics.x2,
+},
+
+filterChip: {
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  borderRadius: 24,
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  marginRight: 8,
+},
+
+filterChipActive: {
+  backgroundColor: Colors.brandPrimary,
+  borderColor: Colors.brandPrimary,
+},
+
+filterChipText: {
+  fontSize: 12,
+  fontWeight: "700",
+  color: "#6B7280",
+},
+
+filterChipTextActive: {
+  color: "#FFFFFF",
+},
 
       /* ======================================================
          SNACKBAR

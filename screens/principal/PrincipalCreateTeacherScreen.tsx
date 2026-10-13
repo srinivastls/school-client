@@ -34,6 +34,7 @@ import {
 import {
   principalServices,
 } from "../../services/principalServices";
+import { principalCreateTeacherStyles as styles } from "../../styles/principal.styles";
 
 const PrincipalCreateTeacherScreen = () => {
   const navigation =
@@ -392,59 +393,6 @@ const PrincipalCreateTeacherScreen = () => {
 /* ============================================================
    STYLES
 ============================================================ */
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-
-  content: {
-    padding: Metrics.x4,
-    paddingBottom: Metrics.x6,
-  },
-
-  header: {
-    marginBottom: Metrics.x5,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-  },
-
-  subtitle: {
-    marginTop: Metrics.x1,
-    color: Colors.subtext,
-    fontSize: 15,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginTop: Metrics.x3,
-    marginBottom: Metrics.x3,
-  },
-
-  input: {
-    marginBottom: Metrics.x2,
-  },
-
-  error: {
-    color: Colors.error,
-    fontSize: 12,
-    marginTop: -Metrics.x1,
-    marginBottom: Metrics.x2,
-  },
-
-  createButton: {
-    marginTop: Metrics.x5,
-    borderRadius: Metrics.x2,
-  },
-
-  createButtonContent: {
-    paddingVertical: Metrics.x1,
-  },
-});
 
 export {
   PrincipalCreateTeacherScreen,

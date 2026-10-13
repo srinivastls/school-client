@@ -214,48 +214,52 @@ const PrincipalTeacherDetailsScreen = () => {
             HEADER
         ==================================================== */}
 
-        <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text
-              style={styles.avatarText}
-            >
-              {teacher.name
-                .charAt(0)
-                .toUpperCase()}
-            </Text>
-          </View>
+        {/* ====================================================
+    MODERN PROFILE HEADER
+==================================================== */}
 
-          <Text style={styles.name}>
-            {teacher.name}
-          </Text>
+<View style={styles.header}>
+  <View style={styles.avatar}>
+    <Text style={styles.avatarText}>
+      {teacher.name.charAt(0).toUpperCase()}
+    </Text>
+  </View>
 
-          <Text
-            style={styles.designation}
-          >
-            {teacher.designation ??
-              "Teacher"}
-          </Text>
+  <Text style={styles.name}>{teacher.name}</Text>
 
-          <View
-            style={[
-              styles.statusBadge,
+  <Text style={styles.designation}>
+    {teacher.designation ?? "Teacher"}
+  </Text>
 
-              teacher.isActive
-                ? styles.activeBadge
-                : styles.inactiveBadge,
-            ]}
-          >
-            <Text
-              style={
-                styles.statusText
-              }
-            >
-              {teacher.isActive
-                ? "ACTIVE"
-                : "INACTIVE"}
-            </Text>
-          </View>
-        </View>
+  <View
+    style={[
+      styles.statusBadge,
+      teacher.isActive
+        ? styles.activeBadge
+        : styles.inactiveBadge,
+    ]}
+  >
+    <View
+      style={[
+        styles.statusDot,
+        teacher.isActive
+          ? styles.activeDot
+          : styles.inactiveDot,
+      ]}
+    />
+
+    <Text
+      style={[
+        styles.statusText,
+        teacher.isActive
+          ? styles.activeText
+          : styles.inactiveText,
+      ]}
+    >
+      {teacher.isActive ? "Active" : "Inactive"}
+    </Text>
+  </View>
+</View>
 
         {/* ====================================================
             ACCOUNT INFORMATION
@@ -411,32 +415,27 @@ const PrincipalTeacherDetailsScreen = () => {
             </Text>
 
             <Button
-              mode={
-                teacher.isActive
-                  ? "outlined"
-                  : "contained"
-              }
-              loading={loading}
-              disabled={loading}
-              onPress={
-                onToggleStatus
-              }
-              style={
-                styles.actionButton
-              }
-              contentStyle={
-                styles.actionButtonContent
-              }
-              textColor={
-                teacher.isActive
-                  ? Colors.error
-                  : undefined
-              }
-            >
-              {teacher.isActive
-                ? "DEACTIVATE TEACHER"
-                : "ACTIVATE TEACHER"}
-            </Button>
+  mode={teacher.isActive ? "outlined" : "contained"}
+  loading={loading}
+  disabled={loading}
+  onPress={onToggleStatus}
+  style={[
+    styles.actionButton,
+    !teacher.isActive && {
+      backgroundColor: Colors.brandPrimary,
+    },
+  ]}
+  contentStyle={styles.actionButtonContent}
+  textColor={
+    teacher.isActive
+      ? Colors.error
+      : "#FFFFFF"
+  }
+>
+  {teacher.isActive
+    ? "DEACTIVATE TEACHER"
+    : "ACTIVATE TEACHER"}
+</Button>
           </Card.Content>
         </Card>
 
@@ -498,23 +497,12 @@ const InfoRow = ({
   value: string;
 }) => {
   return (
-    <View
-      style={
-        styles.infoRow
-      }
-    >
-      <Text
-        style={
-          styles.infoLabel
-        }
-      >
-        {label}
-      </Text>
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>{label}</Text>
 
       <Text
-        style={
-          styles.infoValue
-        }
+        style={styles.infoValue}
+        selectable
       >
         {value}
       </Text>
@@ -558,185 +546,189 @@ const formatDate = (
    STYLES
 ============================================================ */
 
-const styles =
-  StyleSheet.create({
-    screen: {
-      flex: 1,
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: "#F5F7FB",
+  },
+
+  container: {
+    paddingHorizontal: Metrics.x4,
+    paddingTop: Metrics.x4,
+    paddingBottom: Metrics.x8,
+  },
+
+  /* ========================================================
+     PROFILE HEADER
+  ======================================================== */
+
+  header: {
+    alignItems: "center",
+    paddingVertical: Metrics.x4,
+    marginBottom: Metrics.x4,
+  },
+
+  avatar: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.brandPrimaryBg,
+    marginBottom: Metrics.x3,
+    borderWidth: 4,
+    borderColor: "#FFFFFF",
+    elevation: 3,
+    shadowColor: "#000000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 3,
     },
+  },
 
-    container: {
-      padding:
-        Metrics.x4,
+  avatarText: {
+    fontSize: 34,
+    fontWeight: "800",
+    color: Colors.brandPrimary,
+  },
 
-      paddingBottom:
-        Metrics.x6,
+  name: {
+    fontSize: 26,
+    lineHeight: 34,
+    fontWeight: "800",
+    color: "#172033",
+    textAlign: "center",
+  },
+
+  designation: {
+    fontSize: 14,
+    color: Colors.subtext,
+    marginTop: Metrics.x1,
+    textAlign: "center",
+  },
+
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Metrics.x3,
+    paddingVertical: Metrics.x2,
+    borderRadius: 24,
+    marginTop: Metrics.x3,
+  },
+
+  activeBadge: {
+    backgroundColor: "#DCFCE7",
+  },
+
+  inactiveBadge: {
+    backgroundColor: "#FEE2E2",
+  },
+
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginRight: Metrics.x2,
+  },
+
+  activeDot: {
+    backgroundColor: "#16A34A",
+  },
+
+  inactiveDot: {
+    backgroundColor: "#DC2626",
+  },
+
+  statusText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  activeText: {
+    color: "#15803D",
+  },
+
+  inactiveText: {
+    color: "#B91C1C",
+  },
+
+  /* ========================================================
+     CARDS
+  ======================================================== */
+
+  card: {
+    marginBottom: Metrics.x4,
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E8ECF3",
+    elevation: 0,
+    shadowColor: "#000000",
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 3,
     },
+  },
 
-    /* ========================================================
-       HEADER
-    ======================================================== */
+  sectionTitle: {
+    fontSize: 17,
+    lineHeight: 24,
+    fontWeight: "800",
+    color: "#172033",
+    marginBottom: Metrics.x3,
+  },
 
-    header: {
-      alignItems:
-        "center",
+  /* ========================================================
+     INFORMATION ROWS
+  ======================================================== */
 
-      marginBottom:
-        Metrics.x5,
-    },
+  infoRow: {
+    paddingVertical: Metrics.x3,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F2F6",
+  },
 
-    avatar: {
-      width: 80,
+  infoLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.subtext,
+    marginBottom: Metrics.x1,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
 
-      height: 80,
+  infoValue: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: "#263247",
+  },
 
-      borderRadius: 40,
+  /* ========================================================
+     ACCOUNT ACTIONS
+  ======================================================== */
 
-      alignItems:
-        "center",
+  actionDescription: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: Colors.subtext,
+    marginBottom: Metrics.x4,
+  },
 
-      justifyContent:
-        "center",
+  actionButton: {
+    borderRadius: 12,
+    borderWidth: 1,
+  },
 
-      backgroundColor:
-        Colors.brandPrimaryBg,
-
-      marginBottom:
-        Metrics.x3,
-    },
-
-    avatarText: {
-      fontSize: 32,
-
-      fontWeight:
-        "800",
-    },
-
-    name: {
-      fontSize: 26,
-
-      fontWeight:
-        "800",
-
-      textAlign:
-        "center",
-    },
-
-    designation: {
-      fontSize: 15,
-
-      color:
-        Colors.subtext,
-
-      marginTop:
-        Metrics.x1,
-    },
-
-    statusBadge: {
-      marginTop:
-        Metrics.x2,
-
-      paddingHorizontal:
-        Metrics.x3,
-
-      paddingVertical:
-        Metrics.x1,
-
-      borderRadius: 20,
-    },
-
-    activeBadge: {
-      backgroundColor:
-        Colors.successBg,
-    },
-
-    inactiveBadge: {
-      backgroundColor:
-        Colors.errorBg,
-    },
-
-    statusText: {
-      color: "#fff",
-
-      fontSize: 11,
-
-      fontWeight:
-        "800",
-    },
-
-    /* ========================================================
-       CARDS
-    ======================================================== */
-
-    card: {
-      marginBottom:
-        Metrics.x4,
-
-      borderRadius:
-        Metrics.x3,
-    },
-
-    sectionTitle: {
-      fontSize: 18,
-
-      fontWeight:
-        "800",
-
-      marginBottom:
-        Metrics.x3,
-    },
-
-    /* ========================================================
-       INFO
-    ======================================================== */
-
-    infoRow: {
-      paddingVertical:
-        Metrics.x2,
-    },
-
-    infoLabel: {
-      fontSize: 12,
-
-      color:
-        Colors.subtext,
-
-      marginBottom:
-        Metrics.x1,
-    },
-
-    infoValue: {
-      fontSize: 16,
-
-      fontWeight:
-        "600",
-    },
-
-    /* ========================================================
-       ACTIONS
-    ======================================================== */
-
-    actionDescription: {
-      fontSize: 14,
-
-      lineHeight: 20,
-
-      color:
-        Colors.subtext,
-
-      marginBottom:
-        Metrics.x3,
-    },
-
-    actionButton: {
-      borderRadius:
-        Metrics.x2,
-    },
-
-    actionButtonContent: {
-      paddingVertical:
-        Metrics.x1,
-    },
-  });
+  actionButtonContent: {
+    minHeight: 46,
+    paddingVertical: Metrics.x1,
+  },
+});
 
 export {
   PrincipalTeacherDetailsScreen,

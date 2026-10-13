@@ -1017,7 +1017,7 @@ const TeacherSectionDetailsScreen = () => {
             />
 
             <InfoRow
-              icon="calendar-school"
+              icon="school"
               label="Academic Year"
               value={
                 academicYear?.name ??

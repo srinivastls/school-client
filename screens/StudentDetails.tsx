@@ -782,6 +782,7 @@ const feeRows = useMemo(
 
   const renderNavbar =
     () => {
+      return null;
       return (
         <View
           style={styles.navbar}
@@ -1784,7 +1785,6 @@ const feeRows = useMemo(
             NAVBAR
         ================================================================ */}
 
-        {renderNavbar()}
 
 
         {/* ================================================================

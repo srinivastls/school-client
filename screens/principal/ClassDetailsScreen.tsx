@@ -35,6 +35,7 @@ import {
 
 import {
   useQuery,
+  useMutation,
 } from "react-query";
 
 import {
@@ -141,7 +142,7 @@ const PrincipalClassDetailsScreen = ({
   const user =
     useUserStore(
       state => state.user
-    );
+    )!;
 
   const logout =
     useUserStore(
@@ -172,6 +173,26 @@ const PrincipalClassDetailsScreen = ({
     setSnackbarText,
   ] = useState("");
 
+
+  /* ==========================================================
+   CREATE SECTION STATE
+========================================================== */
+
+const [
+  createSectionVisible,
+  setCreateSectionVisible,
+] = useState(false);
+
+const [
+  sectionNameInput,
+  setSectionNameInput,
+] = useState("");
+
+const [
+  createSectionError,
+  setCreateSectionError,
+] = useState("");
+
   /* ==========================================================
      AUTHORIZATION
   ========================================================== */
@@ -186,7 +207,7 @@ const PrincipalClassDetailsScreen = ({
     );
   }
 
-  if (user.role !== "PRINCIPAL") {
+  if (user.role !== "PRINCIPAL" && user.role !== "ADMIN") {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
@@ -195,6 +216,88 @@ const PrincipalClassDetailsScreen = ({
       </View>
     );
   }
+
+  /* ==========================================================
+   CREATE SECTION MUTATION
+========================================================== */
+
+const createSectionMutation =
+  useMutation(
+    (payload: {
+      classId: string;
+      sectionName: string;
+    }) =>
+      sectionServices.createSection(payload),
+
+    {
+      onSuccess: (response) => {
+        setCreateSectionVisible(false);
+        setSectionNameInput("");
+        setCreateSectionError("");
+
+        setSnackbarText(
+          response.message ||
+            "Section created successfully."
+        );
+
+        setShowSnackbar(true);
+
+        // Refresh sections list
+        void refetchSections();
+      },
+
+      onError: (error: any) => {
+        const message =
+          error?.response?.data?.message ??
+          "Unable to create section.";
+
+        setCreateSectionError(
+          String(message)
+        );
+      },
+    }
+  );
+
+
+  /* ==========================================================
+   CREATE SECTION HANDLER
+========================================================== */
+
+const handleCreateSection = () => {
+  const trimmedName =
+    sectionNameInput.trim();
+
+  if (!classDetails?.id) {
+    setCreateSectionError(
+      "Class information is not available."
+    );
+
+    return;
+  }
+
+  if (!trimmedName) {
+    setCreateSectionError(
+      "Please enter a section name."
+    );
+
+    return;
+  }
+
+  if (trimmedName.length > 50) {
+    setCreateSectionError(
+      "Section name cannot exceed 50 characters."
+    );
+
+    return;
+  }
+
+  setCreateSectionError("");
+
+  createSectionMutation.mutate({
+    classId: classDetails.id,
+    sectionName: trimmedName,
+  });
+};
 
   /* ==========================================================
      CLASS API
@@ -281,6 +384,137 @@ const PrincipalClassDetailsScreen = ({
       retry: 1,
     }
   );
+
+
+  /* ==========================================================
+   CREATE SECTION MODAL
+========================================================== */
+
+const renderCreateSectionModal = () => {
+  return (
+    <Modal
+      visible={createSectionVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => {
+        if (!createSectionMutation.isLoading) {
+          setCreateSectionVisible(false);
+          setCreateSectionError("");
+        }
+      }}
+    >
+      <View style={styles.createModalOverlay}>
+        <View style={styles.createModalContainer}>
+
+          {/* HEADER */}
+
+          <View style={styles.createModalHeader}>
+            <View style={styles.createModalHeaderText}>
+
+              <Text style={styles.createModalTitle}>
+                Create Section
+              </Text>
+
+              <Text style={styles.createModalSubtitle}>
+                Add a new section to{" "}
+                {String(
+                  classDetails?.displayName ||
+                    `Class ${classNumber}`
+                )}
+              </Text>
+
+            </View>
+
+            <IconButton
+              icon="close"
+              size={22}
+              onPress={() => {
+                if (
+                  !createSectionMutation.isLoading
+                ) {
+                  setCreateSectionVisible(false);
+                  setCreateSectionError("");
+                }
+              }}
+              disabled={
+                createSectionMutation.isLoading
+              }
+            />
+          </View>
+
+          {/* INPUT */}
+
+          <TextInput
+            mode="outlined"
+            label="Section Name"
+            placeholder="Enter section name (e.g. A)"
+            value={sectionNameInput}
+            onChangeText={(value) => {
+              setSectionNameInput(value);
+
+              if (createSectionError) {
+                setCreateSectionError("");
+              }
+            }}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={50}
+            disabled={
+              createSectionMutation.isLoading
+            }
+            style={styles.createSectionInput}
+            outlineStyle={
+              styles.createSectionInputOutline
+            }
+          />
+
+          {/* ERROR */}
+
+          {Boolean(createSectionError) && (
+            <Text style={styles.createSectionError}>
+              {createSectionError}
+            </Text>
+          )}
+
+          {/* BUTTONS */}
+
+          <View style={styles.createModalActions}>
+
+            <Button
+              mode="outlined"
+              onPress={() => {
+                setCreateSectionVisible(false);
+                setCreateSectionError("");
+              }}
+              disabled={
+                createSectionMutation.isLoading
+              }
+              style={styles.createCancelButton}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              mode="contained"
+              onPress={handleCreateSection}
+              loading={
+                createSectionMutation.isLoading
+              }
+              disabled={
+                createSectionMutation.isLoading
+              }
+              style={styles.createSubmitButton}
+            >
+              Create
+            </Button>
+
+          </View>
+
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
   /* ==========================================================
      SECTIONS
@@ -420,6 +654,7 @@ const PrincipalClassDetailsScreen = ({
   ========================================================== */
 
   const renderNavbar = () => {
+    return null;
     return (
       <View style={styles.navbar}>
 
@@ -1046,46 +1281,57 @@ const PrincipalClassDetailsScreen = ({
      SECTION HEADER
   ========================================================== */
 
-  const renderSectionHeader = () => {
-    return (
-      <View
-        style={styles.sectionHeader}
-      >
+  /* ==========================================================
+   SECTION HEADER
+========================================================== */
 
-        <View
-          style={styles.sectionHeaderText}
-        >
+const renderSectionHeader = () => {
+  return (
+    <View style={styles.sectionHeader}>
 
-          <Text
-            style={styles.sectionTitle}
-          >
-            Sections
-          </Text>
+      <View style={styles.sectionHeaderText}>
 
-          <Text
-            style={styles.sectionSubtitle}
-          >
-            Select a section to view its students
-            and class teacher.
-          </Text>
+        <Text style={styles.sectionTitle}>
+          Sections
+        </Text>
 
-        </View>
-
-        <View
-          style={styles.sectionCountBadge}
-        >
-
-          <Text
-            style={styles.sectionCountText}
-          >
-            {sections.length}
-          </Text>
-
-        </View>
+        <Text style={styles.sectionSubtitle}>
+          Select a section to view its students
+          and class teacher.
+        </Text>
 
       </View>
-    );
-  };
+
+      <View style={styles.sectionHeaderRight}>
+
+        <View style={styles.sectionCountBadge}>
+          <Text style={styles.sectionCountText}>
+            {sections.length}
+          </Text>
+        </View>
+
+        <Button
+          mode="contained"
+          icon="plus"
+          compact
+          onPress={() => {
+            setSectionNameInput("");
+            setCreateSectionError("");
+            setCreateSectionVisible(true);
+          }}
+          style={styles.createSectionButton}
+          contentStyle={
+            styles.createSectionButtonContent
+          }
+        >
+          Create
+        </Button>
+
+      </View>
+
+    </View>
+  );
+};
 
   /* ==========================================================
      SEARCH
@@ -1443,7 +1689,6 @@ const PrincipalClassDetailsScreen = ({
           ]}
         >
 
-          {renderNavbar()}
 
           <View
             style={styles.loaderContent}
@@ -1496,74 +1741,60 @@ const PrincipalClassDetailsScreen = ({
      MAIN UI
   ========================================================== */
 
-  return (
-    <View style={styles.page}>
+    return (
+  <View style={styles.page}>
 
-      <FlatList
-        data={filteredSections}
-        renderItem={renderSection}
-        keyExtractor={item => item.id}
-        showsVerticalScrollIndicator={false}
+    <FlatList
+      data={filteredSections}
+      renderItem={renderSection}
+      keyExtractor={item => item.id}
+      showsVerticalScrollIndicator={false}
 
-        contentContainerStyle={[
-          styles.listContent,
-          {
-            paddingHorizontal:
-              horizontalPadding,
-          },
-        ]}
+      contentContainerStyle={[
+        styles.listContent,
+        {
+          paddingHorizontal:
+            horizontalPadding,
+        },
+      ]}
 
-        ListHeaderComponent={
-          <>
-            {renderNavbar()}
-            {renderPageHeader()}
-            {renderClassHero()}
-            {renderFees()}
-            {renderSearch()}
-            {renderSectionHeader()}
-          </>
-        }
+      ListHeaderComponent={
+        <>
+          {renderPageHeader()}
+          {renderClassHero()}
+          {renderFees()}
+          {renderSearch()}
+          {renderSectionHeader()}
+        </>
+      }
 
-        /*
-         * IMPORTANT:
-         * Pass the function itself.
-         * Do not call renderEmpty().
-         */
-        ListEmptyComponent={
-          renderEmpty
-        }
+      ListEmptyComponent={renderEmpty}
 
-        refreshing={
-          isFetching ||
-          sectionsFetching
-        }
+      refreshing={
+        isFetching ||
+        sectionsFetching
+      }
 
-        onRefresh={
-          handleRefresh
-        }
-      />
+      onRefresh={handleRefresh}
+    />
 
-      {renderProfileDropdown()}
+    {renderProfileDropdown()}
 
-      <Snackbar
-        visible={
-          showSnackbar
-        }
-        onDismiss={() =>
-          setShowSnackbar(false)
-        }
-        duration={3000}
-        style={
-          styles.snackbar
-        }
-      >
-        {String(
-          snackbarText
-        )}
-      </Snackbar>
+    {renderCreateSectionModal()}
 
-    </View>
-  );
+    <Snackbar
+      visible={showSnackbar}
+      onDismiss={() =>
+        setShowSnackbar(false)
+      }
+      duration={3000}
+      style={styles.snackbar}
+    >
+      {String(snackbarText)}
+    </Snackbar>
+
+  </View>
+);
 };
 
 /* ============================================================
@@ -1724,6 +1955,98 @@ const useStyles = makeStyles(
       flex: 1,
       minWidth: 0,
     },
+
+    sectionHeaderRight: {
+  flexDirection: "row" as const,
+  alignItems: "center" as const,
+  gap: Metrics.x2,
+},
+
+createSectionButton: {
+  borderRadius: 12,
+},
+
+createSectionButtonContent: {
+  minHeight: 40,
+},
+
+
+/* ======================================================
+   CREATE SECTION MODAL
+====================================================== */
+
+createModalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.45)",
+  justifyContent: "center" as const,
+  alignItems: "center" as const,
+  paddingHorizontal: Metrics.x4,
+},
+
+createModalContainer: {
+  width: "100%",
+  maxWidth: 480,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 20,
+  padding: Metrics.x4,
+  elevation: 8,
+},
+
+createModalHeader: {
+  flexDirection: "row" as const,
+  alignItems: "flex-start" as const,
+  justifyContent: "space-between" as const,
+  marginBottom: Metrics.x3,
+},
+
+createModalHeaderText: {
+  flex: 1,
+  paddingTop: Metrics.x1,
+},
+
+createModalTitle: {
+  fontSize: 20,
+  fontWeight: "800" as const,
+  color: "#171717",
+},
+
+createModalSubtitle: {
+  fontSize: 13,
+  lineHeight: 19,
+  color: Colors.subtext,
+  marginTop: Metrics.x1,
+},
+
+createSectionInput: {
+  backgroundColor: "#FFFFFF",
+},
+
+createSectionInputOutline: {
+  borderRadius: 12,
+},
+
+createSectionError: {
+  fontSize: 12,
+  lineHeight: 18,
+  color: Colors.error,
+  marginTop: Metrics.x2,
+},
+
+createModalActions: {
+  flexDirection: "row" as const,
+  justifyContent: "flex-end" as const,
+  alignItems: "center" as const,
+  gap: Metrics.x2,
+  marginTop: Metrics.x4,
+},
+
+createCancelButton: {
+  borderRadius: 12,
+},
+
+createSubmitButton: {
+  borderRadius: 12,
+},
 
     backButton: {
       width: 38,

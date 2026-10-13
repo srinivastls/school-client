@@ -5,6 +5,13 @@ import { Metrics } from "../theme/metrics";
 const dashboardStyles =
   StyleSheet.create({
 
+    modulesGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+  width: "100%",
+},
+
     
 
     /* ========================================================
