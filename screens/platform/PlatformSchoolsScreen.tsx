@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -23,7 +24,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import type {
   NativeStackScreenProps,
@@ -130,17 +131,22 @@ const PlatformSchoolsScreen = ({
     data,
     isLoading,
     isFetching,
+    isError,
     error,
     refetch,
-  } = useQuery<PlatformSchoolsResponse>(
-    ["platform-schools"],
-    platformAdminServices.getSchools,
-    {
+  } = useQuery<PlatformSchoolsResponse>({
+    queryKey: ["platform-schools"],
+    queryFn: platformAdminServices.getSchools,
+    
       retry: false,
-      onError: () =>
-        setSnackbarVisible(true),
+
     }
   );
+  useEffect(() => {
+  if (isError) {
+    console.error("Failed to load schools:", error);
+  }
+}, [isError, error]);
 
   const schools =
     data?.schools ?? [];

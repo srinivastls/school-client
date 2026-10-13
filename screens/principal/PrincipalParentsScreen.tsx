@@ -31,7 +31,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   RootStackParamList,
@@ -135,12 +135,12 @@ const PrincipalParentsScreen =
       data,
       isLoading,
       error,
-    } = useQuery(
-      [
+    } = useQuery({
+      queryKey: [
         "principal-parents",
       ],
-      principalServices.getParents
-    );
+      queryFn: principalServices.getParents
+    });
 
 
     const parents: Parent[] =

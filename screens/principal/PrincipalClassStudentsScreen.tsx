@@ -21,7 +21,7 @@ import {
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { studentServices } from "../../services/studentServices";
 import { sectionServices } from "../../services/sectionServices";
@@ -116,10 +116,10 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
     setSnackbarVisible(true);
   };
 
-  const sectionQuery = useQuery<SectionResponse>(
-    ["principal-section-students", sectionId],
-    () => sectionServices.getStudentsBySection(sectionId),
-    {
+  const sectionQuery = useQuery<SectionResponse>({
+    queryKey: ["principal-section-students", sectionId],
+    queryFn: () => sectionServices.getStudentsBySection(sectionId),
+    
       enabled: Boolean(sectionId),
       retry: 1,
     }
@@ -127,36 +127,38 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
 
   const classId = sectionQuery.data?.section?.classId ?? "";
 
-  const classSectionsQuery = useQuery(
-    ["principal-sections-by-class", classId],
-    () => sectionServices.getSectionsByClass(classId),
-    {
+  const classSectionsQuery = useQuery({
+    queryKey: ["principal-sections-by-class", classId],
+    queryFn: () => sectionServices.getSectionsByClass(classId),
+    
       enabled: Boolean(classId),
       retry: 1,
     }
   );
 
   const teachersQuery = useQuery<AvailableTeachersResponse>(
-    ["available-class-teachers"],
-    () => sectionServices.getAvailableClassTeachers(),
     {
-      enabled: teacherModalVisible,
-      retry: 1,
-    }
+      queryKey: ["available-class-teachers"],
+      queryFn: () => sectionServices.getAvailableClassTeachers(),
+
+        enabled: teacherModalVisible,
+        retry: 1,
+      }
+   
   );
 
   const assignTeacherMutation = useMutation(
-    (payload: { sectionId: string; teacherUserId: string }) =>
+    {mutationFn: (payload: { sectionId: string; teacherUserId: string }) =>
       sectionServices.assignClassTeacher(payload),
-    {
+    
       onSuccess: (response) => {
         setTeacherModalVisible(false);
         setSelectedTeacherId("");
         setTeacherSearch("");
         showMessage(response.message || "Class teacher assigned.");
-        queryClient.invalidateQueries(["principal-section-students", sectionId]);
-        queryClient.invalidateQueries(["principal-sections-by-class", classId]);
-        queryClient.invalidateQueries(["available-class-teachers"]);
+        queryClient.invalidateQueries({queryKey: ["principal-section-students", sectionId]});
+        queryClient.invalidateQueries({queryKey: ["principal-sections-by-class", classId]});
+        queryClient.invalidateQueries({queryKey: ["available-class-teachers"]});
       },
       onError: (error: any) => {
         showMessage(
@@ -168,14 +170,14 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
   );
 
   const removeTeacherMutation = useMutation(
-    (payload: { sectionId: string }) =>
+    {mutationFn: (payload: { sectionId: string }) =>
       sectionServices.removeClassTeacher(payload),
-    {
+    
       onSuccess: (response) => {
         showMessage(response.message || "Class teacher removed.");
-        queryClient.invalidateQueries(["principal-section-students", sectionId]);
-        queryClient.invalidateQueries(["principal-sections-by-class", classId]);
-        queryClient.invalidateQueries(["available-class-teachers"]);
+        queryClient.invalidateQueries({queryKey: ["principal-section-students", sectionId]});
+        queryClient.invalidateQueries({queryKey: ["principal-sections-by-class", classId]});
+        queryClient.invalidateQueries({queryKey: ["available-class-teachers"]});
       },
       onError: (error: any) => {
         showMessage(
@@ -242,7 +244,7 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
   };
 
   const closeTeacherModal = () => {
-    if (assignTeacherMutation.isLoading) {
+    if (assignTeacherMutation.isPending) {
       return;
     }
 
@@ -486,8 +488,8 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
                     buttonColor={Colors.brandPrimary}
                     style={styles.primaryAction}
                     contentStyle={styles.actionContent}
-                    loading={assignTeacherMutation.isLoading}
-                    disabled={assignTeacherMutation.isLoading}
+                    loading={assignTeacherMutation.isPending}
+                    disabled={assignTeacherMutation.isPending}
                   >
                     {classTeacher ? "Change Teacher" : "Assign Teacher"}
                   </Button>
@@ -500,8 +502,8 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
                       textColor="#B42318"
                       style={styles.removeAction}
                       contentStyle={styles.actionContent}
-                      loading={removeTeacherMutation.isLoading}
-                      disabled={removeTeacherMutation.isLoading}
+                      loading={removeTeacherMutation.isPending}
+                      disabled={removeTeacherMutation.isPending}
                     >
                       Remove
                     </Button>
@@ -582,7 +584,7 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
               <IconButton
                 icon="close"
                 onPress={closeTeacherModal}
-                disabled={assignTeacherMutation.isLoading}
+                disabled={assignTeacherMutation.isPending}
               />
             </View>
 
@@ -669,7 +671,7 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
               <Button
                 mode="outlined"
                 onPress={closeTeacherModal}
-                disabled={assignTeacherMutation.isLoading}
+                disabled={assignTeacherMutation.isPending}
                 style={styles.modalCancelButton}
               >
                 Cancel
@@ -680,9 +682,9 @@ const PrincipalClassStudentsScreen = ({ route }: Props) => {
                 buttonColor={Colors.brandPrimary}
                 disabled={
                   !selectedTeacherId ||
-                  assignTeacherMutation.isLoading
+                  assignTeacherMutation.isPending
                 }
-                loading={assignTeacherMutation.isLoading}
+                loading={assignTeacherMutation.isPending}
                 style={styles.modalConfirmButton}
               >
                 Save Teacher

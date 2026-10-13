@@ -37,7 +37,7 @@ import {
 import {
   useQuery,
   useQueryClient,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   Page,
@@ -296,12 +296,12 @@ const StudentRegistrationFormScreen = ({
       fetchingRegistrationOptions,
     error:
       registrationOptionsError,
-  } = useQuery<RegistrationOptionsResponse>(
-    ["student-registration-options"],
-    () =>
+  } = useQuery<RegistrationOptionsResponse>({
+    queryKey: ["student-registration-options"],
+    queryFn: () =>
       studentServices
         .getRegistrationOptions(),
-    {
+
       staleTime:
         5 * 60 * 1000,
     }
@@ -1204,20 +1204,23 @@ const StudentRegistrationFormScreen = ({
          REFRESH CACHE
       ====================================================================== */
 
-      await queryClient.refetchQueries([
-        "principal-class-student-counts",
-      ]);
+      await queryClient.refetchQueries({
+        queryKey: ["principal-class-student-counts"],
+      });
 
 
-      await queryClient.refetchQueries([
-        "student",
-        data.admissionNo,
-      ]);
+
+      await queryClient.refetchQueries({
+        queryKey: [
+          "student",
+          data.admissionNo,
+        ],
+      });
 
 
-      await queryClient.refetchQueries([
-        "transactions",
-      ]);
+      await queryClient.refetchQueries({
+        queryKey: ["transactions"],
+      });
 
 
     } catch (err: any) {

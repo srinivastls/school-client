@@ -41,7 +41,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   Page,
@@ -222,26 +222,23 @@ const StudentDetails = () => {
     error:
       studentError,
   } =
-    useQuery<GetStudentResponse>(
-      [
+    useQuery<GetStudentResponse>({
+      queryKey: [
         "student-details",
         student.admissionNo,
       ],
-      () =>
+      queryFn: () =>
         studentServices
           .getStudentById({
             admissionNo:
               student.admissionNo,
           }),
-      {
+      
         enabled: true,
-
-        cacheTime: 0,
-
         refetchOnWindowFocus:
           false,
-      }
-    );
+      
+});
 
 
   /* ==========================================================================
@@ -257,18 +254,18 @@ const StudentDetails = () => {
     isFetching:
       fetchingTransactions,
   } =
-    useQuery<Transaction[]>(
-      [
+    useQuery<Transaction[]>({
+      queryKey: [
         "student-transactions",
         student.admissionNo,
       ],
-      () =>
+      queryFn: () =>
         txnServices
           .getStudentTxns({
             admissionNo:
               student.admissionNo,
           }),
-      {
+
         refetchOnWindowFocus:
           false,
       }

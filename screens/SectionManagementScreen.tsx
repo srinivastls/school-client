@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Avatar,
@@ -25,7 +25,7 @@ import {
   Alert,
   useColorScheme,
 } from "react-native";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
@@ -152,21 +152,23 @@ const SectionManagementScreen = () => {
   const [sectionFilter, setSectionFilter] = useState<"all" | "assigned" | "unassigned">("all");
   const [actionMenuSection, setActionMenuSection] = useState<ManagedSection | null>(null);
 
-  const yearsQuery = useQuery(
-    ["section-management-years"],
-    () => academicYearServices.getAcademicYears(),
-    {
-      retry: 1,
-      onSuccess: (response: any) => {
-        const years = normalizeYears(response);
-        if (!selectedYearId && years.length) {
-          setSelectedYearId(
-            years.find((year) => year.isCurrent)?.id ?? years[0].id
-          );
-        }
-      },
-    }
-  );
+  
+const yearsQuery = useQuery({
+  queryKey: ["section-management-years"],
+  queryFn: () => academicYearServices.getAcademicYears(),
+  retry: 1,
+});
+
+useEffect(() => {
+  const years = normalizeYears(yearsQuery.data);
+
+  if (!selectedYearId && years.length > 0) {
+    setSelectedYearId(
+      years.find((year) => year.isCurrent)?.id ?? years[0].id
+    );
+  }
+}, [yearsQuery.data, selectedYearId]);
+
 
   const years = useMemo(
     () => normalizeYears(yearsQuery.data),
@@ -176,9 +178,11 @@ const SectionManagementScreen = () => {
   const selectedYear = years.find((year) => year.id === selectedYearId);
 
   const classesQuery = useQuery(
-    ["section-management-classes", selectedYearId],
-    () => classServices.getClassesByAcademicYear(selectedYearId),
-    { enabled: Boolean(selectedYearId), retry: 1 }
+    {
+      queryKey: ["section-management-classes", selectedYearId],
+      queryFn: () => classServices.getClassesByAcademicYear(selectedYearId),
+      enabled: Boolean(selectedYearId), retry: 1 
+    }
   );
 
   const classes = useMemo(
@@ -186,10 +190,10 @@ const SectionManagementScreen = () => {
     [classesQuery.data]
   );
 
-  const sectionsQuery = useQuery<GetClassTeacherAssignmentsResponse>(
-    ["section-management-sections", selectedYearId],
-    () => sectionServices.getClassTeacherAssignments(selectedYearId),
-    { enabled: Boolean(selectedYearId), retry: 1 }
+  const sectionsQuery = useQuery<GetClassTeacherAssignmentsResponse>({
+    queryKey: ["section-management-sections", selectedYearId],
+    queryFn: () => sectionServices.getClassTeacherAssignments(selectedYearId),
+     enabled: Boolean(selectedYearId), retry: 1 }
   );
 
   const sections: ManagedSection[] =
@@ -206,9 +210,9 @@ const SectionManagementScreen = () => {
 const [removeTarget, setRemoveTarget] =
   useState<ManagedSection | null>(null);
 
-  const studentCountsQuery = useQuery<Record<string, number>>(
-    ["section-management-student-counts", selectedYearId, sectionIds],
-    async () => {
+  const studentCountsQuery = useQuery<Record<string, number>>({
+    queryKey: ["section-management-student-counts", selectedYearId, sectionIds],
+    queryFn: async () => {
       const entries = await Promise.all(
         sectionIds.map(async (sectionId) => {
           try {
@@ -233,7 +237,7 @@ const [removeTarget, setRemoveTarget] =
         return result;
       }, {});
     },
-    {
+    
       enabled: Boolean(selectedYearId) && sectionIds.length > 0,
       retry: 1,
     }
@@ -275,10 +279,10 @@ const [removeTarget, setRemoveTarget] =
     0
   );
 
-  const teachersQuery = useQuery(
-    ["section-management-available-teachers", selectedYearId],
-    () => sectionServices.getAvailableClassTeachers(),
-    { enabled: teacherModalVisible && Boolean(selectedYearId), retry: 1 }
+  const teachersQuery = useQuery({
+    queryKey: ["section-management-available-teachers", selectedYearId],
+    queryFn: () => sectionServices.getAvailableClassTeachers(),
+     enabled: teacherModalVisible && Boolean(selectedYearId), retry: 1 }
   );
 
   const availableTeachers: AvailableTeacher[] = useMemo(() => {
@@ -331,7 +335,7 @@ const [removeTarget, setRemoveTarget] =
   };
 
   const closeTeacherModal = () => {
-    if (!assignTeacherMutation.isLoading && !removeTeacherMutation.isLoading && !deleteSectionMutation.isLoading) {
+    if (!assignTeacherMutation.isPending && !removeTeacherMutation.isPending && !deleteSectionMutation.isPending) {
       setTeacherModalVisible(false);
       setSelectedSection(null);
       setSelectedTeacherId("");
@@ -340,10 +344,11 @@ const [removeTarget, setRemoveTarget] =
     }
   };
 
-  const assignTeacherMutation = useMutation(
-    (payload: { sectionId: string; teacherUserId: string }) =>
+
+  const assignTeacherMutation = useMutation({
+    mutationFn: (payload: { sectionId: string; teacherUserId: string }) =>
       (sectionServices.assignClassTeacher as any)(payload),
-    {
+    
       onSuccess: (response: any) => {
         setSnackbar(response?.message ?? "Class teacher assigned successfully.");
         closeTeacherModal();
@@ -361,10 +366,11 @@ const [removeTarget, setRemoveTarget] =
     }
   );
 
-  const removeTeacherMutation = useMutation(
-    (payload: { sectionId: string }) =>
+
+  const removeTeacherMutation = useMutation({
+    mutationFn: (payload: { sectionId: string }) =>
       (sectionServices.removeClassTeacher as any)(payload),
-    {
+    
       onSuccess: (response: any) => {
         setSnackbar(response?.message ?? "Class teacher removed successfully.");
         closeTeacherModal();
@@ -382,9 +388,10 @@ const [removeTarget, setRemoveTarget] =
     }
   );
 
-  const deleteSectionMutation = useMutation(
-    (sectionId: string) => sectionServices.deleteSection(sectionId),
-    {
+
+  const deleteSectionMutation = useMutation({
+    mutationFn: (sectionId: string) => sectionServices.deleteSection(sectionId),
+    
       onSuccess: (response: any) => {
         setSnackbar(response?.message ?? "Section deleted successfully.");
         sectionsQuery.refetch();
@@ -452,9 +459,9 @@ const [removeTarget, setRemoveTarget] =
   };
 
   const createMutation = useMutation(
-    (payload: { classId: string; sectionName: string }) =>
+    {mutationFn: (payload: { classId: string; sectionName: string }) =>
       sectionServices.createSection(payload),
-    {
+    
       onSuccess: (response) => {
         setCreateVisible(false);
         setSectionName("");
@@ -469,9 +476,9 @@ const [removeTarget, setRemoveTarget] =
   );
 
   const copyMutation = useMutation(
-    (payload: { fromAcademicYearId: string; toAcademicYearId: string }) =>
+    {mutationFn: (payload: { fromAcademicYearId: string; toAcademicYearId: string }) =>
       sectionServices.copySectionsToAcademicYear(payload),
-    {
+    
       onSuccess: (response) => {
         setCopyVisible(false);
         setSourceYearId("");
@@ -859,7 +866,7 @@ const [removeTarget, setRemoveTarget] =
 
         <Modal
           visible={createVisible}
-          onDismiss={() => !createMutation.isLoading && setCreateVisible(false)}
+          onDismiss={() => !createMutation.isPending && setCreateVisible(false)}
           contentContainerStyle={[styles.modal, styles.bottomSheet, isDark && styles.modalDark]}
         >
           <Text style={[styles.modalTitle, { color: palette.text }]}>Create section</Text>
@@ -918,15 +925,15 @@ const [removeTarget, setRemoveTarget] =
           <View style={styles.modalActions}>
             <Button
               onPress={() => setCreateVisible(false)}
-              disabled={createMutation.isLoading}
+              disabled={createMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               mode="contained"
               onPress={submitCreate}
-              loading={createMutation.isLoading}
-              disabled={createMutation.isLoading}
+              loading={createMutation.isPending}
+              disabled={createMutation.isPending}
             >
               Create
             </Button>
@@ -935,7 +942,7 @@ const [removeTarget, setRemoveTarget] =
 
         <Modal
           visible={copyVisible}
-          onDismiss={() => !copyMutation.isLoading && setCopyVisible(false)}
+          onDismiss={() => !copyMutation.isPending && setCopyVisible(false)}
           contentContainerStyle={[styles.modal, styles.bottomSheet, isDark && styles.modalDark]}
         >
           <Text style={[styles.modalTitle, { color: palette.text }]}>Copy sections</Text>
@@ -981,15 +988,15 @@ const [removeTarget, setRemoveTarget] =
           <View style={styles.modalActions}>
             <Button
               onPress={() => setCopyVisible(false)}
-              disabled={copyMutation.isLoading}
+              disabled={copyMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               mode="contained"
               onPress={submitCopy}
-              loading={copyMutation.isLoading}
-              disabled={copyMutation.isLoading}
+              loading={copyMutation.isPending}
+              disabled={copyMutation.isPending}
             >
               Copy sections
             </Button>
@@ -1067,7 +1074,7 @@ const [removeTarget, setRemoveTarget] =
                 mode="text"
                 textColor="#B42318"
                 onPress={confirmRemoveTeacher}
-                disabled={removeTeacherMutation.isLoading || assignTeacherMutation.isLoading}
+                disabled={removeTeacherMutation.isPending || assignTeacherMutation.isPending}
               >
                 Remove
               </Button>
@@ -1075,7 +1082,7 @@ const [removeTarget, setRemoveTarget] =
 
             <Button
               onPress={closeTeacherModal}
-              disabled={removeTeacherMutation.isLoading || assignTeacherMutation.isLoading}
+              disabled={removeTeacherMutation.isPending || assignTeacherMutation.isPending}
             >
               Cancel
             </Button>
@@ -1083,8 +1090,8 @@ const [removeTarget, setRemoveTarget] =
             <Button
               mode="contained"
               onPress={submitTeacherAssignment}
-              loading={assignTeacherMutation.isLoading}
-              disabled={assignTeacherMutation.isLoading || removeTeacherMutation.isLoading}
+              loading={assignTeacherMutation.isPending}
+              disabled={assignTeacherMutation.isPending || removeTeacherMutation.isPending}
             >
               Save
             </Button>
@@ -1201,8 +1208,8 @@ const [removeTarget, setRemoveTarget] =
         <Pressable
           style={styles.confirmDeleteButton}
           disabled={
-            deleteSectionMutation.isLoading ||
-            removeTeacherMutation.isLoading
+            deleteSectionMutation.isPending ||
+            removeTeacherMutation.isPending
           }
           onPress={() => {
             if (deleteTarget) {

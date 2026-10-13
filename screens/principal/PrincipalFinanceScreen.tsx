@@ -24,7 +24,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import dayjs from "dayjs";
 
@@ -161,12 +161,12 @@ const PrincipalFinanceScreen = () => {
     isFetching: dailyFetching,
     error: dailyError,
     refetch: refetchDaily,
-  } = useQuery(
-    [
+  } = useQuery({
+    queryKey: [
       "principal-finance-daily",
     ],
 
-    () =>
+    queryFn: () =>
       txnServices.getTotalTxnAmount({
         dates: [
           dayjs().format(
@@ -175,7 +175,7 @@ const PrincipalFinanceScreen = () => {
         ],
       }),
 
-    {
+    
       staleTime: 60 * 1000,
     }
   );
@@ -191,12 +191,12 @@ const PrincipalFinanceScreen = () => {
     isFetching: weeklyFetching,
     error: weeklyError,
     refetch: refetchWeekly,
-  } = useQuery(
-    [
+  } = useQuery({
+    queryKey: [
       "principal-finance-weekly",
     ],
 
-    () =>
+    queryFn: () =>
       txnServices.getTotalTxnAmount({
         dates:
           getDateRangeFromStartOf(
@@ -204,7 +204,7 @@ const PrincipalFinanceScreen = () => {
           ),
       }),
 
-    {
+    
       staleTime: 60 * 1000,
     }
   );
@@ -220,12 +220,12 @@ const PrincipalFinanceScreen = () => {
     isFetching: monthlyFetching,
     error: monthlyError,
     refetch: refetchMonthly,
-  } = useQuery(
-    [
+  } = useQuery({
+    queryKey: [
       "principal-finance-monthly",
     ],
 
-    () =>
+    queryFn: () =>
       txnServices.getTotalTxnAmount({
         dates:
           getDateRangeFromStartOf(
@@ -233,7 +233,7 @@ const PrincipalFinanceScreen = () => {
           ),
       }),
 
-    {
+    
       staleTime: 60 * 1000,
     }
   );

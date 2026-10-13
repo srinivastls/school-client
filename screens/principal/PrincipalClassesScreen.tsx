@@ -29,7 +29,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   studentServices,
@@ -92,13 +92,13 @@ const PrincipalClassesScreen = () => {
   data: academicYear,
   isLoading: isAcademicYearLoading,
   isError: isAcademicYearError,
-} = useQuery(
-  [
+} = useQuery({
+  queryKey: [
     "current-academic-year",
   ],
-  () =>
+  queryFn: () =>
     academicYearServices.getCurrentAcademicYear()
-);
+});
   const academicYearId =
   academicYear?.id;
 
@@ -115,16 +115,16 @@ const PrincipalClassesScreen = () => {
   isError,
   error,
   refetch,
-} = useQuery(
-  [
+} = useQuery({
+  queryKey: [
     "principal-class-student-counts",
     academicYearId,
   ],
-  () =>
+  queryFn: () =>
     studentServices.getClassStudentCounts(
       academicYearId as string
     ),
-  {
+  
     enabled: Boolean(academicYearId),
   }
 );

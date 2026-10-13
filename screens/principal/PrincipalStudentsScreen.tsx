@@ -28,7 +28,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   RootStackParamList,
@@ -501,10 +501,12 @@ const PrincipalStudentsScreen = () => {
     error,
     refetch,
   } = useQuery(
-    [
-      "principal-all-students",
-    ],
-    principalServices.getStudents
+    {
+      queryKey: [
+        "principal-all-students",
+      ],
+      queryFn: principalServices.getStudents
+    }
   );
 
 

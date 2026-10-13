@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { ProgressBar } from "react-native-paper";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { classServices } from "../services";
 import { Colors, makeStyles } from "../theme";
@@ -55,9 +55,9 @@ const ClassList = ({
     isError,
     refetch,
     isFetching,
-  } = useQuery(
-    ["classList", academicYearId],
-    () => {
+  } = useQuery({
+    queryKey: ["classList", academicYearId],
+    queryFn: () => {
       if (!academicYearId) {
         return Promise.reject(
           new Error("Academic year ID is required")
@@ -66,10 +66,9 @@ const ClassList = ({
 
       return classServices.getAllClasses(academicYearId)();
     },
-    {
+
       enabled: Boolean(academicYearId),
-    }
-  );
+  });
 
   const classes = response?.classes ?? [];
 

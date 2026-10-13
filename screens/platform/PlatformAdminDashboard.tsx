@@ -34,7 +34,7 @@ import {
   Snackbar,
 } from "react-native-paper";
 
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import type {
   NativeStackScreenProps,
@@ -542,13 +542,16 @@ const PlatformAdminDashboard = ({
       refetchStats,
 
   } = useQuery<PlatformStats>(
-    [
-      "platformAdminStats",
-    ],
+    {
+      queryKey: [
+        "platformAdminStats",
+      ],
 
-    platformAdminServices
-      .getDashboard
+      queryFn: () =>
+        platformAdminServices.getDashboard(),
+    }
   );
+
 
 
   /* ==========================================================
@@ -571,12 +574,14 @@ const PlatformAdminDashboard = ({
       refetchSchools,
 
   } = useQuery<SchoolsResponse>(
-    [
+    {
+    queryKey: [
       "platformAdminSchools",
     ],
 
-    platformAdminServices
-      .getSchools
+    queryFn: () =>
+      platformAdminServices.getSchools(),
+    }
   );
 
 

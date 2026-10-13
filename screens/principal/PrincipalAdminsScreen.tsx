@@ -19,7 +19,7 @@ import {
 
 import {
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   useNavigation,
@@ -132,12 +132,12 @@ const PrincipalAdminsScreen = () => {
     isLoading,
     isFetching,
     error,
-  } = useQuery(
-    [
+  } = useQuery({
+    queryKey: [
       "principal-admins",
     ],
-    principalServices.getAdmins
-  );
+    queryFn: principalServices.getAdmins
+  });
 
 
   /* ==========================================================

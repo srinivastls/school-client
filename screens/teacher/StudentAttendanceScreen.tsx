@@ -29,7 +29,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import {
   useMutation,
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import {
   academicYearServices,
@@ -333,95 +333,66 @@ const StudentAttendanceScreen = () => {
      LOAD STUDENTS
   ========================================================== */
 
-  const studentsQuery =
-    useQuery(
-      [
-        "student-attendance",
-        selectedClass,
-        selectedSection,
-        academicYear?.id,
-        selectedDate,
-      ],
+  
+  const studentsQuery = useQuery({
+    queryKey: [
+      "student-attendance",
+      selectedClass,
+      selectedSection,
+      academicYear?.id,
+      selectedDate,
+    ],
+    queryFn: () =>
+      attendanceServices.getStudentsForAttendance({
+        classId: selectedClass!,
+        sectionId: selectedSection!,
+        academicYearId: academicYear!.id,
+        date: selectedDate,
+      }),
+    enabled: false,
+  });
 
-      () =>
-        attendanceServices
-          .getStudentsForAttendance({
-            classId:
-              selectedClass!,
-            sectionId:
-              selectedSection!,
-            academicYearId:
-              academicYear!.id,
-            date:
-              selectedDate,
-          }),
+  // Handle successfully loaded students (replaces the old onSuccess callback).
+  useEffect(() => {
+    const response = studentsQuery.data;
+    if (!response) return;
 
-      {
-        enabled: false,
+    const loadedStudents = response.students ?? [];
+    setStudents(loadedStudents);
 
-        onSuccess: (
-          response
-        ) => {
-          const loadedStudents =
-            response?.students ??
-            [];
+    const initialAttendance: Record<string, AttendanceState> = {};
 
-          setStudents(
-            loadedStudents
-          );
+    loadedStudents.forEach((student) => {
+      initialAttendance[student.id] = {
+        status: student.attendance?.status ?? "PRESENT",
+        remark: student.attendance?.remark ?? "",
+      };
+    });
 
-          const initialAttendance:
-            Record<
-              string,
-              AttendanceState
-            > = {};
+    setAttendance(initialAttendance);
+    setExpandedRemarkStudent(null);
+  }, [studentsQuery.data]);
 
-          loadedStudents.forEach(
-            student => {
-              initialAttendance[
-                student.id
-              ] = {
-                status:
-                  student
-                    .attendance
-                    ?.status ??
-                  "PRESENT",
+  // Handle query errors (replaces the old onError callback).
+  useEffect(() => {
+    if (!studentsQuery.isError) return;
 
-                remark:
-                  student
-                    .attendance
-                    ?.remark ??
-                  "",
-              };
-            }
-          );
+    setStudents([]);
+    setAttendance({});
 
-          setAttendance(
-            initialAttendance
-          );
-
-          setExpandedRemarkStudent(
-            null
-          );
-        },
-
-        onError: (
-          error: any
-        ) => {
-          setStudents([]);
-
-          setAttendance({});
-
-          showSnackbar(
-            getErrorMessage(
-              error,
-              "Unable to load students"
-            )
-          );
-        },
-      }
+    showSnackbar(
+      getErrorMessage(
+        studentsQuery.error,
+        "Unable to load students"
+      )
     );
+  }, [
+    studentsQuery.isError,
+    studentsQuery.error,
+    showSnackbar,
+  ]);
 
+    
   /* ==========================================================
      LOAD STUDENTS BUTTON
   ========================================================== */
@@ -469,7 +440,7 @@ const StudentAttendanceScreen = () => {
 
   const markAttendanceMutation =
     useMutation(
-      (
+      {mutationFn: (
         payload: Parameters<
           typeof attendanceServices.markStudentAttendance
         >[0]
@@ -478,7 +449,7 @@ const StudentAttendanceScreen = () => {
           .markStudentAttendance(
             payload
           )
-    );
+});
 
   /* ==========================================================
      UPDATE STATUS
@@ -669,7 +640,7 @@ const StudentAttendanceScreen = () => {
 
       if (
         markAttendanceMutation
-          .isLoading
+          .isPending
       ) {
         return;
       }
@@ -1594,10 +1565,10 @@ const StudentAttendanceScreen = () => {
               submitAttendance
             }
             loading={
-              markAttendanceMutation.isLoading
+              markAttendanceMutation.isPending
             }
             disabled={
-              markAttendanceMutation.isLoading
+              markAttendanceMutation.isPending 
             }
             buttonColor={
               Colors.brandPrimary
