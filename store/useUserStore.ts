@@ -47,6 +47,7 @@ export type LoginResponse = {
   accessToken: string;
   accessTokenTTL: number;
   accessTokenFetchedAt?: number;
+  refreshToken: string;
 };
 
 export type UserStore = {
@@ -57,6 +58,8 @@ export type UserStore = {
   accessTokenTTL: number | null;
 
   accessTokenFetchedAt: number | null;
+
+  refreshToken: string | null;
 
   /**
    * IMPORTANT:
@@ -83,6 +86,8 @@ export const useUserStore =
         accessTokenTTL: null,
 
         accessTokenFetchedAt: null,
+
+        refreshToken: null,
 
         hasHydrated: false,
 
@@ -122,6 +127,9 @@ export const useUserStore =
             accessTokenTTL:
               response.accessTokenTTL,
 
+            refreshToken:
+              response.refreshToken,
+
             accessTokenFetchedAt,
 
             hasHydrated: true,
@@ -150,6 +158,7 @@ export const useUserStore =
             accessTokenTTL: null,
 
             accessTokenFetchedAt: null,
+            refreshToken: null,
 
             hasHydrated: true,
           });

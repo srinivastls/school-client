@@ -22,9 +22,10 @@ import {
   TouchableOpacity,
   Pressable,
   View,
-  Alert,
+  
   useColorScheme,
 } from "react-native";
+import { useConfirm } from "../components/ConfirmProvider";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -152,7 +153,7 @@ const SectionManagementScreen = () => {
   const [sectionFilter, setSectionFilter] = useState<"all" | "assigned" | "unassigned">("all");
   const [actionMenuSection, setActionMenuSection] = useState<ManagedSection | null>(null);
 
-  
+  const { showAlert ,confirm} = useConfirm();
 const yearsQuery = useQuery({
   queryKey: ["section-management-years"],
   queryFn: () => academicYearServices.getAcademicYears(),
@@ -405,20 +406,6 @@ const [removeTarget, setRemoveTarget] =
     }
   );
 
-  // const confirmDeleteSection = (section: ManagedSection) => {
-  //   Alert.alert(
-  //     "Delete section",
-  //     `Are you sure you want to permanently delete ${section.sectionName}? This action cannot be undone.`,
-  //     [
-  //       { text: "Cancel", style: "cancel" },
-  //       {
-  //         text: "Delete",
-  //         style: "destructive",
-  //         onPress: () => deleteSectionMutation.mutate(String(section.id)),
-  //       },
-  //     ]
-  //   );
-  // };
   
   const confirmDeleteSection = (section: ManagedSection) => {
   setDeleteTarget(section);
@@ -438,25 +425,25 @@ const [removeTarget, setRemoveTarget] =
     });
   };
 
-  const confirmRemoveTeacher = () => {
-    if (!selectedSection?.id) return;
+  
+const confirmRemoveTeacher = async () => {
+  if (!selectedSection?.id) return;
 
-    Alert.alert(
-      "Remove class teacher",
-      "Are you sure you want to remove the current class teacher?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () =>
-            removeTeacherMutation.mutate({
-              sectionId: String(selectedSection.id),
-            }),
-        },
-      ]
-    );
-  };
+  const confirmed = await confirm({
+    title: "Remove class teacher",
+    message: "Are you sure you want to remove the current class teacher?",
+    confirmText: "Remove",
+    cancelText: "Cancel",
+    destructive: true,
+  });
+
+  if (!confirmed) return;
+
+  removeTeacherMutation.mutate({
+    sectionId: String(selectedSection.id),
+  });
+};
+
 
   const createMutation = useMutation(
     {mutationFn: (payload: { classId: string; sectionName: string }) =>
@@ -538,37 +525,41 @@ const [removeTarget, setRemoveTarget] =
     createMutation.mutate({ classId: selectedClassId, sectionName: name });
   };
 
-  const submitCopy = () => {
-    if (!sourceYearId) {
-      setFormError("Select a source academic year.");
-      return;
-    }
+  
+const submitCopy = async () => {
+  if (!sourceYearId) {
+    setFormError("Select a source academic year.");
+    return;
+  }
 
-    if (!selectedYearId || sourceYearId === selectedYearId) {
-      setFormError("Source and target academic years must be different.");
-      return;
-    }
-
-    Alert.alert(
-      "Copy sections",
-      `Copy sections from ${
-        years.find((year) => year.id === sourceYearId)?.name ?? "source year"
-      } to ${selectedYear?.name ?? "target year"}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Copy",
-          onPress: () => {
-            setFormError("");
-            copyMutation.mutate({
-              fromAcademicYearId: sourceYearId,
-              toAcademicYearId: selectedYearId,
-            });
-          },
-        },
-      ]
+  if (!selectedYearId || sourceYearId === selectedYearId) {
+    setFormError(
+      "Source and target academic years must be different."
     );
-  };
+    return;
+  }
+
+  const confirmed = await confirm({
+    title: "Copy sections",
+    message: `Copy sections from ${
+      years.find((year) => year.id === sourceYearId)?.name ??
+      "source year"
+    } to ${selectedYear?.name ?? "target year"}?`,
+    confirmText: "Copy",
+    cancelText: "Cancel",
+    destructive: false,
+  });
+
+  if (!confirmed) return;
+
+  setFormError("");
+
+  copyMutation.mutate({
+    fromAcademicYearId: sourceYearId,
+    toAcademicYearId: selectedYearId,
+  });
+};
+
 
   const selectedClass = classes.find((item) => item.id === selectedClassId);
 
@@ -625,7 +616,12 @@ const [removeTarget, setRemoveTarget] =
               <Text style={[styles.selectorText, { color: palette.text }]}>
                 {selectedYear?.name ?? "Select academic year"}
               </Text>
-              <IconButton icon="chevron-down" size={20} />
+              <Text
+  accessible={false}
+  style={styles.selectorChevron}
+>
+  ⌄
+</Text>
             </TouchableOpacity>
 
             <View style={styles.actionsRow}>
@@ -885,7 +881,13 @@ const [removeTarget, setRemoveTarget] =
                   ? `Class ${selectedClass.classNumber}`
                   : "Select class")}
             </Text>
-            <IconButton icon="chevron-down" size={20} />
+
+            <Text
+              accessible={false}
+              style={styles.selectorChevron}
+            >
+              ⌄
+            </Text>
           </TouchableOpacity>
 
           {classPickerVisible && (
@@ -959,7 +961,9 @@ const [removeTarget, setRemoveTarget] =
               {years.find((year) => year.id === sourceYearId)?.name ??
                 "Select source year"}
             </Text>
-            <IconButton icon="chevron-down" size={20} />
+            <Text style={styles.selectorChevron}>
+              ⌄
+            </Text>
           </TouchableOpacity>
 
           {sourcePickerVisible && (
@@ -1055,7 +1059,12 @@ const [removeTarget, setRemoveTarget] =
                     )}
                   </View>
                   {selectedTeacherId === teacher.id && (
-                    <IconButton icon="check-circle" iconColor="#16A34A" />
+                    <Text
+    accessible={false}
+    style={styles.teacherCheck}
+  >
+    ✓
+  </Text>
                   )}
                 </TouchableOpacity>
               ))}
@@ -1352,6 +1361,18 @@ const styles = StyleSheet.create({
   statusChip: {
     borderRadius: 12,
   },
+  selectorChevron: {
+  fontSize: 24,
+  color: "#79747E",
+  paddingHorizontal: 16,
+  textAlign: "center",
+},
+teacherCheck: {
+  color: "#16A34A",
+  fontSize: 24,
+  fontWeight: "700",
+  paddingHorizontal: 8,
+},
   sectionCard: {
     marginBottom: 14,
     borderRadius: 24,

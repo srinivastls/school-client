@@ -37,6 +37,7 @@ import { userServices } from "../services";
 import { isEmailValid } from "../utils";
 
 import { useUserStore } from "../store";
+import { useConfirm } from "../components/ConfirmProvider";
 
 
 /* ============================================================================
@@ -92,6 +93,8 @@ const LoginScreen = ({
 
   const [passwordError, setPasswordError] =
     useState("");
+
+  const {showAlert} = useConfirm();
 
 
   /* ==========================================================================
@@ -224,6 +227,8 @@ const LoginScreen = ({
           return;
         }
 
+        
+
 
         /* --------------------------------------------------------------------
            CHECK ROLE
@@ -260,6 +265,7 @@ const LoginScreen = ({
         }
 
 
+
         /* --------------------------------------------------------------------
            SAVE USER
         -------------------------------------------------------------------- */
@@ -286,27 +292,18 @@ const LoginScreen = ({
 
       onError: (error: any) => {
 
-        console.log(
-          "================================="
-        );
+      
 
-        console.log(
-          "🔥 LOGIN API ERROR"
-        );
-
-        console.log(
+        showAlert(
           "STATUS:",
           error?.response?.status
         );
 
-        console.log(
+        showAlert(
           "ERROR:",
           error?.response?.data
         );
 
-        console.log(
-          "================================="
-        );
 
 
         const status =
@@ -530,11 +527,7 @@ const LoginScreen = ({
   ------------------------------------------------------------------------ */
 
   if (hasError) {
-
-    console.log(
-      "🔥 LOGIN VALIDATION FAILED"
-    );
-
+    
     return;
   }
 
@@ -543,16 +536,6 @@ const LoginScreen = ({
      LOGIN
   ------------------------------------------------------------------------ */
 
-  console.log(
-    "🔥 LOGIN VALIDATION PASSED"
-  );
-
-  console.log(
-    "🔥 LOGIN TYPE:",
-    isSchoolLogin
-      ? "SCHOOL"
-      : "PLATFORM"
-  );
 
 
   login();

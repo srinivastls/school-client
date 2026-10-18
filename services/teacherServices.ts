@@ -572,6 +572,7 @@ const getTeacherMarksEntry=
 const saveTeacherMarks=
   async (
     payload: {
+      
       sectionId: string;
       subjectId: string;
       examId: string;

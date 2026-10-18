@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -10,7 +9,7 @@ import {
   View,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-
+import { useConfirm } from "../../components/ConfirmProvider";
 import { RootStackParamList, RootStackScreenNames } from "../../types";
 import { Colors } from "../../theme";
 import { studentServices } from "../../services/studentServices";
@@ -120,6 +119,7 @@ export  const AdminStudentRegistration = ({ navigation }: Props) => {
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const { showAlert } = useConfirm();
 
   const update = (key: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -172,7 +172,7 @@ export  const AdminStudentRegistration = ({ navigation }: Props) => {
     ];
 
     if (required.some((key) => !form[key].trim())) {
-      Alert.alert("Missing details", "Complete all required fields.");
+      await showAlert("Missing details", "Complete all required fields.", "error");
       return;
     }
 
@@ -189,9 +189,8 @@ export  const AdminStudentRegistration = ({ navigation }: Props) => {
         siblings: [],
       } as any);
 
-      Alert.alert("Success", "Student created successfully.", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
+      await showAlert("Success", "Student created successfully.", "success");
+      navigation.goBack();
     } catch (requestError: any) {
       setError(
         requestError?.response?.data?.message ??

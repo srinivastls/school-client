@@ -7,7 +7,6 @@ import React, {
 
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -18,6 +17,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+
+import {useConfirm} from "../../components/ConfirmProvider";
 
 import {
   Avatar,
@@ -127,6 +128,8 @@ const PrincipalClassTeachersScreen = () => {
     useUserStore(
       state => state.user
     );
+
+  const { confirm } = useConfirm();
 
 
   /* ==========================================================
@@ -743,73 +746,49 @@ const PrincipalClassTeachersScreen = () => {
      REMOVE TEACHER
   ========================================================== */
 
-  const handleRemoveTeacher = (
-    section: AssignmentResponse["sections"][number]
-  ) => {
+  
+const handleRemoveTeacher = async (
+  section: AssignmentResponse["sections"][number]
+) => {
+  if (!section.classTeacher) {
+    return;
+  }
 
-    if (!section.classTeacher) {
-      return;
-    }
+  const confirmed = await confirm({
+    title: "Remove Class Teacher",
+    message: `Remove ${section.classTeacher.name} as class teacher for Class ${section.class.classNumber} - ${section.sectionName}?`,
+    confirmText: "Remove",
+    cancelText: "Cancel",
+    destructive: true,
+  });
 
-    Alert.alert(
-      "Remove Class Teacher",
-      `Remove ${section.classTeacher.name} as class teacher for Class ${section.class.classNumber} - ${section.sectionName}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Remove",
-          style: "destructive",
+  if (!confirmed) return;
 
-          onPress: async () => {
+  try {
+    setSaving(true);
 
-            try {
+    await sectionServices.removeClassTeacher({
+      sectionId: section.id,
+    });
 
-              setSaving(true);
+    showMessage("Class teacher removed successfully");
 
-              await sectionServices
-                .removeClassTeacher({
+    await Promise.all([
+      loadAssignments(),
+      loadTeachers(),
+    ]);
+  } catch (error: any) {
+    console.error("REMOVE CLASS TEACHER ERROR", error);
 
-                  sectionId:
-                    section.id,
-
-                });
-
-              showMessage(
-                "Class teacher removed successfully"
-              );
-
-              await Promise.all([
-                loadAssignments(),
-                loadTeachers(),
-              ]);
-
-            } catch (error: any) {
-
-              console.error(
-                "REMOVE CLASS TEACHER ERROR",
-                error
-              );
-
-              showMessage(
-                error?.response?.data?.message ??
-                "Unable to remove class teacher"
-              );
-
-            } finally {
-
-              setSaving(false);
-
-            }
-
-          },
-        },
-      ]
+    showMessage(
+      error?.response?.data?.message ??
+        "Unable to remove class teacher"
     );
+  } finally {
+    setSaving(false);
+  }
+};
 
-  };
 
 
   /* ==========================================================

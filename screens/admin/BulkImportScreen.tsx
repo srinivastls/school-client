@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Platform } from 'react-native';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {  Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Colors } from '../../theme/colors';
 import { bulkImportServices, BulkModule, ImportPreviewResponse } from '../../services/bulkImportServices';
-
+import {useConfirm} from "../../components/ConfirmProvider";
 export default function BulkImportScreen() {
   const [module, setModule] = useState<BulkModule>('students');
   const [fileName, setFileName] = useState('No file selected');
   const [preview, setPreview] = useState<ImportPreviewResponse | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const { showAlert } = useConfirm();
 
   
 
@@ -48,9 +50,10 @@ const chooseFile = async () => {
     const isCsv = selectedFileName.endsWith(".csv");
     const isXlsx = selectedFileName.endsWith(".xlsx");
     const isXls = selectedFileName.endsWith(".xls");
+    const { showAlert } = useConfirm();
 
     if (!isCsv && !isXlsx && !isXls) {
-      Alert.alert(
+      showAlert(
         "Unsupported file",
         "Please select a CSV, XLS, or XLSX file."
       );
@@ -106,7 +109,7 @@ const chooseFile = async () => {
   } catch (error: any) {
     console.error("Bulk upload error:", error);
 
-    Alert.alert(
+    showAlert(
       "Upload failed",
       error?.message ||
         "Unable to preview the selected file."
@@ -119,7 +122,7 @@ const chooseFile = async () => {
 
   const commit = async () => {
   if (!preview) {
-    Alert.alert("Error", "No preview available.");
+    showAlert("Error", "No preview available.");
     return;
   }
 
@@ -127,7 +130,7 @@ const chooseFile = async () => {
 
 
   if (!previewId) {
-    Alert.alert(
+    showAlert(
       "Error",
       "Preview ID is missing. Please upload the file again."
     );
@@ -135,7 +138,7 @@ const chooseFile = async () => {
   }
 
   if (preview.summary.invalidRows > 0) {
-    Alert.alert(
+    showAlert(
       "Validation errors",
       "Please fix the invalid rows before importing."
     );
@@ -150,7 +153,7 @@ const chooseFile = async () => {
       previewId
     );
 
-    Alert.alert(
+    showAlert(
       "Import completed",
       `${preview.summary.validRows} rows imported successfully.`
     );
@@ -176,9 +179,7 @@ const chooseFile = async () => {
       "A student with this admission number already exists in this school.";
   }
 
-  Alert.alert("Import Failed", userMessage, [
-    { text: "OK" },
-  ]);
+  showAlert("Import Failed", userMessage);
 } finally {
     setBusy(false);
   }

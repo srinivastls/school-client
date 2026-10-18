@@ -3,10 +3,11 @@ import axios, {
   AxiosError,
   AxiosRequestConfig,
 } from "axios";
+import { useConfirm } from "../components/ConfirmProvider";
 export const api = axios.create({
   baseURL:
       //"http://localhost:3000/api",
-      //"http://10.81.49.212:3000/api",
+      //"http://10.81.59.254:3000/api",
       //"http://10.61.4.100:3000/api",
     "https://school-server-production-41f8.up.railway.app/api",
     //"https://school-management-d0ccfbbd10d1.herokuapp.com/api",
@@ -89,9 +90,16 @@ const refreshAccessToken = async (): Promise<string | null> => {
   refreshPromise = (async () => {
     try {
       const state = await getAuthState();
-      const refreshToken = state?.refreshToken;
+const refreshToken = state?.refreshToken;
 
-      if (!refreshToken) return null;
+const {showAlert} = useConfirm();
+
+if (!refreshToken) {
+  showAlert(
+    "Session expired",
+    "Please log in again.",)
+  return null;
+}
 
       // Use plain axios here, not `api`, so the refresh request
       // cannot recursively trigger this interceptor.
@@ -106,11 +114,18 @@ const refreshAccessToken = async (): Promise<string | null> => {
         }
       );
 
+
+
       const newAccessToken = response.data?.accessToken;
 
       if (!newAccessToken) return null;
 
       await saveAccessToken(newAccessToken);
+      api.defaults.headers.common["x-access-token"] =
+  newAccessToken;
+
+
+
 
       return newAccessToken;
     } catch (error) {

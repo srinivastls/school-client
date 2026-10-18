@@ -25,6 +25,8 @@ import {
   TextInput,
 } from "react-native-paper";
 
+import {useConfirm} from "../components/ConfirmProvider";
+
 import type {
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
@@ -721,6 +723,8 @@ const StudentRegistrationFormScreen = ({
     setSnackbarVisible,
   ] = useState(false);
 
+  const {showAlert} = useConfirm();
+
 
   const [
     snackbarMessage,
@@ -1225,7 +1229,7 @@ const StudentRegistrationFormScreen = ({
 
     } catch (err: any) {
 
-      console.log(
+      showAlert(
         "STUDENT SAVE ERROR:",
         err?.response?.data ??
         err

@@ -5,13 +5,14 @@ import React, {
 } from "react";
 
 import {
-  Alert,
   Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
+
+import {useConfirm} from "../../components/ConfirmProvider";
 
 import {
   ActivityIndicator,
@@ -69,6 +70,8 @@ const AdminProfileScreen = ({
   const [phone, setPhone] =
     useState("");
 
+  const {showAlert, confirm} = useConfirm();
+
   // ==========================================================
   // LOAD PROFILE
   // ==========================================================
@@ -97,7 +100,7 @@ const AdminProfileScreen = ({
           error
         );
 
-        Alert.alert(
+        showAlert(
           "Unable to load",
           error?.response?.data?.message ||
             "Unable to load your profile."
@@ -131,7 +134,6 @@ const AdminProfileScreen = ({
       const userProfile =
         response.profile;
 
-      console.log("PLATFORM ADMIN PROFILE:", userProfile);
 
       setProfile(userProfile);
 
@@ -148,7 +150,7 @@ const AdminProfileScreen = ({
         error
       );
 
-      Alert.alert(
+      showAlert(
         "Refresh failed",
         error?.response?.data?.message ||
           "Unable to refresh your profile."
@@ -196,7 +198,7 @@ const AdminProfileScreen = ({
 
   const saveProfile = async () => {
     if (!name.trim()) {
-      Alert.alert(
+      showAlert(
         "Name required",
         "Please enter your name."
       );
@@ -226,7 +228,7 @@ const AdminProfileScreen = ({
 
       setEditing(false);
 
-      Alert.alert(
+      showAlert(
         "Profile updated",
         "Your profile has been updated successfully."
       );
@@ -236,7 +238,7 @@ const AdminProfileScreen = ({
         error
       );
 
-      Alert.alert(
+      showAlert(
         "Update failed",
         error?.response?.data?.message ||
           "Unable to update your profile."

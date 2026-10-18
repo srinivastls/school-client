@@ -5,13 +5,14 @@ import React, {
 } from "react";
 
 import {
-  Alert,
   Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
+
+import { useConfirm } from "../../components/ConfirmProvider";
 
 import {
   ActivityIndicator,
@@ -53,6 +54,8 @@ const TeacherProfileScreen = ({
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
+  const { showAlert } = useConfirm();
+
   const loadProfile = useCallback(
     async () => {
       try {
@@ -73,10 +76,11 @@ const TeacherProfileScreen = ({
           error
         );
 
-        Alert.alert(
+        await showAlert(
           "Unable to load",
           error?.response?.data?.message ||
-            "Unable to load your profile."
+            "Unable to load your profile.",
+          "error"
         );
       } finally {
         setLoading(false);
@@ -127,7 +131,7 @@ const TeacherProfileScreen = ({
 
   const saveProfile = async () => {
     if (!name.trim()) {
-      Alert.alert(
+      await showAlert(
         "Name required",
         "Please enter your name."
       );
@@ -152,7 +156,7 @@ const TeacherProfileScreen = ({
 
       setEditing(false);
 
-      Alert.alert(
+      await showAlert(
         "Profile updated",
         "Your profile has been updated successfully."
       );
@@ -162,7 +166,7 @@ const TeacherProfileScreen = ({
         error
       );
 
-      Alert.alert(
+      await showAlert(
         "Update failed",
         error?.response?.data?.message ||
           "Unable to update your profile."
@@ -409,7 +413,7 @@ const TeacherProfileScreen = ({
             <InfoRow
               label="Role"
               value={profile.role}
-              icon="account-badge"
+              icon="account-cog"
             />
 
             <InfoRow

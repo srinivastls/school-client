@@ -35,6 +35,7 @@ import {
   Colors,
   Metrics,
 } from "../../theme";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 /* ============================================================
    ROUTE
@@ -138,6 +139,8 @@ const PrincipalTeacherDetailsScreen = () => {
     setSnackbarVisible(true);
   };
 
+  const {showAlert} = useConfirm();
+
   /* ==========================================================
      TOGGLE TEACHER STATUS
   ========================================================== */
@@ -186,7 +189,7 @@ const PrincipalTeacherDetailsScreen = () => {
         ]
       });
     } catch (error: any) {
-      console.log(
+      showAlert(
         "UPDATE TEACHER STATUS ERROR:",
         error?.response?.data ??
           error

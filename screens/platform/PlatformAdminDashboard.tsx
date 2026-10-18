@@ -60,6 +60,7 @@ import {
 
 import { useUserStore } from "../../store";
 import { DashboardModuleCard } from "../admin/DashboardModuleCard";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 
 /* ============================================================
@@ -521,6 +522,8 @@ const PlatformAdminDashboard = ({
     setSortMenuVisible,
   ] = useState(false);
 
+  const {showAlert} = useConfirm();
+
 
   /* ==========================================================
      STATISTICS
@@ -638,9 +641,9 @@ const PlatformAdminDashboard = ({
 
         } catch (error) {
 
-          console.log(
+          showAlert(
             "Platform refresh error:",
-            error
+            "Unable to refresh platform information.",
           );
 
         } finally {

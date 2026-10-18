@@ -70,6 +70,7 @@ import {
 import {
   useUserStore,
 } from "../store";
+import { useConfirm } from "../components/ConfirmProvider";
 
 
 /* ============================================================================
@@ -306,6 +307,7 @@ const EditStudentScreen = ({
     initialSectionName
   );
 
+  const {showAlert} = useConfirm();
 
   /* ==========================================================================
      FORM
@@ -1095,7 +1097,7 @@ const EditStudentScreen = ({
       err: any
     ) {
 
-      console.log(
+      showAlert(
         "EDIT STUDENT ERROR:",
         err?.response?.data ??
           err

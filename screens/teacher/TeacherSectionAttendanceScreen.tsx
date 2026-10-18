@@ -7,7 +7,6 @@ import React, {
 
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -19,6 +18,8 @@ import {
   View,
   Modal,
 } from "react-native";
+
+import { useConfirm } from "../../components/ConfirmProvider";
 
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -156,6 +157,10 @@ const TeacherSectionAttendanceScreen =
 
     const [selectedDate, setSelectedDate] =
       useState<Date>(new Date());
+
+
+
+    const {confirm,showAlert} = useConfirm();
 
 
     /* --------------------------------------------------------
@@ -335,60 +340,28 @@ const TeacherSectionAttendanceScreen =
        CHANGE DATE
     ======================================================== */
 
-    const changeDate = (
-      direction: number
-    ) => {
+    
+const changeDate = async (direction: number) => {
+  if (hasChanges) {
+    const confirmed = await confirm({
+      title: "Unsaved Changes",
+      message:
+        "You have unsaved attendance changes. Change the date without saving?",
+      confirmText: "Continue",
+      cancelText: "Cancel",
+      destructive: true,
+    });
 
-      if (hasChanges) {
+    if (!confirmed) return;
+  }
 
-        Alert.alert(
-          "Unsaved Changes",
-          "You have unsaved attendance changes. Change the date without saving?",
-          [
-            {
-              text: "Cancel",
-              style: "cancel",
-            },
-            {
-              text: "Continue",
-              style: "destructive",
-              onPress: () => {
+  const next = new Date(selectedDate);
 
-                const next =
-                  new Date(
-                    selectedDate
-                  );
+  next.setDate(next.getDate() + direction);
 
-                next.setDate(
-                  next.getDate() +
-                    direction
-                );
+  setSelectedDate(next);
+};
 
-                setSelectedDate(
-                  next
-                );
-              },
-            },
-          ]
-        );
-
-        return;
-      }
-
-      const next =
-        new Date(
-          selectedDate
-        );
-
-      next.setDate(
-        next.getDate() +
-          direction
-      );
-
-      setSelectedDate(
-        next
-      );
-    };
 
 
     /* ========================================================
@@ -478,58 +451,38 @@ const TeacherSectionAttendanceScreen =
        MARK ALL HOLIDAY
     ======================================================== */
 
-    const markAllHoliday = () => {
+    
+const markAllHoliday = async () => {
+  if (!attendanceData) {
+    return;
+  }
 
-      if (!attendanceData) {
-        return;
-      }
+  const confirmed = await confirm({
+    title: "Mark Holiday",
+    message: "Mark all students as holiday for this date?",
+    confirmText: "Continue",
+    cancelText: "Cancel",
+    destructive: false,
+  });
 
-      Alert.alert(
-        "Mark Holiday",
-        "Mark all students as holiday for this date?",
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Continue",
-            onPress: () => {
+  if (!confirmed) return;
 
-              setAttendanceMap(
-                previous => {
+  setAttendanceMap((previous) => {
+    const updated = { ...previous };
 
-                  const updated = {
-                    ...previous,
-                  };
+    for (const student of attendanceData.students) {
+      updated[student.id] = {
+        ...updated[student.id],
+        status: "HOLIDAY",
+      };
+    }
 
-                  for (
-                    const student
-                    of attendanceData.students
-                  ) {
+    return updated;
+  });
 
-                    updated[
-                      student.id
-                    ] = {
-                      ...updated[
-                        student.id
-                      ],
+  setHasChanges(true);
+};
 
-                      status:
-                        "HOLIDAY",
-                    };
-                  }
-
-                  return updated;
-                }
-              );
-
-              setHasChanges(true);
-            },
-          },
-        ]
-      );
-    };
 
 
     /* ========================================================
@@ -602,187 +555,111 @@ const TeacherSectionAttendanceScreen =
        SAVE
     ======================================================== */
 
-    const saveAttendance =
-      async () => {
+    
+const saveAttendance = async () => {
+  if (!attendanceData || attendanceData.students.length === 0) {
+    return;
+  }
 
-        if (!attendanceData) {
-          return;
-        }
+  // Check for unmarked students
+  const unmarked = attendanceData.students.filter(
+    (student) => !attendanceMap[student.id]
+  );
 
-        if (
-          attendanceData.students.length ===
-          0
-        ) {
-          return;
-        }
+  if (unmarked.length > 0) {
+    const confirmed = await confirm({
+      title: "Attendance Missing",
+      message: `${unmarked.length} student(s) do not have an attendance status.`,
+      confirmText: "Mark Present",
+      cancelText: "Cancel",
+      destructive: false,
+    });
 
+    if (!confirmed) return;
 
-        /* ----------------------------------------------------
-           CHECK UNMARKED
-        ---------------------------------------------------- */
+    setAttendanceMap((previous) => {
+      const updated = { ...previous };
 
-        const unmarked =
-          attendanceData.students.filter(
-            student =>
-              !attendanceMap[
-                student.id
-              ]
-          );
+      for (const student of unmarked) {
+        updated[student.id] = {
+          status: "PRESENT",
+          remark: null,
+        };
+      }
 
+      return updated;
+    });
 
-        if (unmarked.length > 0) {
+    setHasChanges(true);
+    return;
+  }
 
-          Alert.alert(
-            "Attendance Missing",
-            `${unmarked.length} student(s) do not have an attendance status.`,
-            [
-              {
-                text: "Cancel",
-                style: "cancel",
-              },
-              {
-                text: "Mark Present",
-                onPress: () => {
+  try {
+    setSaving(true);
 
-                  setAttendanceMap(
-                    previous => {
+    const payload = attendanceData.students.map((student) => {
+      const value = attendanceMap[student.id];
 
-                      const updated = {
-                        ...previous,
-                      };
-
-                      for (
-                        const student
-                        of unmarked
-                      ) {
-
-                        updated[
-                          student.id
-                        ] = {
-                          status:
-                            "PRESENT",
-                          remark:
-                            null,
-                        };
-                      }
-
-                      return updated;
-                    }
-                  );
-
-                  setHasChanges(true);
-                },
-              },
-            ]
-          );
-
-          return;
-        }
-
-
-        try {
-
-          setSaving(true);
-
-
-          const payload =
-            attendanceData.students.map(
-              student => {
-
-                const value =
-                  attendanceMap[
-                    student.id
-                  ];
-
-                return {
-                  studentId:
-                    student.id,
-
-                  status:
-                    value.status,
-
-                  remark:
-                    value.remark ??
-                    null,
-                };
-              }
-            );
-
-
-          await teacherServices.saveSectionAttendance(
-            sectionId,
-            dateString,
-            payload
-          );
-
-
-          setHasChanges(false);
-
-
-          Alert.alert(
-            "Attendance Saved",
-            "Student attendance has been saved successfully."
-          );
-
-
-          await loadAttendance(
-            false
-          );
-
-        } catch (err: any) {
-
-          console.error(
-            "SAVE ATTENDANCE ERROR:",
-            err
-          );
-
-          const message =
-            err?.response?.data?.message ??
-            err?.message ??
-            "Failed to save attendance";
-
-          Alert.alert(
-            "Save Failed",
-            message
-          );
-
-        } finally {
-
-          setSaving(false);
-        }
+      return {
+        studentId: student.id,
+        status: value.status,
+        remark: value.remark ?? null,
       };
+    });
+
+    await teacherServices.saveSectionAttendance(
+      sectionId,
+      dateString,
+      payload
+    );
+
+    setHasChanges(false);
+
+    void showAlert(
+      "Attendance Saved",
+      "Student attendance has been saved successfully.",
+      "success"
+    );
+
+    await loadAttendance(false);
+  } catch (err: any) {
+    console.error("SAVE ATTENDANCE ERROR:", err);
+
+    const message =
+      err?.response?.data?.message ??
+      err?.message ??
+      "Failed to save attendance";
+
+    void showAlert("Save Failed", message, "error");
+  } finally {
+    setSaving(false);
+  }
+};
+
 
 
     /* ========================================================
        BACK
     ======================================================== */
 
-    const handleBack = () => {
+    
+const handleBack = async () => {
+  if (hasChanges) {
+    const confirmed = await confirm({
+      title: "Unsaved Changes",
+      message:
+        "You have unsaved attendance changes. Leave without saving?",
+      confirmText: "Leave",
+      cancelText: "Stay",
+      destructive: true,
+    });
 
-      if (hasChanges) {
+    if (!confirmed) return;
+  }
 
-        Alert.alert(
-          "Unsaved Changes",
-          "You have unsaved attendance changes. Leave without saving?",
-          [
-            {
-              text: "Stay",
-              style: "cancel",
-            },
-            {
-              text: "Leave",
-              style: "destructive",
-              onPress: () =>
-                navigation.goBack(),
-            },
-          ]
-        );
+  navigation.goBack();
+};
 
-        return;
-      }
-
-      navigation.goBack();
-    };
 
 
     /* ========================================================
@@ -793,7 +670,7 @@ const TeacherSectionAttendanceScreen =
       student: TeacherSectionAttendanceStudent
     ) => {
       if (hasChanges) {
-        Alert.alert(
+        showAlert(
           "Unsaved Changes",
           "Please save attendance before opening student history."
         );

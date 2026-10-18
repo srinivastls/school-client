@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState,useEffect} from "react";
 
 import {
-  View,
+  View,BackHandler,Platform
 } from "react-native";
 
 import {
   NavigationContainer,
   createNavigationContainerRef,
+  RouteProp,
 } from "@react-navigation/native";
 
 import {
@@ -24,6 +25,8 @@ import {
   MD3LightTheme as DefaultTheme,
   Provider as PaperProvider,
 } from "react-native-paper";
+
+import { useConfirm } from "./components/ConfirmProvider";
 
 import {
   ThemeProp,
@@ -43,7 +46,7 @@ import {
 import { LoginScreen } from "./screens/LoginScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { SplashScreen } from "./screens/SplashScreen";
-
+import { PrincipalSubjectManagementScreen } from "./screens/principal/PrincipalSubjectManagementScreen";
 import { AdminFeatureMenu } from "./screens/admin/AdminFeatureMenuScreen";
 import { AdminStudentManagement } from "./screens/admin/AdminStudentManagement";
 import { AdminStudentRegistration } from "./screens/admin/AdminStudentRegistration";
@@ -139,6 +142,12 @@ import AdminLeaveApprovals from "./screens/admin/AdminLeaveApprovals";
 import AdminTeacherAttendance from "./screens/admin/AdminTeacherAttendance";
 import { PromotionDemotion } from "./screens";
 import SectionManagementScreen from "./screens/SectionManagementScreen";
+import PrincipalTimetableManagementScreen from "./screens/principal/PrincipalTimetableManagementScreen";
+import PrincipalTeacherSubjectMappingScreen from "./screens/principal/PrincipalTeacherSubjectMappingScreen";
+import ExamSetupScreen from "./screens/principal/ExamSetupScreen";
+import ExamSubjectsScreen from "./screens/principal/ExamSubjectsScreen";
+import ExamTimetableScreen from "./screens/principal/ExamTimetableScreen";
+import { ConfirmProvider } from "./components/ConfirmProvider";
 const RootStack =
   createNativeStackNavigator<RootStackParamList>();
 
@@ -159,8 +168,66 @@ const theme: ThemeProp = {
   },
 };
 
+
+function ExitConfirmationHandler() {
+  const { confirm } = useConfirm();
+
+  useEffect(() => {
+    let isConfirmingExit = false;
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (!navigationRef.isReady()) {
+          return false;
+        }
+
+        // Allow React Navigation to handle normal back navigation.
+        if (navigationRef.canGoBack()) {
+          return false;
+        }
+
+        // Prevent duplicate dialogs.
+        if (isConfirmingExit) {
+          return true;
+        }
+
+        isConfirmingExit = true;
+
+        void confirm({
+          title: "Exit App",
+          message: "Are you sure you want to close the app?",
+          confirmText: "Yes, Exit",
+          cancelText: "Cancel",
+          destructive: true,
+        })
+          .then((confirmed) => {
+            if (confirmed) {
+              BackHandler.exitApp();
+            }
+          })
+          .catch((error) => {
+            console.error("Exit confirmation failed:", error);
+          })
+          .finally(() => {
+            isConfirmingExit = false;
+          });
+
+        return true;
+      }
+    );
+
+    return () => subscription.remove();
+  }, [confirm]);
+
+  return null;
+}
+
+
 export default function App() {
   const [activeRoute, setActiveRoute] = useState<string>(RootStackScreenNames.SplashScreen);
+
+  
 
 
   return (
@@ -170,11 +237,36 @@ export default function App() {
 
       <QueryClientProvider client={queryClient}>
 
-        <NavigationContainer
+        {/* <NavigationContainer
           ref={navigationRef}
           onReady={() => setActiveRoute(navigationRef.getCurrentRoute()?.name ?? RootStackScreenNames.SplashScreen)}
           onStateChange={() => setActiveRoute(navigationRef.getCurrentRoute()?.name ?? RootStackScreenNames.SplashScreen)}
-        >
+        > */}
+
+        <ConfirmProvider>
+          <ExitConfirmationHandler />
+      <NavigationContainer
+        ref={navigationRef}
+        onReady={() => {
+          setActiveRoute(
+            navigationRef.getCurrentRoute()?.name ??
+              RootStackScreenNames.SplashScreen
+          );
+        }}
+        onStateChange={() => {
+  const state = navigationRef.getRootState();
+
+
+  setActiveRoute(
+    navigationRef.getCurrentRoute()?.name ??
+      RootStackScreenNames.SplashScreen,
+  );
+}}
+
+
+      >
+
+        
 
           <View style={{ flex: 1 }}>
             <ModuleNavigationBar activeRoute={activeRoute} navigationRef={navigationRef} />
@@ -226,6 +318,54 @@ export default function App() {
               component={SplashScreen}
               options={{
                 headerShown: false,
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.PrincipalSubjectManagement}
+              component={PrincipalSubjectManagementScreen}
+              options={{
+                headerTitle: "Principal Subject Management",
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.PrincipalExamSetup}
+              component={ExamSetupScreen}
+              options={{
+                headerTitle: "Examination Setup",
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.PrincipalExamSubjects}
+              component={ExamSubjectsScreen}
+              options={{
+                headerTitle: "Exam Subjects",
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.PrincipalExamTimetable}
+              component={ExamTimetableScreen}
+              options={{
+                headerTitle: "Exam Timetable",
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.PrincipalTeacherSubjectMapping}
+              component={PrincipalTeacherSubjectMappingScreen}
+              options={{
+                headerTitle: "Principal Teacher Subject Mapping",
+              }}
+            />
+
+            <RootStack.Screen
+              name={RootStackScreenNames.PrincipalTimetableManagement}
+              component={PrincipalTimetableManagementScreen}
+              options={{
+                headerTitle: "Timetable Management",
               }}
             />
 
@@ -818,6 +958,7 @@ name={RootStackScreenNames.TeacherAttendance}
           </View>
 
         </NavigationContainer>
+        </ConfirmProvider>
 
       </QueryClientProvider>
 

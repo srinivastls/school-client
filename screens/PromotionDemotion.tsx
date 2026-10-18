@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
+  
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { useConfirm } from "../components/ConfirmProvider";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Button, Checkbox, TextInput } from "react-native-paper";
 import { useQuery } from "@tanstack/react-query";
@@ -523,6 +524,8 @@ export const PromotionDemotion = ({
     },
   ];
 
+  const { showAlert } = useConfirm();
+
   /* ----------------------------------------------------------
    * SUBMIT
    * ----------------------------------------------------------
@@ -530,7 +533,7 @@ export const PromotionDemotion = ({
 
   const handleSubmit = async () => {
     if (!hasValidSourceAcademicYear) {
-      Alert.alert(
+      showAlert(
         "Source academic year missing",
         "The current academic year could not be loaded."
       );
@@ -538,7 +541,7 @@ export const PromotionDemotion = ({
     }
 
     if (!hasValidTargetAcademicYear) {
-      Alert.alert(
+      showAlert(
         "Select target academic year",
         "Please select a target academic year."
       );
@@ -546,7 +549,7 @@ export const PromotionDemotion = ({
     }
 
     if (!sourceClassId) {
-      Alert.alert(
+      showAlert(
         "Select source class",
         "Please select the source class."
       );
@@ -554,7 +557,7 @@ export const PromotionDemotion = ({
     }
 
     if (!sourceSectionId) {
-      Alert.alert(
+      showAlert(
         "Select source section",
         "Please select the source section."
       );
@@ -562,7 +565,7 @@ export const PromotionDemotion = ({
     }
 
     if (!targetClassId) {
-      Alert.alert(
+      showAlert(
         "Select target class",
         "Please select the target class."
       );
@@ -572,7 +575,7 @@ export const PromotionDemotion = ({
 
 
     if (!targetSectionId) {
-      console.log(
+      showAlert(
         "Select target section",
         "Please select the target section."
       );
@@ -580,7 +583,7 @@ export const PromotionDemotion = ({
     }
 
     if (selectedStudentIds.length === 0) {
-      Alert.alert(
+      showAlert(
         "Select students",
         "Please select at least one student."
       );
@@ -613,7 +616,7 @@ export const PromotionDemotion = ({
       const response =
         await studentServices.promoteDemoteBulk(payload);
 
-      Alert.alert(
+      showAlert(
         "Success",
         response?.message ??
           `${selectedStudentIds.length} student(s) processed successfully.`
@@ -629,7 +632,7 @@ export const PromotionDemotion = ({
         error?.message ??
         "Unable to process students.";
 
-      Alert.alert("Error", message);
+      showAlert("Error", message);
     } finally {
       setIsSubmitting(false);
     }

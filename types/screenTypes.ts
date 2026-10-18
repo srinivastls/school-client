@@ -105,6 +105,16 @@ AdminSchoolSettings = "AdminSchoolSettings",
 AdminReports = "AdminReports",
 ProfileScreen = "ProfileScreen",
 AdminProfileScreen = "AdminProfileScreen",
+
+PrincipalSubjectManagement = "PrincipalSubjectManagement",
+
+
+PrincipalTeacherSubjectMapping = "PrincipalTeacherSubjectMapping",
+
+PrincipalTimetableManagement = "PrincipalTimetableManagement",
+PrincipalExamSetup = "PrincipalExamSetup",
+PrincipalExamSubjects = "PrincipalExamSubjects",
+PrincipalExamTimetable = "PrincipalExamTimetable",
 }
 
 export type ParentChild = {
@@ -134,8 +144,24 @@ export type RootStackParamList = {
   [RootStackScreenNames.CouponList]: undefined;
   [RootStackScreenNames.AdminList]: undefined;
   [RootStackScreenNames.Principaladmin]: undefined;
+  [RootStackScreenNames.PrincipalExamSubjects]: {
+    academicYearId: string;
+  };
+  [RootStackScreenNames.PrincipalSubjectManagement]: {
+    academicYearId: string;
+  };
   [RootStackScreenNames.PromotionDemotion]: undefined;
   [RootStackScreenNames.SectionManagement]: undefined;
+  [RootStackScreenNames.PrincipalTimetableManagement]: {
+    academicYearId: string;
+  };
+  [RootStackScreenNames.PrincipalExamTimetable]: {
+    academicYearId: string;
+  };
+  [RootStackScreenNames.PrincipalTeacherSubjectMapping]: undefined;
+  [RootStackScreenNames.PrincipalExamSetup]: {
+    academicYearId: string;
+  };
   [RootStackScreenNames.PrincipalClassDetails]:{
     classNumber: string;
   };

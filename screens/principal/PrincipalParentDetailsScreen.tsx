@@ -42,6 +42,7 @@ import {
 import {
   useQueryClient,
 } from "@tanstack/react-query";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 
 /* ============================================================
@@ -186,6 +187,8 @@ const PrincipalParentDetailsScreen =
       );
     };
 
+    const {showAlert} = useConfirm();
+
 
     /* ========================================================
        TOGGLE PARENT STATUS
@@ -251,7 +254,7 @@ const PrincipalParentDetailsScreen =
           error: any
         ) {
 
-          console.log(
+          showAlert(
             "UPDATE PARENT STATUS ERROR:",
             error?.response?.data ??
               error

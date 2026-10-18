@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -9,6 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useConfirm } from "../../components/ConfirmProvider";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList, RootStackScreenNames } from "../../types";
 import { Colors } from "../../theme";
@@ -82,6 +82,8 @@ export const AdminStudentEdit = ({ route, navigation }: Props) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const {showAlert} = useConfirm();
+
   const update = (key: keyof FormState, text: string) =>
     setForm((previous) => ({ ...previous, [key]: text }));
 
@@ -135,39 +137,49 @@ export const AdminStudentEdit = ({ route, navigation }: Props) => {
     };
   }, [route.params.admissionNo]);
 
-  const save = async () => {
-    if (!form.name.trim() || !form.admissionNo.trim()) {
-      Alert.alert("Validation", "Admission number and student name are required.");
-      return;
-    }
+  
+const save = async () => {
+  if (!form.name.trim() || !form.admissionNo.trim()) {
+    void showAlert(
+      "Validation",
+      "Admission number and student name are required.",
+      "error"
+    );
+    return;
+  }
 
-    setSaving(true);
-    setError("");
+  setSaving(true);
+  setError("");
 
-    try {
-      await studentServices.editStudent({
-        ...form,
-        oldAdmissionNo: route.params.admissionNo,
-        tie: Number(form.tie || 0),
-        belt: Number(form.belt || 0),
-        arrears: Number(form.arrears || 0),
-        diary: Number(form.diary || 0),
-        siblings: [],
-      } as any);
+  try {
+    await studentServices.editStudent({
+      ...form,
+      oldAdmissionNo: route.params.admissionNo,
+      tie: Number(form.tie || 0),
+      belt: Number(form.belt || 0),
+      arrears: Number(form.arrears || 0),
+      diary: Number(form.diary || 0),
+      siblings: [],
+    } as any);
 
-      Alert.alert("Updated", "Student details updated successfully.", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
-    } catch (requestError: any) {
-      setError(
-        requestError?.response?.data?.message ??
-          requestError?.message ??
-          "Unable to update student.",
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
+    await showAlert(
+      "Updated",
+      "Student details updated successfully.",
+      "success"
+    );
+
+    navigation.goBack();
+  } catch (requestError: any) {
+    setError(
+      requestError?.response?.data?.message ??
+        requestError?.message ??
+        "Unable to update student."
+    );
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   if (loading) {
     return <ActivityIndicator style={styles.loader} color={Colors.brandPrimary} />;

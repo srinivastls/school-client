@@ -7,7 +7,6 @@ import { platformSchoolStyles as styles} from "../../styles";
 
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   Modal,
   ScrollView,
@@ -17,6 +16,8 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+
+import {useConfirm} from "../../components/ConfirmProvider";
 
 import {
   Avatar,
@@ -183,6 +184,8 @@ const PlatformAdminSchoolDetails = () => {
   const {
     schoolId,
   } = route.params;
+
+  const { showAlert, confirm } = useConfirm();
 
 
   /* ==========================================================
@@ -381,46 +384,41 @@ const PlatformAdminSchoolDetails = () => {
 
 };
 
-const onDeletePrincipal = () => {
-  // Show confirmation before deleting
-  if (!school) {
-    return;
+
+const onDeletePrincipal = async () => {
+  if (!school) return;
+
+  const confirmed = await confirm({
+    title: "Delete Principal",
+    message: `Are you sure you want to delete the principal for ${school.name}?`,
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    destructive: true,
+  });
+
+  if (!confirmed) return;
+
+  try {
+    await platformAdminServices.deletePrincipal(school.id);
+
+    await refetch();
+
+    void showAlert(
+      "Deleted",
+      "Principal deleted successfully.",
+      "success"
+    );
+  } catch (error) {
+    console.error("Error deleting principal:", error);
+
+    void showAlert(
+      "Delete Failed",
+      "Unable to delete the principal. Please try again.",
+      "error"
+    );
   }
-
-  Alert.alert(
-    "Delete Principal",
-
-    `Are you sure you want to delete the principal for ${school.name}?`,
-
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          if (!school) {
-            return;
-          }
-          // Perform the deletion logic here
-          const deletePrincipal = async () => {
-            try {
-              await platformAdminServices.deletePrincipal(school.id);
-            } catch (error) {
-              console.error("Error deleting principal:", error);
-            }
-          };
-          deletePrincipal();
-
-
-          refetch();
-        },
-      },
-    ]
-  );
 };
+
 
   /* ==========================================================
      UPDATE STATUS
@@ -502,7 +500,7 @@ const onDeletePrincipal = () => {
         error: any
       ) {
 
-        console.log(
+        showAlert(
           "UPDATE SCHOOL STATUS ERROR:",
 
           error?.response?.data ??
@@ -533,85 +531,43 @@ const onDeletePrincipal = () => {
      SUSPEND CONFIRMATION
   ========================================================== */
 
-  const confirmSuspend =
-    () => {
+  
+const confirmSuspend = async () => {
+  if (!school) return;
 
-      if (!school) {
-        return;
-      }
+  const confirmed = await confirm({
+    title: "Suspend School",
+    message: `Are you sure you want to suspend ${school.name}?`,
+    confirmText: "Suspend",
+    cancelText: "Cancel",
+    destructive: true,
+  });
 
+  if (!confirmed) return;
 
-      Alert.alert(
-        "Suspend School",
+  await updateStatus("SUSPENDED");
+};
 
-        `Are you sure you want to suspend ${school.name}?`,
+/* ==========================================================
+   REACTIVATE CONFIRMATION
+========================================================== */
 
-        [
-          {
-            text:
-              "Cancel",
+const confirmReactivate = async () => {
+  if (!school) return;
 
-            style:
-              "cancel",
-          },
+  const confirmed = await confirm({
+    title: "Reactivate School",
+    message: `Are you sure you want to reactivate ${school.name}?`,
+    confirmText: "Reactivate",
+    cancelText: "Cancel",
+    destructive: false,
+  });
 
-          {
-            text:
-              "Suspend",
+  if (!confirmed) return;
 
-            style:
-              "destructive",
+  await updateStatus("ACTIVE");
+};
 
-            onPress:
-              () =>
-                updateStatus(
-                  "SUSPENDED"
-                ),
-          },
-        ]
-      );
-    };
-
-
-  /* ==========================================================
-     REACTIVATE CONFIRMATION
-  ========================================================== */
-
-  const confirmReactivate =
-    () => {
-
-      if (!school) {
-        return;
-      }
-
-
-      Alert.alert(
-        "Reactivate School",
-
-        `Are you sure you want to reactivate ${school.name}?`,
-
-        [
-          {
-            text:
-              "Cancel",
-
-            style:
-              "cancel",
-          },
-
-          {
-            text:
-              "Reactivate",
-
-            onPress:
-              () =>
-                updateStatus(
-                  "ACTIVE"
-                ),
-          },
-        ]
-      );
-    };
 
 
   const exportFullSchool = async () => {
@@ -721,136 +677,134 @@ const onDeletePrincipal = () => {
   };
 
 
-  const confirmDeleteYear = async (year: AcademicYear) => {
-    if (!school || lifecycleBusy) return;
+  
+const confirmDeleteYear = async (year: AcademicYear) => {
+  if (!school || lifecycleBusy) return;
 
-    setLifecycleBusy(true);
+  setLifecycleBusy(true);
 
-    try {
-      const preview =
-        await platformAdminServices.getAcademicYearDeletionPreview(
-          school.id,
-          year.id
-        );
-
-      if (preview?.blockers?.length) {
-        Alert.alert(
-          "Cannot Delete Academic Year",
-          preview.blockers.join("\n\n")
-        );
-        return;
-      }
-
-      Alert.alert(
-        `Delete ${year.name}?`,
-        `This will permanently delete the academic-year records listed in the preview.\n\nClasses: ${preview.counts.classes}\nSections: ${preview.counts.sections}\nEnrollments: ${preview.counts.enrollments}\nAttendance: ${preview.counts.attendance}\nExams: ${preview.counts.exams}\nID Cards: ${preview.counts.idCards}`,
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => {
-              const expectedText =
-                `DELETE ACADEMIC YEAR ${year.name}`;
-
-              openDeleteConfirmation(
-                expectedText,
-                "Final Confirmation",
-                `Type the following exactly to permanently delete ${year.name}:\n\n${expectedText}`,
-                async () => {
-                  if (!school) {
-                    return;
-                  }
-
-                  setLifecycleBusy(true);
-
-                  try {
-                    await platformAdminServices.deleteAcademicYear(
-                      school.id,
-                      year.id,
-                      deleteConfirmationRef.current.trim()
-                    );
-
-                    showMessage(
-                      `${year.name} deleted successfully`,
-                      "success"
-                    );
-
-                    deleteConfirmationRef.current = "";
-                    pendingDeleteRef.current = null;
-                    setDeleteConfirmation("");
-                    setDeleteModalVisible(false);
-
-                    await refetch();
-                  } catch (error: any) {
-                    showMessage(
-                      getErrorMessage(
-                        error,
-                        "Unable to delete academic year"
-                      ),
-                      "error"
-                    );
-                  } finally {
-                    setLifecycleBusy(false);
-                  }
-                }
-              );
-            },
-          },
-        ]
+  try {
+    const preview =
+      await platformAdminServices.getAcademicYearDeletionPreview(
+        school.id,
+        year.id
       );
-    } catch (error: any) {
-      showMessage(
-        getErrorMessage(
-          error,
-          "Unable to check academic year deletion"
-        ),
+
+    if (preview?.blockers?.length) {
+      void showAlert(
+        "Cannot Delete Academic Year",
+        preview.blockers.join("\n\n"),
         "error"
       );
-    } finally {
-      setLifecycleBusy(false);
+      return;
     }
-  };
 
+    const confirmed = await confirm({
+      title: `Delete ${year.name}?`,
+      message:
+        `This will permanently delete the academic-year records listed in the preview.\n\n` +
+        `Classes: ${preview.counts.classes}\n` +
+        `Sections: ${preview.counts.sections}\n` +
+        `Enrollments: ${preview.counts.enrollments}\n` +
+        `Attendance: ${preview.counts.attendance}\n` +
+        `Exams: ${preview.counts.exams}\n` +
+        `ID Cards: ${preview.counts.idCards}`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      destructive: true,
+    });
 
-  const confirmArchive = () => {
-    if (!school || lifecycleBusy) return;
-    Alert.alert(
-      "Archive School",
-      `Archive ${school.name}? The data will remain intact and the school can be restored later.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Archive",
-          style: "destructive",
-          onPress: async () => {
-            setLifecycleBusy(true);
-            try {
-              await platformAdminServices.archiveSchool(school.id);
-              showMessage("School archived successfully", "success");
-              await refetch();
-              await queryClient.invalidateQueries({
-                queryKey: ["platform-admin-schools"]
-              });
-              await queryClient.invalidateQueries({
-                queryKey: ["platform-admin-dashboard"]
-              });
-            } catch (error: any) {
-              showMessage(getErrorMessage(
-        error,
-        "Unable to archive school"
-      ), "error");
-            } finally {
-              setLifecycleBusy(false);
-            }
-          },
-        },
-      ]
+    if (!confirmed) return;
+
+    const expectedText = `DELETE ACADEMIC YEAR ${year.name}`;
+
+    openDeleteConfirmation(
+      expectedText,
+      "Final Confirmation",
+      `Type the following exactly to permanently delete ${year.name}:\n\n${expectedText}`,
+      async () => {
+        if (!school) return;
+
+        setLifecycleBusy(true);
+
+        try {
+          await platformAdminServices.deleteAcademicYear(
+            school.id,
+            year.id,
+            deleteConfirmationRef.current.trim()
+          );
+
+          showMessage(
+            `${year.name} deleted successfully`,
+            "success"
+          );
+
+          deleteConfirmationRef.current = "";
+          pendingDeleteRef.current = null;
+          setDeleteConfirmation("");
+          setDeleteModalVisible(false);
+
+          await refetch();
+        } catch (error: any) {
+          showMessage(
+            getErrorMessage(error, "Unable to delete academic year"),
+            "error"
+          );
+        } finally {
+          setLifecycleBusy(false);
+        }
+      }
     );
-  };
+  } catch (error: any) {
+    showMessage(
+      getErrorMessage(error, "Unable to check academic year deletion"),
+      "error"
+    );
+  } finally {
+    setLifecycleBusy(false);
+  }
+};
+
+const confirmArchive = async () => {
+  if (!school || lifecycleBusy) return;
+
+  const confirmed = await confirm({
+    title: "Archive School",
+    message:
+      `Archive ${school.name}? The data will remain intact and the school can be restored later.`,
+    confirmText: "Archive",
+    cancelText: "Cancel",
+    destructive: true,
+  });
+
+  if (!confirmed) return;
+
+  setLifecycleBusy(true);
+
+  try {
+    await platformAdminServices.archiveSchool(school.id);
+
+    showMessage("School archived successfully", "success");
+
+    await refetch();
+
+    await queryClient.invalidateQueries({
+      queryKey: ["platform-admin-schools"],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["platform-admin-dashboard"],
+    });
+  } catch (error: any) {
+    showMessage(
+      getErrorMessage(error, "Unable to archive school"),
+      "error"
+    );
+  } finally {
+    setLifecycleBusy(false);
+  }
+};
+
 
   const confirmRestore = async () => {
     if (!school || lifecycleBusy) return;
@@ -869,98 +823,89 @@ const onDeletePrincipal = () => {
     }
   };
 
-  const confirmPermanentDelete = () => {
-    if (!school || lifecycleBusy) return;
+  
+const confirmPermanentDelete = async () => {
+  if (!school || lifecycleBusy) return;
 
-    if (
-      school.status !== "SUSPENDED" &&
-      school.status !== "ARCHIVED"
-    ) {
-      showMessage(
-        "School must be suspended or archived before permanent deletion",
-        "error"
-      );
-      return;
-    }
-
-    const expectedText =
-      `DELETE SCHOOL ${school.code}`;
-
-    Alert.alert(
-      "PERMANENT DELETE",
-      `A complete backup will be created first.\n\nThis action cannot be undone.\n\nYou will need to type exactly:\n\n${expectedText}`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Continue",
-          style: "destructive",
-          onPress: () => {
-            openDeleteConfirmation(
-              expectedText,
-              "Final Confirmation",
-              `Type the following exactly to permanently delete ${school.name}:\n\n${expectedText}`,
-              async () => {
-                if (!school) {
-                  return;
-                }
-
-                setLifecycleBusy(true);
-
-                try {
-                  const result =
-                    await platformAdminServices.deleteSchool(
-                      school.id,
-                      deleteConfirmationRef.current.trim()
-                    );
-
-                  showMessage(
-                    "School permanently deleted. Backup was created first.",
-                    "success"
-                  );
-
-                  if (result?.backup?.operationId) {
-                    console.log(
-                      "School backup operation:",
-                      result.backup.operationId
-                    );
-                  }
-
-                  deleteConfirmationRef.current = "";
-                  pendingDeleteRef.current = null;
-                  setDeleteConfirmation("");
-                  setDeleteModalVisible(false);
-
-
-                  await queryClient.invalidateQueries({
-                    queryKey: ["platform-admin-schools"]
-                  });
-
-                  await queryClient.invalidateQueries({
-                    queryKey: ["platform-admin-dashboard"]
-                  });
-
-                  navigation.goBack();
-                } catch (error: any) {
-                  showMessage(
-                    getErrorMessage(
-                      error,
-                      "Unable to delete school"
-                    ),
-                    "error"
-                  );
-                } finally {
-                  setLifecycleBusy(false);
-                }
-              }
-            );
-          },
-        },
-      ]
+  if (
+    school.status !== "SUSPENDED" &&
+    school.status !== "ARCHIVED"
+  ) {
+    showMessage(
+      "School must be suspended or archived before permanent deletion",
+      "error"
     );
-  };
+    return;
+  }
+
+  const expectedText = `DELETE SCHOOL ${school.code}`;
+
+  const confirmed = await confirm({
+    title: "PERMANENT DELETE",
+    message:
+      `A complete backup will be created first.\n\n` +
+      `This action cannot be undone.\n\n` +
+      `You will need to type exactly:\n\n${expectedText}`,
+    confirmText: "Continue",
+    cancelText: "Cancel",
+    destructive: true,
+  });
+
+  if (!confirmed) return;
+
+  openDeleteConfirmation(
+    expectedText,
+    "Final Confirmation",
+    `Type the following exactly to permanently delete ${school.name}:\n\n${expectedText}`,
+    async () => {
+      if (!school) return;
+
+      setLifecycleBusy(true);
+
+      try {
+        const result = await platformAdminServices.deleteSchool(
+          school.id,
+          deleteConfirmationRef.current.trim()
+        );
+
+        showMessage(
+          "School permanently deleted. Backup was created first.",
+          "success"
+        );
+
+        if (result?.backup?.operationId) {
+          showAlert(
+            "School backup operation:",
+            result.backup.operationId
+          );
+        }
+
+        deleteConfirmationRef.current = "";
+        pendingDeleteRef.current = null;
+        setDeleteConfirmation("");
+        setDeleteModalVisible(false);
+
+        await queryClient.invalidateQueries({
+          queryKey: ["platform-admin-schools"],
+        });
+
+        await queryClient.invalidateQueries({
+          queryKey: ["platform-admin-dashboard"],
+        });
+
+        navigation.goBack();
+      } catch (error: any) {
+        showMessage(
+          getErrorMessage(error, "Unable to delete school"),
+          "error"
+        );
+      } finally {
+        setLifecycleBusy(false);
+      }
+    }
+  );
+};
+
 
 
   /* ==========================================================

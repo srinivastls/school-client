@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -13,6 +12,8 @@ import {
   TextInput,
   View,
 } from "react-native";
+
+import {useConfirm} from "../../components/ConfirmProvider";
 
 import { classServices } from "../../services/classServices";
 import { academicYearServices } from "../../services/academicYearServices";
@@ -98,6 +99,8 @@ const ClassManagementScreen = () => {
 
   const [saving, setSaving] = useState(false);
 
+  const { showAlert, confirm } = useConfirm();
+
   /* ----------------------------------------------------------
      FORM
   ---------------------------------------------------------- */
@@ -140,7 +143,7 @@ const ClassManagementScreen = () => {
         setSelectedAcademicYearId(years[0].id);
       }
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         "Error",
         error?.response?.data?.message ??
           "Unable to load academic years"
@@ -186,7 +189,7 @@ const ClassManagementScreen = () => {
 
       setClasses(normalizedClasses as ClassItem[]);
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         "Error",
         error?.response?.data?.message ??
           "Unable to load classes"
@@ -299,7 +302,7 @@ const ClassManagementScreen = () => {
 
   const validateForm = () => {
     if (!selectedAcademicYearId) {
-      Alert.alert(
+      showAlert(
         "Academic Year",
         "Please select an academic year."
       );
@@ -307,7 +310,7 @@ const ClassManagementScreen = () => {
     }
 
     if (!classNumber.trim()) {
-      Alert.alert(
+      showAlert(
         "Class Number",
         "Please enter class number."
       );
@@ -315,7 +318,7 @@ const ClassManagementScreen = () => {
     }
 
     if (!tuitionFee.trim()) {
-      Alert.alert(
+      showAlert(
         "Tuition Fee",
         "Please enter tuition fee."
       );
@@ -323,7 +326,7 @@ const ClassManagementScreen = () => {
     }
 
     if (!textBookFee.trim()) {
-      Alert.alert(
+      showAlert(
         "Text Book Fee",
         "Please enter text book fee."
       );
@@ -331,7 +334,7 @@ const ClassManagementScreen = () => {
     }
 
     if (!noteBookFee.trim()) {
-      Alert.alert(
+      showAlert(
         "Note Book Fee",
         "Please enter note book fee."
       );
@@ -339,7 +342,7 @@ const ClassManagementScreen = () => {
     }
 
     if (!diaryFee.trim()) {
-      Alert.alert(
+      showAlert(
         "Diary Fee",
         "Please enter diary fee."
       );
@@ -360,7 +363,7 @@ const ClassManagementScreen = () => {
         ) ||
         Number(fee) < 0
       ) {
-        Alert.alert(
+        showAlert(
           "Invalid Fee",
           "All fees must be valid non-negative numbers."
         );
@@ -405,7 +408,7 @@ const ClassManagementScreen = () => {
             selectedAcademicYearId,
         } as any);
 
-        Alert.alert(
+        showAlert(
           "Success",
           "Class updated successfully."
         );
@@ -434,7 +437,7 @@ const ClassManagementScreen = () => {
             selectedAcademicYearId,
         } as any);
 
-        Alert.alert(
+        showAlert(
           "Success",
           "Class created successfully."
         );
@@ -444,7 +447,7 @@ const ClassManagementScreen = () => {
 
       await loadClasses();
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         "Unable to save",
         error?.response?.data?.message ??
           "Something went wrong."
@@ -458,24 +461,21 @@ const ClassManagementScreen = () => {
      DELETE
   ========================================================== */
 
-  const confirmDelete = (item: ClassItem) => {
-    Alert.alert(
-      "Delete Class",
-      `Delete Class ${item.displayName}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () =>
-            deleteClass(item),
-        },
-      ]
-    );
-  };
+  
+const confirmDelete = async (item: ClassItem) => {
+  const confirmed = await confirm({
+    title: "Delete Class",
+    message: `Delete Class ${item.displayName}?`,
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    destructive: true,
+  });
+
+  if (!confirmed) return;
+
+  await deleteClass(item);
+};
+
 
   const deleteClass = async (
     item: ClassItem
@@ -491,14 +491,14 @@ const ClassManagementScreen = () => {
           item.academicYearId,
       } as any);
 
-      Alert.alert(
+      showAlert(
         "Deleted",
         "Class deleted successfully."
       );
 
       await loadClasses();
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         "Unable to delete",
         error?.response?.data?.message ??
           "Class could not be deleted."

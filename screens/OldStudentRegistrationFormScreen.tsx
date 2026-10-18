@@ -36,6 +36,7 @@ import {
   RootStackScreenNames,
   Student,
 } from "../types";
+import { useConfirm } from "../components/ConfirmProvider";
 
 
 const OldStudentRegistrationFormScreen =
@@ -51,6 +52,8 @@ const OldStudentRegistrationFormScreen =
       showErrorSnackbar,
       setShowErrorSnackbar,
     ] = useState(false);
+
+    const {showAlert} = useConfirm();
 
 
     const [
@@ -153,7 +156,7 @@ const OldStudentRegistrationFormScreen =
         error: any
       ) {
 
-        console.log(
+        showAlert(
           "GET STUDENT ERROR:",
           error?.response?.data ??
             error

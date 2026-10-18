@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   SafeAreaView,
@@ -14,6 +13,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList, RootStackScreenNames } from "../../types";
 import { Colors } from "../../theme";
 import { studentServices } from "../../services/studentServices";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
@@ -76,9 +76,11 @@ export const AdminStudentManagement = ({ navigation }: Props) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const { showAlert } = useConfirm();
+
   const loadStudents = useCallback(async () => {
     if (!classNumber.trim()) {
-      Alert.alert("Class required", "Enter a class number before loading students.");
+      await showAlert("Class required", "Enter a class number before loading students.", "error");
       return;
     }
 

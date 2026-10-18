@@ -27,22 +27,23 @@
       "bundleIdentifier": "com.soir.shikshavega.app"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      },
-      "permissions": [
-        "BLUETOOTH",
-        "BLUETOOTH_ADMIN",
-        "BLUETOOTH_SCAN",
-        "BLUETOOTH_CONNECT",
-        "ACCESS_FINE_LOCATION",
-        "INTERNET",
-        "ACCESS_NETWORK_STATE",
-        "CHANGE_WIFI_MULTICAST_STATE"
-      ],
-      "package": "com.soir.shikshavega.app"
-    },
+  "adaptiveIcon": {
+    "foregroundImage": "./assets/adaptive-icon.png",
+    "backgroundColor": "#FFFFFF"
+  },
+  "predictiveBackGestureEnabled": false,
+  "permissions": [
+    "BLUETOOTH",
+    "BLUETOOTH_ADMIN",
+    "BLUETOOTH_SCAN",
+    "BLUETOOTH_CONNECT",
+    "ACCESS_FINE_LOCATION",
+    "INTERNET",
+    "ACCESS_NETWORK_STATE",
+    "CHANGE_WIFI_MULTICAST_STATE"
+  ],
+  "package": "com.soir.shikshavega.app"
+},
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "single"

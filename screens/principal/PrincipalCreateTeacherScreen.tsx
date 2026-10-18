@@ -35,6 +35,7 @@ import {
   principalServices,
 } from "../../services/principalServices";
 import { principalCreateTeacherStyles as styles } from "../../styles/principal.styles";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 const PrincipalCreateTeacherScreen = () => {
   const navigation =
@@ -69,6 +70,8 @@ const PrincipalCreateTeacherScreen = () => {
     email?: string;
     password?: string;
   }>({});
+
+  const {showAlert} = useConfirm();
 
   /* ============================================================
      MESSAGE
@@ -171,7 +174,7 @@ const PrincipalCreateTeacherScreen = () => {
         navigation.goBack();
       }, 700);
     } catch (error: any) {
-      console.log(
+      showAlert(
         "CREATE TEACHER ERROR:",
         error?.response?.data ??
           error

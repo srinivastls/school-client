@@ -868,7 +868,7 @@ const classes = getItems(classesResponse, "classes");
         "View all user activities",
 
       icon:
-        "shield-search-outline",
+        "shield-search",
 
       iconBackground:
         "#F1EEFF",

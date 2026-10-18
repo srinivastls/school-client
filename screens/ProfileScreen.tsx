@@ -5,7 +5,6 @@ import React, {
 } from "react";
 
 import {
-  Alert,
   Image,
   RefreshControl,
   ScrollView,
@@ -13,6 +12,7 @@ import {
   View,
 } from "react-native";
 
+import { useConfirm } from "../components/ConfirmProvider";
 import {
   ActivityIndicator,
   Avatar,
@@ -68,6 +68,8 @@ const ProfileScreen = ({
   const [phone, setPhone] =
     useState("");
 
+  const { showAlert } = useConfirm();
+
   // ==========================================================
   // LOAD PROFILE
   // ==========================================================
@@ -96,7 +98,7 @@ const ProfileScreen = ({
           error
         );
 
-        Alert.alert(
+        showAlert(
           "Unable to load",
           error?.response?.data?.message ||
             "Unable to load your profile."
@@ -145,7 +147,7 @@ const ProfileScreen = ({
         error
       );
 
-      Alert.alert(
+      showAlert(
         "Refresh failed",
         error?.response?.data?.message ||
           "Unable to refresh your profile."
@@ -193,7 +195,7 @@ const ProfileScreen = ({
 
   const saveProfile = async () => {
     if (!name.trim()) {
-      Alert.alert(
+      showAlert(
         "Name required",
         "Please enter your name."
       );
@@ -223,7 +225,7 @@ const ProfileScreen = ({
 
       setEditing(false);
 
-      Alert.alert(
+      showAlert(
         "Profile updated",
         "Your profile has been updated successfully."
       );
@@ -233,7 +235,7 @@ const ProfileScreen = ({
         error
       );
 
-      Alert.alert(
+      showAlert(
         "Update failed",
         error?.response?.data?.message ||
           "Unable to update your profile."
@@ -519,7 +521,7 @@ const ProfileScreen = ({
             <InfoRow
               label="Role"
               value={formatRole(profile.role)}
-              icon="account-badge"
+              icon="account-cog"
             />
 
             <InfoRow

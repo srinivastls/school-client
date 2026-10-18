@@ -5,12 +5,13 @@ import React, {
 } from "react";
 
 import {
-  Alert,
   FlatList,
   RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
+
+import { useConfirm } from "../../components/ConfirmProvider";
 
 import {
   ActivityIndicator,
@@ -112,6 +113,8 @@ const TeacherLeaveScreen = ({
   const [submitting, setSubmitting] =
     useState(false);
 
+  const { showAlert, confirm } = useConfirm();
+
   const loadLeaves = useCallback(
     async () => {
       try {
@@ -130,7 +133,7 @@ const TeacherLeaveScreen = ({
         setRequests(response.requests);
         setSummary(response.summary);
       } catch (error: any) {
-        Alert.alert(
+        showAlert(
           "Unable to load",
           error?.response?.data?.message ||
             "Unable to load leave requests."
@@ -157,7 +160,7 @@ const TeacherLeaveScreen = ({
 
   const submitLeave = async () => {
     if (!reason.trim()) {
-      Alert.alert(
+      showAlert(
         "Reason required",
         "Please enter the reason for your leave."
       );
@@ -165,7 +168,7 @@ const TeacherLeaveScreen = ({
     }
 
     if (toDate < fromDate) {
-      Alert.alert(
+      showAlert(
         "Invalid dates",
         "To date cannot be before from date."
       );
@@ -192,14 +195,14 @@ const TeacherLeaveScreen = ({
       setFromDate(today);
       setToDate(today);
 
-      Alert.alert(
+      showAlert(
         "Submitted",
         "Your leave request has been submitted successfully."
       );
 
       await loadLeaves();
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         "Unable to submit",
         error?.response?.data?.message ||
           "Unable to submit leave request."
@@ -209,44 +212,40 @@ const TeacherLeaveScreen = ({
     }
   };
 
-  const cancelRequest = (
-    request: TeacherLeaveRequest
-  ) => {
-    Alert.alert(
-      "Cancel leave?",
-      "This pending leave request will be cancelled.",
-      [
-        {
-          text: "Keep",
-          style: "cancel",
-        },
-        {
-          text: "Cancel Leave",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await teacherServices.cancelLeave(
-                request.id
-              );
+  
+const cancelRequest = async (
+  request: TeacherLeaveRequest
+) => {
+  const confirmed = await confirm({
+    title: "Cancel leave?",
+    message: "This pending leave request will be cancelled.",
+    confirmText: "Cancel Leave",
+    cancelText: "Keep",
+    destructive: true,
+  });
 
-              await loadLeaves();
+  if (!confirmed) return;
 
-              Alert.alert(
-                "Cancelled",
-                "Leave request cancelled successfully."
-              );
-            } catch (error: any) {
-              Alert.alert(
-                "Unable to cancel",
-                error?.response?.data?.message ||
-                  "Unable to cancel leave request."
-              );
-            }
-          },
-        },
-      ]
+  try {
+    await teacherServices.cancelLeave(request.id);
+
+    await loadLeaves();
+
+    void showAlert(
+      "Cancelled",
+      "Leave request cancelled successfully.",
+      "success"
     );
-  };
+  } catch (error: any) {
+    void showAlert(
+      "Unable to cancel",
+      error?.response?.data?.message ||
+        "Unable to cancel leave request.",
+      "error"
+    );
+  }
+};
+
 
   if (loading && requests.length === 0) {
     return (

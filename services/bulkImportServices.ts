@@ -54,8 +54,7 @@ export const bulkImportServices = {
     const uploadURL =
       `${baseURL}/admin/bulk/${module}/preview`;
 
-    console.log("NATIVE UPLOAD URL:", uploadURL);
-    console.log("HAS ACCESS TOKEN:", Boolean(accessToken));
+
 
     const response = await fetch(uploadURL, {
       method: "POST",

@@ -5,6 +5,9 @@ import React, {
 
 import {createPrincipalStyles as styles} from "../../styles";
 
+import {useConfirm} from "../../components/ConfirmProvider";
+
+
 import {
   KeyboardAvoidingView,
   Platform,
@@ -184,6 +187,9 @@ const CreatePrincipalScreen = () => {
   ] = useState<
     "success" | "error"
   >("error");
+
+
+  const {showAlert} = useConfirm();
 
 
   const [
@@ -802,7 +808,7 @@ const CreatePrincipalScreen = () => {
         error: any
       ) {
 
-        console.log(
+        showAlert(
           "CREATE PRINCIPAL ERROR:",
           error?.response?.data ??
             error

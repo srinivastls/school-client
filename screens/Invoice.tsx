@@ -310,7 +310,7 @@ function InfoRow({ label, value }: { label: string; value: string | number | und
 /* ============================================================
    FEE ROW
 ============================================================ */
-function FeeRow({ label, amount }: { label: string; amount: number }): JSX.Element {
+function FeeRow({ label, amount }: { label: string; amount: number }): React.ReactElement {
   const s = rowStyles();
   return (
     <View style={s.row}>

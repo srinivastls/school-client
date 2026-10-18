@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   RefreshControl,
   SafeAreaView,
   StyleSheet,
@@ -14,7 +15,8 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-
+  import { useEffect } from "react";
+import { BackHandler } from "react-native";
 import { teacherServices } from "../../services/teacherServices";
 import type {
   TeacherStudentAttendanceHistoryResponse,
@@ -29,6 +31,8 @@ type RouteParams = {
   sectionName?: string;
   studentName?: string;
 };
+
+
 
 const statusLabel = (
   status: TeacherStudentAttendanceHistoryItem["status"]
@@ -127,6 +131,8 @@ export default function TeacherStudentAttendanceHistoryScreen() {
     }, [loadHistory])
   );
 
+
+
   const onRefresh = () => {
     setRefreshing(true);
     loadHistory();
@@ -160,6 +166,9 @@ export default function TeacherStudentAttendanceHistoryScreen() {
 
   const student = data.student;
   const summary = data.summary;
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>

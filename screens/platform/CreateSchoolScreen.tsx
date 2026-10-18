@@ -41,6 +41,7 @@ import {
 import {
   styles,
 } from "./CreateSchoolScreen.styles";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 
 /* ============================================================
@@ -244,6 +245,10 @@ const CreateSchoolScreen = () => {
       }
     );
   };
+
+
+
+  const {showAlert} = useConfirm();
 
 
   const showMessage = (
@@ -871,7 +876,7 @@ const CreateSchoolScreen = () => {
         error: any
       ) {
 
-        console.log(
+        showAlert(
           "CREATE SCHOOL ERROR:",
           error?.response?.data ??
             error
