@@ -12,3 +12,6 @@ export * from "./academicYearServices";
 export * from "./adminAttendanceLeaveServices";
 export * from "./bulkImportServices";
 export * from "./platformAdminServices";
+export * from "./parentResultsServices";
+export * from "./principalResultsServices";
+export * from "./principalReportCardServices";

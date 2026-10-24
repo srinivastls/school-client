@@ -31,6 +31,10 @@ import {
   Metrics,
 } from "../../theme";
 
+import {
+  RootStackScreenNames,
+} from "../../types/screenTypes";
+
 
 /* ============================================================
    TYPES
@@ -78,6 +82,7 @@ type ParentChildDetailsParams = {
 
 type RootStackParamList = {
   ParentChildDetails: ParentChildDetailsParams;
+  ParentResults: undefined;
 };
 
 
@@ -480,6 +485,11 @@ const ParentChildDetailsScreen =
                   icon="M"
                   title="Marks"
                   subtitle="Coming soon"
+                  onPress={() =>
+                    navigation.navigate(
+                      RootStackScreenNames.ParentResults,
+                    )
+                  }
                 />
 
                 <QuickAction
@@ -609,14 +619,17 @@ const QuickAction = ({
   icon,
   title,
   subtitle,
+  onPress,
 }: {
   icon: string;
   title: string;
   subtitle: string;
+  onPress?: () => void;
 }) => {
 
   return (
     <TouchableRipple
+      onPress={onPress}
       style={
         styles.quickActionTouchable
       }

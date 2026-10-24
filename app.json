@@ -31,7 +31,6 @@
     "foregroundImage": "./assets/adaptive-icon.png",
     "backgroundColor": "#FFFFFF"
   },
-  "predictiveBackGestureEnabled": false,
   "permissions": [
     "BLUETOOTH",
     "BLUETOOTH_ADMIN",

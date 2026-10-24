@@ -45,6 +45,7 @@ import {
   useUserStore,
 } from "../../store";
 import {teacherServices} from "../../services/teacherServices";
+import { academicYearServices } from "../../services";
 /* ============================================================
    TYPES
 ============================================================ */
@@ -351,6 +352,37 @@ const TeacherDashboard = () => {
 
       },
 
+    },
+    {
+      title: "Reports",
+      subtitle: "View and generate reports.",
+      icon: "chart-bar",
+      iconBackground: "#F0F0F0",
+      iconColor: "#666666",
+      section: "Academic Work",
+      onPress: () => {
+        academicYearServices.getCurrentAcademicYear().then(academicYear => {
+          navigation.navigate(RootStackScreenNames.TeacherReports, {
+            academicYearId: academicYear.id,
+          });
+        });
+      },
+    },
+
+    {
+      title: "Results",
+      subtitle: "View your students' results.",
+      icon: "chart-bar",
+      iconBackground: "#F0F0F0",
+      iconColor: "#666666",
+      section: "Academic Work",
+      onPress: () => {
+        academicYearServices.getCurrentAcademicYear().then(academicYear => {
+          navigation.navigate(RootStackScreenNames.TeacherResults, {
+            academicYearId: academicYear.id,
+          });
+        });
+      },
     },
 
     {

@@ -83,6 +83,7 @@ export enum RootStackScreenNames {
   TeacherMyAttendance = "TeacherMyAttendance",
   TeacherLeave = "TeacherLeave",
   TeacherAttendance = "TeacherAttendance",
+  TeacherReports = "TeacherReports",
   SectionManagement = "SectionManagement",
 
   BulkImport = "BulkImport",
@@ -115,6 +116,14 @@ PrincipalTimetableManagement = "PrincipalTimetableManagement",
 PrincipalExamSetup = "PrincipalExamSetup",
 PrincipalExamSubjects = "PrincipalExamSubjects",
 PrincipalExamTimetable = "PrincipalExamTimetable",
+PrincipalResults = "PrincipalResults",
+ParentResults = "ParentResults",
+PrincipalReportCards = "PrincipalReportCards",
+PrincipalReportCardAnalytics = "PrincipalReportCardAnalytics",
+PrincipalStudentPerformanceTrends = "PrincipalStudentPerformanceTrends",
+TeacherResults = "TeacherResults",
+
+ImportExport = "ImportExport",
 }
 
 export type ParentChild = {
@@ -144,6 +153,10 @@ export type RootStackParamList = {
   [RootStackScreenNames.CouponList]: undefined;
   [RootStackScreenNames.AdminList]: undefined;
   [RootStackScreenNames.Principaladmin]: undefined;
+  [RootStackScreenNames.PrincipalResults]: {
+    academicYearId: string;
+  };
+  [RootStackScreenNames.ParentResults]: undefined;
   [RootStackScreenNames.PrincipalExamSubjects]: {
     academicYearId: string;
   };
@@ -152,10 +165,16 @@ export type RootStackParamList = {
   };
   [RootStackScreenNames.PromotionDemotion]: undefined;
   [RootStackScreenNames.SectionManagement]: undefined;
+  [RootStackScreenNames.ImportExport]: {
+    academicYearId?: string;
+  };
   [RootStackScreenNames.PrincipalTimetableManagement]: {
     academicYearId: string;
   };
   [RootStackScreenNames.PrincipalExamTimetable]: {
+    academicYearId: string;
+  };
+  [RootStackScreenNames.PrincipalReportCards]: {
     academicYearId: string;
   };
   [RootStackScreenNames.PrincipalTeacherSubjectMapping]: undefined;
@@ -168,6 +187,12 @@ export type RootStackParamList = {
   [RootStackScreenNames.PrincipalPendingDues]: undefined;
   [RootStackScreenNames.PrincipalDefaulterStudents]: undefined;
   [RootStackScreenNames.PrincipalAttendanceDashboard]: undefined;
+  [RootStackScreenNames.PrincipalReportCardAnalytics]: {
+    academicYearId: string;
+  };
+  [RootStackScreenNames.PrincipalStudentPerformanceTrends]: {
+    academicYearId: string;
+  };
   [RootStackScreenNames.ClassManagement]: undefined;
   [RootStackScreenNames.TeacherMyClasses]: undefined;
   [RootStackScreenNames.AdminStudentRegistration]: undefined;
@@ -189,6 +214,9 @@ export type RootStackParamList = {
 [RootStackScreenNames.TeacherMyStudents]: undefined;
 [RootStackScreenNames.TeacherTimetable]: undefined;
 [RootStackScreenNames.TeacherAttendance]: undefined;
+[RootStackScreenNames.TeacherResults]: {
+  academicYearId: string;
+};
 [RootStackScreenNames.AdminTeacherAttendance]: {
   date: string;
 };
@@ -239,6 +267,9 @@ export type RootStackParamList = {
 };
   [RootStackScreenNames.TeacherClassDetails]: {
     classId: string;
+  };
+  [RootStackScreenNames.TeacherReports]: {
+    academicYearId: string;
   };
   [RootStackScreenNames.PrincipalAdminDetails]: {
     adminId: string;

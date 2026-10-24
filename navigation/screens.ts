@@ -1,13 +1,10 @@
 import {
-  AdminListScreen,
-  ClassFeeFormScreen,
   CouponListScreen,
   CreateCouponScreen,
   Invoice,
   LoginScreen,
   OldStudentRegistrationFormScreen,
   //Payment,
-  PercentageUnpaidFeeScreen,
   SplashScreen,
   StudentDetails,
   StudentFeeHistory,
@@ -53,11 +50,7 @@ export const RootScreens: Screen[] = [
     component: CouponListScreen,
     options: { headerTitle: "Coupons List" },
   },
-  {
-    name: RootStackScreenNames.AdminList,
-    component: AdminListScreen,
-    options: { headerTitle: "Admin List" },
-  },
+ 
   {
     name: RootStackScreenNames.StudentRegistrationForm,
     component: StudentRegistrationFormScreen,
@@ -68,15 +61,12 @@ export const RootScreens: Screen[] = [
     component: OldStudentRegistrationFormScreen,
     options: { headerTitle: "Student Registration" },
   },
-  {
-    name: RootStackScreenNames.ClassFeeForm,
-    component: ClassFeeFormScreen,
-  },
-  {
-    name: RootStackScreenNames.PercentageUnpaidFee,
-    component: PercentageUnpaidFeeScreen,
-    options: { headerTitle: "Report" },
-  },
+
+  // {
+  //   name: RootStackScreenNames.PercentageUnpaidFee,
+  //   component: PercentageUnpaidFeeScreen,
+  //   options: { headerTitle: "Report" },
+  // },
   // {
   //   name: RootStackScreenNames.MonthOrDateFeeHistory,
   //   component: MonthOrDateFeeHistory,

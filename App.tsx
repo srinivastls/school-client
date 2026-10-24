@@ -148,6 +148,14 @@ import ExamSetupScreen from "./screens/principal/ExamSetupScreen";
 import ExamSubjectsScreen from "./screens/principal/ExamSubjectsScreen";
 import ExamTimetableScreen from "./screens/principal/ExamTimetableScreen";
 import { ConfirmProvider } from "./components/ConfirmProvider";
+import PrincipalResultsScreen from "./screens/principal/PrincipalResultsScreen";
+import ParentResultsScreen from "./screens/parent/ParentResultsScreen";
+import PrincipalReportCardsScreen from "./screens/principal/PrincipalReportCardsScreen";
+import PrincipalReportCardAnalyticsScreen from "./screens/principal/PrincipalReportCardAnalyticsScreen";
+import PrincipalStudentPerformanceTrendsScreen from "./screens/principal/PrincipalStudentPerformanceTrendsScreen";
+import TeacherStudentPerformanceTrendsScreen from "./screens/teacher/TeacherStudentPerformanceTrendsScreen";
+import TeacherReportCardsScreen from "./screens/teacher/TeacherReportCardsScreen";
+import BulkImportExportScreen from "./screens/principal/BulkImportExportScreen";
 const RootStack =
   createNativeStackNavigator<RootStackParamList>();
 
@@ -681,6 +689,69 @@ name={RootStackScreenNames.TeacherAttendance}
 <RootStack.Screen
   name={RootStackScreenNames.AdminReports}
   component={AdminReports}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.PrincipalResults}
+  component={PrincipalResultsScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.ParentResults}
+  component={ParentResultsScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.PrincipalReportCards}
+  component={PrincipalReportCardsScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.PrincipalReportCardAnalytics}
+  component={PrincipalReportCardAnalyticsScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.PrincipalStudentPerformanceTrends}
+  component={PrincipalStudentPerformanceTrendsScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherReports}
+  component={TeacherStudentPerformanceTrendsScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+<RootStack.Screen
+  name={RootStackScreenNames.TeacherResults}
+  component={TeacherReportCardsScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<RootStack.Screen
+  name={RootStackScreenNames.ImportExport}
+  component={BulkImportExportScreen}
   options={{
     headerShown: false,
   }}

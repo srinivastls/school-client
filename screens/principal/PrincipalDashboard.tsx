@@ -517,6 +517,20 @@ const classes = getItems(classesResponse, "classes");
 
     },
 
+    {
+      title: "import / Export",
+      subtitle: "Import and export data in bulk",
+      icon: "import",
+      iconBackground: "#F0F9FF",
+      iconColor: "#1D4ED8",
+      section: "Administration",
+      onPress: () => {
+        navigation.navigate(
+          RootStackScreenNames.ImportExport as never
+        );
+      },
+    },
+
 
     {
       title: "School Admins",

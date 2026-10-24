@@ -57,11 +57,11 @@ const handleLogout = async () => {
     { title: "Examination Setup", subtitle: "Create and manage exams for each academic year", icon: "📝", accent: "#F3EEFF", route: "PrincipalExamSetup" },
     { title: "Exam Subjects", subtitle: "Manage subjects for each exam and class", icon: "📖", accent: "#EAF7F8", route: "PrincipalExamSubjects" },
     { title: "Exam Timetable", subtitle: "Create and manage exam timetables", icon: "⏰", accent: "#FFF0F0", route: "PrincipalExamTimetable" },
-    { title: "Mark Sheets", subtitle: "View student academic performance", icon: "📝", accent: "#EEF8F2", onPress: () => notify("Mark Sheets screen is not connected yet.") },
-    { title: "Results", subtitle: "View examination results", icon: "📊", accent: "#FFF7E8", onPress: () => notify("Results dashboard is not connected yet.") },
+    { title: "Mark Sheets", subtitle: "View student academic performance", icon: "📝", accent: "#EEF8F2", route: "PrincipalReportCards" },
+    { title: "Results", subtitle: "View examination results", icon: "📊", accent: "#FFF7E8", route: "PrincipalResults" },
     { title: "Pass / Fail", subtitle: "View pass and fail statistics", icon: "📈", accent: "#F3EEFF", onPress: () => notify("Pass/fail statistics are not connected yet.") },
-    { title: "Class Performance", subtitle: "Compare performance across classes", icon: "🏫", accent: "#EAF7F8", onPress: () => notify("Class performance is not connected yet.") },
-    { title: "Academic Reports", subtitle: "View consolidated academic reports", icon: "📖", accent: "#FFF0F0", onPress: () => notify("Academic reports are not connected yet.") },
+    { title: "Class Performance", subtitle: "Compare performance across classes", icon: "🏫", accent: "#EAF7F8", route: "PrincipalStudentPerformanceTrends" },
+    { title: "Academic Reports", subtitle: "View consolidated academic reports", icon: "📖", accent: "#FFF0F0", route: "PrincipalReportCardAnalytics" },
   ], [navigation]);
 
   
@@ -115,6 +115,72 @@ const openTile = async (item: AcademicTile) => {
     return;
   }
 
+  if (item.route === "PrincipalReportCards") {
+    try {
+      const currentAcademicYearId =
+        await academicYearServices.getCurrentAcademicYear();
+
+      if (!currentAcademicYearId) {
+        notify("No current academic year found.");
+        return;
+      }
+
+      navigation.navigate({
+        name: "PrincipalReportCards",
+        params: { academicYearId: currentAcademicYearId.id },
+      } as never);
+    } catch (error) {
+      console.error("Failed to get current academic year:", error);
+      notify("Unable to load the current academic year.");
+    }
+
+    return;
+  }
+
+  if (item.route === "PrincipalReportCardAnalytics") {
+    try {
+      const currentAcademicYearId =
+        await academicYearServices.getCurrentAcademicYear();
+
+      if (!currentAcademicYearId) {
+        notify("No current academic year found.");
+        return;
+      }
+
+      navigation.navigate({
+        name: "PrincipalReportCardAnalytics",
+        params: { academicYearId: currentAcademicYearId.id },
+      } as never);
+    } catch (error) {
+      console.error("Failed to get current academic year:", error);
+      notify("Unable to load the current academic year.");
+    }
+
+    return;
+  }
+
+  if (item.route === "PrincipalStudentPerformanceTrends") {
+    try {
+      const currentAcademicYearId =
+        await academicYearServices.getCurrentAcademicYear();
+
+      if (!currentAcademicYearId) {
+        notify("No current academic year found.");
+        return;
+      }
+
+      navigation.navigate({
+        name: "PrincipalStudentPerformanceTrends",
+        params: { academicYearId: currentAcademicYearId.id },
+      } as never);
+    } catch (error) {
+      console.error("Failed to get current academic year:", error);
+      notify("Unable to load the current academic year.");
+    }
+
+    return;
+  }
+
   if (item.route === "PrincipalExamTimetable") {
     try {
       const currentAcademicYearId =
@@ -127,6 +193,28 @@ const openTile = async (item: AcademicTile) => {
 
       navigation.navigate({
         name: "PrincipalExamTimetable",
+        params: { academicYearId: currentAcademicYearId.id },
+      } as never);
+    } catch (error) {
+      console.error("Failed to get current academic year:", error);
+      notify("Unable to load the current academic year.");
+    }
+
+    return;
+  }
+
+  if (item.route === "PrincipalResults") {
+    try {
+      const currentAcademicYearId =
+        await academicYearServices.getCurrentAcademicYear();
+
+      if (!currentAcademicYearId) {
+        notify("No current academic year found.");
+        return;
+      }
+
+      navigation.navigate({
+        name: "PrincipalResults",
         params: { academicYearId: currentAcademicYearId.id },
       } as never);
     } catch (error) {
