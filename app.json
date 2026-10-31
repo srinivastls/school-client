@@ -3,7 +3,7 @@
     "name": "shikshavega",
     "slug": "srinu",
     "version": "1.0.0+4",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -27,6 +27,7 @@
       "bundleIdentifier": "com.soir.shikshavega.app"
     },
     "android": {
+      "edgeToEdgeEnabled": true,
   "adaptiveIcon": {
     "foregroundImage": "./assets/adaptive-icon.png",
     "backgroundColor": "#FFFFFF"
@@ -54,8 +55,16 @@
     },
     "owner": "srinivastls-team",
     "plugins": [
-      "expo-asset",
-      "expo-font"
-    ]
+  "expo-asset",
+  "expo-font",
+  [
+    "react-native-edge-to-edge",
+    {
+      "android": {
+        "parentTheme": "Default"
+      }
+    }
+  ]
+]
   }
 }
