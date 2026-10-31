@@ -17,6 +17,8 @@ import {
   useTheme,
 } from "react-native-paper";
 
+import { registerConfirmAlert } from "../services/confirmBridge";
+
 export type AlertType = "success" | "error" | "info";
 
 type AlertOptions = {
@@ -55,6 +57,10 @@ type DialogRequest =
       resolve: (result: boolean) => void;
     };
 
+type DialogRequestOptions =
+  | Omit<Extract<DialogRequest, { kind: "alert" }>, "id" | "resolve">
+  | Omit<Extract<DialogRequest, { kind: "confirm" }>, "id" | "resolve">;
+
 type ConfirmContextValue = {
   showAlert: (
     title: string,
@@ -66,7 +72,9 @@ type ConfirmContextValue = {
     options: AlertOptions
   ) => Promise<void>;
 
-  confirm: (options: ConfirmOptions) => Promise<boolean>;
+  confirm: (
+    options: ConfirmOptions
+  ) => Promise<boolean>;
 
   showError: (
     error: unknown,
@@ -101,7 +109,10 @@ function getErrorMessage(
       return apiMessage;
     }
 
-    if (typeof value.message === "string" && value.message.trim()) {
+    if (
+      typeof value.message === "string" &&
+      value.message.trim()
+    ) {
       return value.message;
     }
   }
@@ -123,7 +134,9 @@ export function ConfirmProvider({
   const nextId = useRef(1);
 
   const enqueue = useCallback(
-    (request: Omit<DialogRequest, "id">): Promise<boolean> =>
+    (
+      request: DialogRequestOptions
+    ): Promise<boolean> =>
       new Promise((resolve) => {
         const item = {
           ...request,
@@ -143,7 +156,6 @@ export function ConfirmProvider({
   const finish = useCallback((result: boolean) => {
     const completed = queue.current.shift();
 
-    // Move to the next queued dialog before resolving the caller.
     const next = queue.current[0] ?? null;
     setCurrent(next);
 
@@ -158,8 +170,7 @@ export function ConfirmProvider({
         message: options.message,
         type: options.type ?? "info",
         buttonText: options.buttonText ?? "OK",
-        resolve: () => {},
-      } as Omit<DialogRequest, "id">);
+      });
     },
     [enqueue]
   );
@@ -169,13 +180,13 @@ export function ConfirmProvider({
       title: string,
       message: string,
       type: AlertType = "info"
-    ) =>
+    ): Promise<void> =>
       showAlertWithOptions({ title, message, type }),
     [showAlertWithOptions]
   );
 
   const confirm = useCallback(
-    (options: ConfirmOptions) =>
+    (options: ConfirmOptions): Promise<boolean> =>
       enqueue({
         kind: "confirm",
         title: options.title,
@@ -183,13 +194,15 @@ export function ConfirmProvider({
         confirmText: options.confirmText ?? "Confirm",
         cancelText: options.cancelText ?? "Cancel",
         destructive: options.destructive ?? false,
-        resolve: () => {},
-      } as Omit<DialogRequest, "id">),
+      }),
     [enqueue]
   );
 
   const showError = useCallback(
-    (error: unknown, fallbackMessage = "Something went wrong.") =>
+    (
+      error: unknown,
+      fallbackMessage = "Something went wrong."
+    ): Promise<void> =>
       showAlert(
         "Error",
         getErrorMessage(error, fallbackMessage),
@@ -198,9 +211,15 @@ export function ConfirmProvider({
     [showAlert]
   );
 
+  // Make the dialog available to services outside React.
+  useEffect(() => {
+    return registerConfirmAlert(showAlert);
+  }, [showAlert]);
+
   useEffect(() => {
     return () => {
       const pending = queue.current.splice(0);
+
       pending.forEach((request) => request.resolve(false));
     };
   }, []);
@@ -208,7 +227,8 @@ export function ConfirmProvider({
   const alertColor =
     current?.kind === "alert" && current.type === "error"
       ? theme.colors.error
-      : current?.kind === "alert" && current.type === "success"
+      : current?.kind === "alert" &&
+          current.type === "success"
         ? "#218653"
         : theme.colors.primary;
 
@@ -279,7 +299,7 @@ export function ConfirmProvider({
   );
 }
 
-export function useConfirm() {
+export function useConfirm(): ConfirmContextValue {
   const context = useContext(ConfirmContext);
 
   if (!context) {

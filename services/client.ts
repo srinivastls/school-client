@@ -1,30 +1,23 @@
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, {
   AxiosError,
-  AxiosRequestConfig,
+  type AxiosRequestConfig,
 } from "axios";
-import { useConfirm } from "../components/ConfirmProvider";
+
+import { handleSessionExpired } from "./sessionBridge";
+
 export const api = axios.create({
-  baseURL:
-      //"http://localhost:3000/api",
+  baseURL: //"http://localhost:3000/api",
       //"http://10.81.53.179:3000/api",
-      //"http://10.61.4.100:3000/api",
-    "https://school-server-production-41f8.up.railway.app/api",
-    //"https://school-management-d0ccfbbd10d1.herokuapp.com/api",
-
-
-    timeout: 50000,
-
+    //"http://10.61.4.100:3000/api",
+   "https://school-server-production-41f8.up.railway.app/api",
+   //"https://school-management-d0ccfbbd10d1.herokuapp.com/api",
+  timeout: 50000,
   headers: {
     "Content-Type": "application/json",
   },
 });
-
-/*
- * ============================================================
- * REQUEST INTERCEPTOR
- * ============================================================
- */
 
 const USER_STORE_KEY = "userStore";
 
@@ -33,8 +26,22 @@ type StoredAuthState = {
   refreshToken?: string;
 };
 
+type RefreshResponse = {
+  accessToken?: string;
+};
+
+type ApiErrorResponse = {
+  code?: string;
+  message?: string;
+};
+
+type RetryableRequestConfig = AxiosRequestConfig & {
+  _retry?: boolean;
+};
+
 const getAuthState = async (): Promise<StoredAuthState | null> => {
   const raw = await AsyncStorage.getItem(USER_STORE_KEY);
+
   if (!raw) return null;
 
   try {
@@ -45,9 +52,12 @@ const getAuthState = async (): Promise<StoredAuthState | null> => {
   }
 };
 
-const saveAccessToken = async (accessToken: string) => {
+const saveAccessToken = async (accessToken: string): Promise<void> => {
   const raw = await AsyncStorage.getItem(USER_STORE_KEY);
-  if (!raw) return;
+
+  if (!raw) {
+    throw new Error("Stored authentication state not found.");
+  }
 
   const parsed = JSON.parse(raw);
 
@@ -56,54 +66,53 @@ const saveAccessToken = async (accessToken: string) => {
     accessToken,
   };
 
-  await AsyncStorage.setItem(
-    USER_STORE_KEY,
-    JSON.stringify(parsed)
-  );
+  await AsyncStorage.setItem(USER_STORE_KEY, JSON.stringify(parsed));
 };
 
+// Attach the current access token to each request.
 api.interceptors.request.use(
-  async (config: AxiosRequestConfig) => {
+  async (config) => {
     try {
       const state = await getAuthState();
-      const accessToken = state?.accessToken;
 
-      if (accessToken) {
-        config.headers = config.headers ?? {};
-        config.headers["x-access-token"] = accessToken;
+      if (state?.accessToken) {
+        config.headers ??= {};
+        config.headers = {
+          ...config.headers,
+          "x-access-token": state.accessToken,
+        };
       }
-
-      return config;
     } catch (error) {
-      console.error("AUTH STORAGE ERROR:", error);
-      return config;
+      console.error("[AUTH] Could not read stored token:", error);
     }
+
+    return config;
   },
   (error) => Promise.reject(error)
 );
 
+// Share one refresh operation across concurrent requests.
 let refreshPromise: Promise<string | null> | null = null;
 
-const refreshAccessToken = async (): Promise<string | null> => {
-  if (refreshPromise) return refreshPromise;
+const refreshAccessToken = (): Promise<string | null> => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
 
-  refreshPromise = (async () => {
+  refreshPromise = (async (): Promise<string | null> => {
     try {
       const state = await getAuthState();
-const refreshToken = state?.refreshToken;
+      const refreshToken = state?.refreshToken;
 
-const {showAlert} = useConfirm();
+      if (!refreshToken) {
+        console.warn("[AUTH] No refresh token found.");
+        await handleSessionExpired();
+        return null;
+      }
 
-if (!refreshToken) {
-  showAlert(
-    "Session expired",
-    "Please log in again.",)
-  return null;
-}
-
-      // Use plain axios here, not `api`, so the refresh request
-      // cannot recursively trigger this interceptor.
-      const response = await axios.post(
+      // Plain axios prevents the API interceptors from recursively
+      // attempting to refresh the refresh request.
+      const response = await axios.post<RefreshResponse>(
         `${api.defaults.baseURL}/auth/refresh`,
         { refreshToken },
         {
@@ -114,25 +123,40 @@ if (!refreshToken) {
         }
       );
 
-
-
       const newAccessToken = response.data?.accessToken;
 
-      if (!newAccessToken) return null;
+      if (!newAccessToken) {
+        console.error("[AUTH] Refresh response has no accessToken.");
+        await handleSessionExpired();
+        return null;
+      }
 
       await saveAccessToken(newAccessToken);
-      api.defaults.headers.common["x-access-token"] =
-  newAccessToken;
 
+      api.defaults.headers.common["x-access-token"] = newAccessToken;
 
-
-
+      console.log("[AUTH] Access token refreshed successfully.");
       return newAccessToken;
     } catch (error) {
+      const refreshError = error as AxiosError<ApiErrorResponse>;
+      const status = refreshError.response?.status;
+
       console.error(
-        "REFRESH TOKEN ERROR:",
-        (error as AxiosError)?.response?.data ?? error
+        "[AUTH] Refresh failed:",
+        status,
+        refreshError.response?.data ?? refreshError.message
       );
+
+      if (status === 401 || status === 403) {
+        // Invalid or expired refresh token: clear session and redirect.
+        await handleSessionExpired();
+      } else if (status === undefined) {
+        // A network error does not necessarily mean the session expired.
+        console.error("[AUTH] Refresh request had no server response.");
+      } else {
+        // Do not log out automatically for other server errors.
+        console.error("[AUTH] Unexpected refresh server error:", status);
+      }
 
       return null;
     } finally {
@@ -145,16 +169,14 @@ if (!refreshToken) {
 
 api.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as
-      | (AxiosRequestConfig & { _retry?: boolean })
-      | undefined;
+  async (error: AxiosError<ApiErrorResponse>) => {
+    const originalRequest =
+      error.config as RetryableRequestConfig | undefined;
 
     const status = error.response?.status;
-    const data = error.response?.data as
-      | { code?: string; message?: string }
-      | undefined;
+    const data = error.response?.data;
 
+    // Keep this condition aligned with your backend's actual error response.
     const tokenExpired =
       status === 401 && data?.code === "TOKEN_EXPIRED";
 
@@ -175,14 +197,14 @@ api.interceptors.response.use(
     const newAccessToken = await refreshAccessToken();
 
     if (!newAccessToken) {
-      // Do not automatically navigate to login here.
-      // Your existing auth/navigation layer can handle a real
-      // session-expiry response if the 7-day refresh token is gone.
       return Promise.reject(error);
     }
 
-    originalRequest.headers = originalRequest.headers ?? {};
-    originalRequest.headers["x-access-token"] = newAccessToken;
+    originalRequest.headers ??= {};
+    originalRequest.headers = {
+      ...originalRequest.headers,
+      "x-access-token": newAccessToken,
+    };
 
     return api.request(originalRequest);
   }

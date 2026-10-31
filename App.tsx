@@ -1,1038 +1,2053 @@
-import React, { useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerSessionExpiredHandler } from "./services/sessionBridge";
+
+
 
 import {
-  View,BackHandler,Platform
+
+  View,
+  BackHandler,
+
 } from "react-native";
 
-import {
-  NavigationContainer,
-  createNavigationContainerRef,
-  RouteProp,
-} from "@react-navigation/native";
+
 
 import {
+
+  NavigationContainer,
+
+  createNavigationContainerRef,
+
+} from "@react-navigation/native";
+
+
+
+import {
+
   QueryClient,
+
   QueryClientProvider,
+
 } from "@tanstack/react-query";
+
+
 
 import { StatusBar } from "expo-status-bar";
 
-import {
-  createNativeStackNavigator,
-} from "@react-navigation/native-stack";
+
 
 import {
+
+  createNativeStackNavigator,
+
+} from "@react-navigation/native-stack";
+
+
+
+import {
+
   MD3LightTheme as DefaultTheme,
+
   Provider as PaperProvider,
+
 } from "react-native-paper";
+
+
 
 import { useConfirm } from "./components/ConfirmProvider";
 
-import {
-  ThemeProp,
-} from "react-native-paper/lib/typescript/types";
+
+
 
 import {
+
+  ThemeProp,
+
+} from "react-native-paper/lib/typescript/types";
+
+
+
+import {
+
   Colors,
+
 } from "./theme";
+
+
 
 import { ModuleNavigationBar } from "./components/ModuleNavigationBar";
 
+
+
 import {
+
   RootStackParamList,
+
   RootStackScreenNames,
+
 } from "./types";
 
+
+
 import { LoginScreen } from "./screens/LoginScreen";
+
 import { HomeScreen } from "./screens/HomeScreen";
+
 import { SplashScreen } from "./screens/SplashScreen";
+
 import { PrincipalSubjectManagementScreen } from "./screens/principal/PrincipalSubjectManagementScreen";
+
 import { AdminFeatureMenu } from "./screens/admin/AdminFeatureMenuScreen";
+
 import { AdminStudentManagement } from "./screens/admin/AdminStudentManagement";
+
 import { AdminStudentRegistration } from "./screens/admin/AdminStudentRegistration";
+
 import { AdminStudentEdit } from "./screens/admin/AdminStudentEdit";
+
 import { AdminStudentDetails } from "./screens/admin/AdminStudentDetails";
+
+
 
 import  BulkImportScreen  from "./screens/admin/BulkImportScreen";
 
+
+
 import { AdminFinanceManagement } from "./screens/admin/AdminFinanceManagement";
+
 import { AdminStaffManagement } from "./screens/admin/AdminStaffManagement";
+
 import { AdminAttendanceCalendar } from "./screens/admin/AdminAttendanceCalendar";
+
 import { AdminCommunication } from "./screens/admin/AdminCommunication";
+
 import { AdminSchoolSettings } from "./screens/admin/AdminSchoolSettings";
+
 import { AdminReports } from "./screens/admin/AdminReports";
+
+
 
 import AdminProfileScreen from "./screens/platform/AdminProfileScreen";
 
+
+
 import { StudentDetails } from "./screens/StudentDetails";
+
 import { StudentRegistration } from "./screens/StudentRegistration";
+
 import { AdminDashboard } from "./screens/admin/AdminDashboard";
+
 import { TeacherDashboard } from "./screens/teacher/TeacherDashboard";
+
 import { ParentDashboardScreen } from "./screens/parent/ParentDashboard";
+
 import { PlatformSchoolsScreen } from "./screens/platform/PlatformSchoolsScreen";
+
 import { PlatformAdminDashboard } from "./screens/platform/PlatformAdminDashboard";
+
 import {CreateSchoolScreen} from "./screens/platform/CreateSchoolScreen";
+
 import {CreatePrincipalScreen} from "./screens/platform/CreatePrincipalScreen";
 //import {PrincipalDefaultersScreen} from "./screens/principal/PrincipalDefaultersScreen";
 import {
+
   PrincipalStudentsScreen,
+
 } from "./screens/principal/PrincipalStudentsScreen";
 
+
+
 import {
+
   PlatformAdminSchoolDetails,
+
 } from "./screens/platform/PlatformAdminSchoolDetails";
+
 import {
+
   PrincipalTeachersScreen,
+
 } from "./screens/principal/PrincipalTeachersScreen";
 
+
+
 import {
+
   PrincipalParentsScreen,
+
 } from "./screens/principal/PrincipalParentsScreen";
 
+
+
 import {
+
   PrincipalClassesScreen,
+
 } from "./screens/principal/PrincipalClassesScreen";
 
-import {
-  PrincipalClassStudentsScreen,
-} from "./screens/principal/PrincipalClassStudentsScreen";
+
 
 import {
-  PrincipalFinanceScreen,
-} from "./screens/principal/PrincipalFinanceScreen";
-import ProfileScreen from "./screens/ProfileScreen";
+
+  PrincipalClassStudentsScreen,
+
+} from "./screens/principal/PrincipalClassStudentsScreen";
+
+
+
 import {
+
+  PrincipalFinanceScreen,
+
+} from "./screens/principal/PrincipalFinanceScreen";
+
+import ProfileScreen from "./screens/ProfileScreen";
+
+import {
+
   PrincipalAcademicsScreen,
+
 } from "./screens/principal/PrincipalAcademicsScreen";
+
+
 
 import {PrincipalDashboard} from "./screens/principal/PrincipalDashboard";
 
+
+
 import {StudentRegistrationFormScreen} from "./screens/StudentRegistrationFormScreen";
+
 import {EditStudentScreen} from "./screens/EditStudentScreen";
+
 import {OldStudentRegistrationFormScreen} from "./screens/OldStudentRegistrationFormScreen";
+
 import { PrincipalCreateTeacherScreen } from "./screens/principal/PrincipalCreateTeacherScreen";
+
 import { PrincipalTeacherDetailsScreen } from "./screens/principal/PrincipalTeacherDetailsScreen";
+
 import { ParentChildDetailsScreen } from "./screens/parent/ParentChildDetailsScreen";
+
 import { PrincipalParentDetailsScreen } from "./screens/principal/PrincipalParentDetailsScreen";
+
 import { PrincipalCreateAdminScreen } from "./screens/principal/PrincipalCreateAdminScreen";
+
 import { PrincipalAdminsScreen } from "./screens/principal/PrincipalAdminsScreen";
+
 import { PrincipalAdminDetailsScreen } from "./screens/principal/AdminDetailsScreen";
+
 import { PrincipalCollectFeeScreen } from "./screens/principal/PrincipalCollectFeeScreen";
+
 import { Invoice } from "./screens/Invoice";
+
 import { PrincipalPendingDuesScreen } from "./screens/principal/PrincipalPendingDuesScreen";
+
 import { PrincipalAttendanceDashboardScreen } from "./screens/principal/PrincipalAttendanceDashboardScreen";
+
 import { PrincipalClassDetailsScreen } from "./screens/principal/ClassDetailsScreen";
+
 import { AcademicYearManagementScreen } from "./screens/principal/AcademicYearManagementScreen";
+
 import ClassManagementScreen from "./screens/principal/ClassManagementScreen";
+
 import { PrincipalClassTeachersScreen } from "./screens/principal/PrincipalClassTeachersScreen";
+
 import {TeacherMyClassesScreen} from "./screens/teacher/TeacherMyClassesScreen";
+
 import { TeacherSectionDetailsScreen } from "./screens/teacher/TeacherSectionDetailsScreen";
+
 import { TeacherSectionStudentsScreen } from "./screens/teacher/TeacherSectionStudentsScreen";
+
 import TeacherSectionAttendanceScreen from "./screens/teacher/TeacherSectionAttendanceScreen";
+
 import TeacherStudentAttendanceHistoryScreen from "./screens/teacher/TeacherStudentAttendanceHistoryScreen";
+
 import TeacherMyStudentsScreen from "./screens/teacher/TeacherMyStudentsScreen";
+
 import TeacherMarksEntryScreen from "./screens/teacher/TeacherMarksEntryScreen";
+
 import TeacherMyAttendanceScreen from "./screens/teacher/TeacherMyAttendanceScreen";
+
 import TeacherLeaveScreen from "./screens/teacher/TeacherLeaveScreen";
+
 import TeacherProfileScreen from "./screens/teacher/TeacherProfileScreen";
+
 import TeacherTimetableScreen from "./screens/teacher/TeacherTimetableScreen";
+
 import TeacherAttendanceScreen from "./screens/teacher/TeacherAttendanceScreen";
+
 import { PrincipalDefaultersScreen } from "./screens/principal/PrincipalDefaultersScreen";
+
 import AdminLeaveApprovals from "./screens/admin/AdminLeaveApprovals";
+
 import AdminTeacherAttendance from "./screens/admin/AdminTeacherAttendance";
+
 import { PromotionDemotion } from "./screens";
+
 import SectionManagementScreen from "./screens/SectionManagementScreen";
+
 import PrincipalTimetableManagementScreen from "./screens/principal/PrincipalTimetableManagementScreen";
+
 import PrincipalTeacherSubjectMappingScreen from "./screens/principal/PrincipalTeacherSubjectMappingScreen";
+
 import ExamSetupScreen from "./screens/principal/ExamSetupScreen";
+
 import ExamSubjectsScreen from "./screens/principal/ExamSubjectsScreen";
+
 import ExamTimetableScreen from "./screens/principal/ExamTimetableScreen";
+
 import { ConfirmProvider } from "./components/ConfirmProvider";
+
 import PrincipalResultsScreen from "./screens/principal/PrincipalResultsScreen";
+
 import ParentResultsScreen from "./screens/parent/ParentResultsScreen";
+
 import PrincipalReportCardsScreen from "./screens/principal/PrincipalReportCardsScreen";
+
 import PrincipalReportCardAnalyticsScreen from "./screens/principal/PrincipalReportCardAnalyticsScreen";
+
 import PrincipalStudentPerformanceTrendsScreen from "./screens/principal/PrincipalStudentPerformanceTrendsScreen";
+
 import TeacherStudentPerformanceTrendsScreen from "./screens/teacher/TeacherStudentPerformanceTrendsScreen";
+
 import TeacherReportCardsScreen from "./screens/teacher/TeacherReportCardsScreen";
+
 import BulkImportExportScreen from "./screens/principal/BulkImportExportScreen";
+
 const RootStack =
+
   createNativeStackNavigator<RootStackParamList>();
+
+
 
 const queryClient = new QueryClient();
 
+
+
 const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
+
+
 const theme: ThemeProp = {
+
   ...DefaultTheme,
 
+
+
   colors: {
+
     ...DefaultTheme.colors,
 
+
+
     primary: Colors.brandPrimary,
+
     secondary: Colors.brandSecondary,
+
     primaryContainer: Colors.brandPrimaryBg,
+
     background: Colors.background,
+
   },
+
 };
 
 
+
+
+
 function ExitConfirmationHandler() {
+
   const { confirm } = useConfirm();
 
+
+
   useEffect(() => {
+
     let isConfirmingExit = false;
 
+
+
     const subscription = BackHandler.addEventListener(
+
       "hardwareBackPress",
+
       () => {
+
         if (!navigationRef.isReady()) {
-          return false;
-        }
 
-        // Allow React Navigation to handle normal back navigation.
+          return false;
+
+        }
+// Allow React Navigation to handle normal back navigation.
         if (navigationRef.canGoBack()) {
+
           return false;
+
+        }
+// Prevent duplicate dialogs.
+        if (isConfirmingExit) {
+
+          return true;
+
         }
 
-        // Prevent duplicate dialogs.
-        if (isConfirmingExit) {
-          return true;
-        }
+
 
         isConfirmingExit = true;
 
+
+
         void confirm({
+
           title: "Exit App",
+
           message: "Are you sure you want to close the app?",
+
           confirmText: "Yes, Exit",
+
           cancelText: "Cancel",
+
           destructive: true,
+
         })
+
           .then((confirmed) => {
+
             if (confirmed) {
+
               BackHandler.exitApp();
+
             }
+
           })
+
           .catch((error) => {
+
             console.error("Exit confirmation failed:", error);
+
           })
+
           .finally(() => {
+
             isConfirmingExit = false;
+
           });
 
+
+
         return true;
+
       }
+
     );
 
+
+
     return () => subscription.remove();
+
   }, [confirm]);
 
+
+
   return null;
+
 }
 
 
-export default function App() {
-  const [activeRoute, setActiveRoute] = useState<string>(RootStackScreenNames.SplashScreen);
 
-  
+
+
+export default function App() {
+  const [activeRoute, setActiveRoute] = useState<string>(
+    RootStackScreenNames.SplashScreen
+  );
+
+  useEffect(() => {
+    return registerSessionExpiredHandler(async () => {
+      // Clear persisted authentication state.
+      await AsyncStorage.removeItem("userStore");
+
+      // Reset navigation so the user cannot return to protected screens.
+      if (navigationRef.isReady()) {
+        navigationRef.resetRoot({
+          index: 0,
+          routes: [{ name: RootStackScreenNames.Login }],
+        });
+      }
+    });
+  }, []);
+
+
+
+
+
+
+
 
 
   return (
+
     <PaperProvider theme={theme}>
+
+
 
       <StatusBar style="auto" />
 
+
+
       <QueryClientProvider client={queryClient}>
 
-        {/* <NavigationContainer
-          ref={navigationRef}
-          onReady={() => setActiveRoute(navigationRef.getCurrentRoute()?.name ?? RootStackScreenNames.SplashScreen)}
-          onStateChange={() => setActiveRoute(navigationRef.getCurrentRoute()?.name ?? RootStackScreenNames.SplashScreen)}
-        > */}
+
+
+        
+
+
 
         <ConfirmProvider>
-          <ExitConfirmationHandler />
-      <NavigationContainer
-        ref={navigationRef}
-        onReady={() => {
-          setActiveRoute(
-            navigationRef.getCurrentRoute()?.name ??
-              RootStackScreenNames.SplashScreen
-          );
-        }}
-        onStateChange={() => {
-  const state = navigationRef.getRootState();
 
+          <ExitConfirmationHandler />
+
+      <NavigationContainer
+
+        ref={navigationRef}
+
+        onReady={() => {
+
+          setActiveRoute(
+
+            navigationRef.getCurrentRoute()?.name ??
+
+              RootStackScreenNames.SplashScreen
+
+          );
+
+        }}
+
+        onStateChange={() => {
 
   setActiveRoute(
+
     navigationRef.getCurrentRoute()?.name ??
+
       RootStackScreenNames.SplashScreen,
+
   );
+
 }}
+
+
+
 
 
       >
 
-        
+
+
+
+
+
 
           <View style={{ flex: 1 }}>
+
             <ModuleNavigationBar activeRoute={activeRoute} navigationRef={navigationRef} />
 
+
+
           <RootStack.Navigator
+
             initialRouteName={
+
               RootStackScreenNames.SplashScreen
+
             }
+
             screenOptions={{
+
               animation: "fade",
+
               headerShown: false,
 
+
+
               headerStyle: {
+
                 backgroundColor:
+
                   Colors.brandPrimary,
+
               },
+
+
 
               headerTintColor: "white",
 
+
+
               contentStyle: {
+
                 backgroundColor:
+
                   Colors.background,
+
               },
+
             }}
+
           >
+
+
 
             {/* AUTH */}
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.Login}
+
               component={LoginScreen}
+
               options={{
+
                 headerShown: false,
+
               }}
+
             />
 
-            {/* <RootStack.Screen
-              name={RootStackScreenNames.Signup}
-              component={SignupScreen}
-              options={{
-                headerTitle: "Create Admin",
-              }}
-            /> */}
+
 
             {/* SPLASH */}
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.SplashScreen}
+
               component={SplashScreen}
+
               options={{
+
                 headerShown: false,
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.PrincipalSubjectManagement}
+
               component={PrincipalSubjectManagementScreen}
+
               options={{
+
                 headerTitle: "Principal Subject Management",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.PrincipalExamSetup}
+
               component={ExamSetupScreen}
+
               options={{
+
                 headerTitle: "Examination Setup",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.PrincipalExamSubjects}
+
               component={ExamSubjectsScreen}
+
               options={{
+
                 headerTitle: "Exam Subjects",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.PrincipalExamTimetable}
+
               component={ExamTimetableScreen}
+
               options={{
+
                 headerTitle: "Exam Timetable",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.PrincipalTeacherSubjectMapping}
+
               component={PrincipalTeacherSubjectMappingScreen}
+
               options={{
+
                 headerTitle: "Principal Teacher Subject Mapping",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.PrincipalTimetableManagement}
+
               component={PrincipalTimetableManagementScreen}
+
               options={{
+
                 headerTitle: "Timetable Management",
+
               }}
+
             />
+
+
 
             {/* HOME */}
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.Home}
+
               component={HomeScreen}
+
               options={{
+
                 headerShown: false,
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.PromotionDemotion}
+
               component={
+
                 PromotionDemotion
+
               }
+
               options={{
+
                 headerTitle: "Promotion/Demotion",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.BulkImport}
+
               component={BulkImportScreen}
+
               options={{
+
                 headerTitle: "Bulk Import",
+
               }}
+
             />
+
+
 
             {/* PRINCIPAL ROUTES */}
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalStudents
+
               }
+
               component={PrincipalStudentsScreen}
+
               options={{
+
                 headerTitle: "Students",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalTeachers
+
               }
+
               component={PrincipalTeachersScreen}
+
               options={{
+
                 headerTitle: "Teachers",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.AdminProfileScreen
+
               }
+
               component={AdminProfileScreen}
+
               options={{
+
                 headerTitle: "Admin Profile",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
   name={RootStackScreenNames.TeacherMyClasses}
+
   component={TeacherMyClassesScreen}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherSectionDetails}
+
   component={TeacherSectionDetailsScreen}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherSectionStudents}
+
   component={
+
     TeacherSectionStudentsScreen
+
   }
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherSectionAttendance}
+
   component={
+
     TeacherSectionAttendanceScreen
+
   }
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherStudentAttendanceHistory}
+
   component={TeacherStudentAttendanceHistoryScreen}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherMyStudents}
+
   component={TeacherMyStudentsScreen}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherMarksEntry}
+
   component={TeacherMarksEntryScreen}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherMyAttendance}
+
   component={TeacherMyAttendanceScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherLeave}
+
   component={TeacherLeaveScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
 
+
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherProfile}
+
   component={TeacherProfileScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherTimetable}
+
   component={TeacherTimetableScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
 name={RootStackScreenNames.TeacherAttendance}
+
   component={TeacherAttendanceScreen}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminTeacherAttendance}
+
   component={AdminTeacherAttendance}
+
 />
+
+
 
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminLeaveApprovals}
+
   component={AdminLeaveApprovals}
+
 />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalParents
+
               }
+
               component={PrincipalParentsScreen}
+
               options={{
+
                 headerTitle: "Parents",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalClasses
+
               }
+
               component={PrincipalClassesScreen}
+
               options={{
+
                 headerTitle: "Classes",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalClassStudents
+
               }
+
               component={PrincipalClassStudentsScreen}
+
               options={{
+
                 headerTitle: "Class Students",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalClassDetails
+
               }
+
               component={PrincipalClassDetailsScreen}
+
               options={{
+
                 headerTitle: "Class Details",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
              name={ RootStackScreenNames.ProfileScreen}
+
              component={ProfileScreen}
+
              options={{
+
                headerShown: false,
+
              }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalAcademicYearManagement
+
               }
+
               component={AcademicYearManagementScreen}
+
               options={{
+
                 headerTitle: "Academic Year Management",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.ClassManagement
+
               }
+
               component={ClassManagementScreen}
+
               options={{
+
                 headerTitle: "Class Management",
+
               }}
+
             />
+
+
 
             {/* ⭐ FINANCE ⭐ */}
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalFinance
+
               }
+
               component={PrincipalFinanceScreen}
+
               options={{
+
                 headerTitle: "Finance Dashboard",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.SectionManagement
+
               }
+
               component={SectionManagementScreen}
+
               options={{
+
                 headerTitle: "Section Management",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
   name={RootStackScreenNames.AdminFeatureMenu}
+
   component={AdminFeatureMenu}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminStudentDetails}
+
   component={AdminStudentDetails}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminStudentEdit}
+
   component={AdminStudentEdit}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminStudentManagement}
+
   component={AdminStudentManagement}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminFinanceManagement}
+
   component={AdminFinanceManagement}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminStaffManagement}
+
   component={AdminStaffManagement}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminAttendanceCalendar}
+
   component={AdminAttendanceCalendar}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminCommunication}
+
   component={AdminCommunication}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminSchoolSettings}
+
   component={AdminSchoolSettings}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.AdminReports}
+
   component={AdminReports}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.PrincipalResults}
+
   component={PrincipalResultsScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.ParentResults}
+
   component={ParentResultsScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.PrincipalReportCards}
+
   component={PrincipalReportCardsScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.PrincipalReportCardAnalytics}
+
   component={PrincipalReportCardAnalyticsScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.PrincipalStudentPerformanceTrends}
+
   component={PrincipalStudentPerformanceTrendsScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
 
+
+
 <RootStack.Screen
+
   name={RootStackScreenNames.TeacherReports}
+
   component={TeacherStudentPerformanceTrendsScreen}
+
   options={{
+
     headerShown: false,
+
   }}
-/>
-<RootStack.Screen
-  name={RootStackScreenNames.TeacherResults}
-  component={TeacherReportCardsScreen}
-  options={{
-    headerShown: false,
-  }}
+
 />
 
 <RootStack.Screen
-  name={RootStackScreenNames.ImportExport}
-  component={BulkImportExportScreen}
+
+  name={RootStackScreenNames.TeacherResults}
+
+  component={TeacherReportCardsScreen}
+
   options={{
+
     headerShown: false,
+
   }}
+
 />
+
+
+
+<RootStack.Screen
+
+  name={RootStackScreenNames.ImportExport}
+
+  component={BulkImportExportScreen}
+
+  options={{
+
+    headerShown: false,
+
+  }}
+
+/>
+
+
 
             {/* ⭐ ACADEMICS ⭐ */}
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalAcademics
+
               }
+
               component={PrincipalAcademicsScreen}
+
               options={{
+
                 headerTitle: "Academics Dashboard",
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={RootStackScreenNames.StudentDetails}
+
               component={StudentDetails}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PrincipalClassTeachers
+
               }
+
               component={PrincipalClassTeachersScreen}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.StudentRegistrationForm
+
               }
+
               component={StudentRegistrationFormScreen}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.OldStudentRegistrationFormScreen
+
               }
+
               component={OldStudentRegistrationFormScreen}
+
             />
 
 
+
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.EditStudent
+
               }
+
               component={EditStudentScreen}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PlatformAdminDashboard
+
               }
+
               component={
+
                 PlatformAdminDashboard
+
               }
+
               options={{
+
     headerShown: false,
+
   }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PlatformSchools
+
               }
+
               component={
+
                 PlatformSchoolsScreen
+
               }
+
               options={{
+
     headerShown: false,
+
   }}
+
+
 
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PlatformAdminCreateSchool
+
               }
+
               component={
+
                 CreateSchoolScreen
+
               }
+
               options={{
+
                 headerShown: false,
+
               }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.AdminDashboard
+
               }
+
               component={
+
                 AdminDashboard
+
               }
+
               options={{
+
     headerShown: false,
+
   }}
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.TeacherDashboard
+
               }
+
               component={
+
                 TeacherDashboard
+
               }
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.ParentDashboard
+
               }
+
               component={
+
                 ParentDashboardScreen
+
               }
+
             />
 
+
+
             <RootStack.Screen
+
               name={
+
                 RootStackScreenNames.PlatformAdminSchoolDetails
+
               }
+
               component={
+
                 PlatformAdminSchoolDetails
+
               }
+
               options={{
+
     headerShown: false,
+
   }}
+
             />
+
+
 
             <RootStack.Screen
+
             name={
+
               RootStackScreenNames.PlatformAdminCreatePrincipal
+
             }
+
               component={
+
                 CreatePrincipalScreen
+
             }
+
             options={{
+
               headerTitle: "Create Principal",headerShown: false,
+
             }}
+
             />
 
+
+
           <RootStack.Screen
+
             name={
+
               RootStackScreenNames.PrincipalDashboard
+
             }
+
             component={
+
               PrincipalDashboard
+
             }
+
             options={{
+
               headerTitle: "Principal Dashboard",headerShown: false,
+
             }}
+
           />
 
+
+
           <RootStack.Screen
+
             name={
+
               RootStackScreenNames.PrincipalParentDetails
+
             }
+
             component={
+
               PrincipalParentDetailsScreen
+
             }
+
             options={{
+
               headerTitle: "Principal Academics",headerShown: false,
+
             }}
+
           />
 
+
+
           <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalCreateTeacher
+
   }
+
   component={
+
     PrincipalCreateTeacherScreen
+
   }
+
 />
 
+
+
         <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalTeacherDetails
+
   }
+
   component={PrincipalTeacherDetailsScreen}
+
 />
+
         <RootStack.Screen
+
   name={
+
     RootStackScreenNames.ParentChildDetails
+
   }
+
   component={
+
     ParentChildDetailsScreen
+
   }
+
 />
 
+
+
         <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalCreateAdmin
+
   }
+
   component={
+
     PrincipalCreateAdminScreen
+
   }
+
 />
 
+
+
   <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalAdminDetails
+
   }
+
   component={
+
     PrincipalAdminDetailsScreen
+
   }
+
 />
 
+
+
 <RootStack.Screen
+
   name={
+
     RootStackScreenNames.AdminList
+
   }
+
   component={
+
     PrincipalAdminsScreen
+
   }
+
 />
+
         <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalFeeCollection
+
   }
+
   component={
+
     PrincipalCollectFeeScreen
+
   }
+
 />
+
+
 
   <RootStack.Screen
+
   name={
+
     RootStackScreenNames.Invoice
+
   }
+
   component={
+
     Invoice
+
   }
+
 />
+
+
 
 <RootStack.Screen
+
   name={
+
     RootStackScreenNames.AdminStudentRegistration
+
   }
+
   component={
+
     AdminStudentRegistration
+
   }
+
 />
 
+
+
     <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalPendingDues
+
   }
+
   component={
+
     PrincipalPendingDuesScreen
+
   }
+
 />
 
+
+
     <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalDefaulterStudents
+
   }
+
   component={
+
     PrincipalDefaultersScreen
+
   }
+
 />
 
+
+
     <RootStack.Screen
+
   name={
+
     RootStackScreenNames.PrincipalAttendanceDashboard
+
   }
+
   component={
+
     PrincipalAttendanceDashboardScreen
+
   }
+
 />
+
+
+
+
 
 
 
           </RootStack.Navigator>
 
+
+
           </View>
 
+
+
         </NavigationContainer>
+
         </ConfirmProvider>
+
+
 
       </QueryClientProvider>
 
+
+
     </PaperProvider>
+
   );
+
 }
